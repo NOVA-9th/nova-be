@@ -48,7 +48,7 @@
 ## 3. Git Convention
 
 ### 3-1. 브랜치 전략
-Git Flow (변형 / Simplified Git Flow)
+Gitub Flow
 
 - **main** : 배포 버전
 - **develop** : 개발 통합 브랜치
