@@ -117,20 +117,20 @@ jobs:
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
             # 4) .env 생성 (docker-compose 변수 주입)
-            cat > /home/ubuntu/nova/.env << EOF
-SPRING_PROFILES_ACTIVE=prod
-DOCKER_IMAGE=${{ needs.build-and-push.outputs.docker_image }}
-IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}
-
-# 일단 필요한것만 채워서
-RDS_HOST=${{ secrets.RDS_HOST }}
-RDS_PORT=${{ secrets.RDS_PORT }}
-RDS_DB=${{ secrets.RDS_DB }}
-RDS_USERNAME=${{ secrets.RDS_USERNAME }}
-RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
-
-JWT_SECRET=${{ secrets.JWT_SECRET }}
-EOF
+            {
+              echo "SPRING_PROFILES_ACTIVE=prod"
+              echo "DOCKER_IMAGE=${{ needs.build-and-push.outputs.docker_image }}"
+              echo "IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}"
+              echo ""
+              echo "# 일단 필요한것만 채워서"
+              echo "RDS_HOST=${{ secrets.RDS_HOST }}"
+              echo "RDS_PORT=${{ secrets.RDS_PORT }}"
+              echo "RDS_DB=${{ secrets.RDS_DB }}"
+              echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}"
+              echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}"
+              echo ""
+              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"
+            } > /home/ubuntu/nova/.env
 
             chmod 600 /home/ubuntu/nova/.env
 
