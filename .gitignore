@@ -13,9 +13,7 @@ build/
 ####################################
 .env*
 *.env
-application-*.yml
-!application.yml
-!application-prod.yml
+# application 파일 중 local만 무시 (prod, test는 커밋)
 application-local.yml
 
 ####################################
