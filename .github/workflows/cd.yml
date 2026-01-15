@@ -1,0 +1,142 @@
+name: CD (main deploy)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.image_tag }}
+      docker_image: ${{ steps.meta.outputs.docker_image }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build jar (skip tests; CI already tested)
+        run: ./gradlew clean bootJar -x test
+
+      - name: Set image meta
+        id: meta
+        run: |
+          echo "image_tag=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+          echo "docker_image=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}" >> $GITHUB_OUTPUT
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & Push Docker image (latest + sha)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ steps.meta.outputs.docker_image }}:latest
+            ${{ steps.meta.outputs.docker_image }}:${{ steps.meta.outputs.image_tag }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout (for scp source files)
+        uses: actions/checkout@v4
+
+      - name: Upload docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: ./docker-compose.yml
+          target: /home/ubuntu/nova/
+
+      - name: Upload deploy.sh to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: ./scripts/deploy.sh
+          target: /home/ubuntu/nova/scripts/
+
+      - name: SSH into EC2 and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            # 1) Docker 설치 확인 
+            if ! command -v docker >/dev/null 2>&1; then
+              sudo apt-get update
+              sudo apt-get install -y ca-certificates curl gnupg
+              sudo install -m 0755 -d /etc/apt/keyrings
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              sudo chmod a+r /etc/apt/keyrings/docker.gpg
+              echo \
+                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+                $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+                sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+            fi
+
+            # 2) 배포 폴더 준비
+            sudo mkdir -p /home/ubuntu/nova/scripts
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/nova
+
+            # 3) DockerHub 로그인
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # 4) .env 생성 (docker-compose 변수 주입)
+            cat > /home/ubuntu/nova/.env << EOF
+SPRING_PROFILES_ACTIVE=prod
+DOCKER_IMAGE=${{ needs.build-and-push.outputs.docker_image }}
+IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}
+
+# 일단 필요한것만 채워서
+RDS_HOST=${{ secrets.RDS_HOST }}
+RDS_PORT=${{ secrets.RDS_PORT }}
+RDS_DB=${{ secrets.RDS_DB }}
+RDS_USERNAME=${{ secrets.RDS_USERNAME }}
+RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+
+JWT_SECRET=${{ secrets.JWT_SECRET }}
+EOF
+
+            chmod 600 /home/ubuntu/nova/.env
+
+            # 5) deploy.sh 실행 권한 & 실행
+            chmod +x /home/ubuntu/nova/scripts/deploy.sh
+            /home/ubuntu/nova/scripts/deploy.sh
+
+            # 6) 헬스체크 외부 시 추가
+            # curl -f http://localhost:8080/actuator/health && echo "Health OK"
