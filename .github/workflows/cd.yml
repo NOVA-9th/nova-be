@@ -83,7 +83,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: ./scripts/deploy.sh
-          target: /home/ubuntu/nova/scripts/
+          target: /home/ubuntu/nova/
 
       - name: SSH into EC2 and deploy
         uses: appleboy/ssh-action@v1.0.3
@@ -119,7 +119,7 @@ jobs:
             # 4) .env 생성 (docker-compose 변수 주입)
             {
               echo "SPRING_PROFILES_ACTIVE=prod"
-              echo "DOCKER_IMAGE=${{ needs.build-and-push.outputs.docker_image }}"
+              echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}"
               echo "IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}"
               echo ""
               echo "# 일단 필요한것만 채워서"
