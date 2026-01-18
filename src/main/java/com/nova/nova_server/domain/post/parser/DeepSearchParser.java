@@ -34,10 +34,12 @@ public class DeepSearchParser {
             String ts = item.get("published_at").asText(); // ex) 2026-01-18T21:30:49
 
             // timezone 미포함 → UTC로 간주
-            LocalDateTime publishedAt = LocalDateTime.parse(ts, formatter)
-                    .atOffset(ZoneOffset.UTC)
-                    .atZoneSameInstant(ZoneId.of("Asia/Seoul"))
-                    .toLocalDateTime();
+            LocalDateTime publishedAt = LocalDateTime.parse(ts, formatter);
+
+//            LocalDateTime publishedAt = LocalDateTime.parse(ts, formatter)
+//                    .atOffset(ZoneOffset.UTC)
+//                    .atZoneSameInstant(ZoneId.of("Asia/Seoul"))
+//                    .toLocalDateTime();
 
             result.add(new Article(
                     title,
