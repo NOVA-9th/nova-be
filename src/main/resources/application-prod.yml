@@ -23,3 +23,21 @@ management:
     web:
       exposure:
         include: health,info
+
+external:
+  newsapi:
+    base-url: "https://newsapi.org/v2"
+    key: ${NEWSAPI_KEY:}
+  newsdata:
+    base-url: "https://newsdata.io/api/1"
+    key: ${NEWSDATA_KEY:}
+  deepsearch:
+    base-url: "https://api-v2.deepsearch.com/v1"
+    key: ${DEEPSEARCH_KEY:}
+  navernews:
+    base-url: "https://openapi.naver.com/v1/search"
+    client-id: ${NAVER_CLIENT_ID:}
+    client-secret: ${NAVER_CLIENT_SECRET:}
+  devto:
+    base-url: "https://dev.to"
+    user-agent: "NOVA-BE/0.1"
