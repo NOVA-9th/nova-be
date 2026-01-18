@@ -1,4 +1,4 @@
-package com.nova.nova_server.domain.ingestion.model;
+package com.nova.nova_server.domain.post.model;
 
 import java.time.LocalDateTime;
 
