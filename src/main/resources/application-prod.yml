@@ -37,4 +37,4 @@ external:
   navernews:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: "${NAVER_CLIENT_ID:}"
-    client-secret: "${NAVER_CLIENT_SECRET:}
+    client-secret: "${NAVER_CLIENT_SECRET:}"
