@@ -27,7 +27,7 @@ public class NaverNewsSearchClient {
                 .uri(uriBuilder -> uriBuilder
                         .path("/news.json")
                         .queryParam("query", query)
-                        .queryParam("display", 50)
+                        .queryParam("display", 100)
                         .queryParam("sort", "date")
                         .build())
                 .retrieve()
