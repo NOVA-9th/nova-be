@@ -10,11 +10,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class NewsDataIngestionService {
+public class NewsDataServiceImpl implements NewsDataService {
 
     private final NewsDataClient client;
     private final NewsDataParser parser;
 
+    @Override
     public List<Article> fetchArticles() {
         try {
             String json = client.fetchRawJson();

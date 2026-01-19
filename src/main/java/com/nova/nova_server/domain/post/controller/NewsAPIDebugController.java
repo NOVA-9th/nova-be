@@ -1,7 +1,7 @@
 package com.nova.nova_server.domain.post.controller;
 
 import com.nova.nova_server.domain.post.model.Article;
-import com.nova.nova_server.domain.post.service.NewsIngestionService;
+import com.nova.nova_server.domain.post.service.NewsApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,12 +14,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NewsAPIDebugController {
 
-    private final NewsIngestionService service;
+    private final NewsApiService service;
 
     @GetMapping
     public List<Article> test() {
         return service.fetchArticles();
     }
 }
-
-

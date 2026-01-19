@@ -9,13 +9,15 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class NewsApiClient {
 
     private final WebClient webClient;
-    private final String apiKey;
 
     public NewsApiClient(
-            @Qualifier("newsApiWebClient") WebClient webClient,
-            @Value("${external.newsapi.key}") String apiKey) {
-        this.webClient = webClient;
-        this.apiKey = apiKey;
+            @Value("${external.newsapi.base-url}") String baseUrl,
+            @Value("${external.newsapi.key}") String apiKey
+    ) {
+        this.webClient = WebClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader("X-Api-Key", apiKey)
+                .build();
     }
 
     public String fetchRawJson() {
@@ -26,7 +28,6 @@ public class NewsApiClient {
                         .queryParam("language", "ko")
                         .queryParam("sortBy", "publishedAt")
                         .build())
-                .header("X-Api-Key", apiKey)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();

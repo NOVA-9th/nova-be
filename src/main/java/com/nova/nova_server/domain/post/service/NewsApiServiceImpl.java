@@ -8,17 +8,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-/**
- * NewsAPI ingestion 파이프라인 orchestrator
- * Client에서 JSON을 가져오고 Parser로 Article로 변환한다.
- */
 @Service
 @RequiredArgsConstructor
-public class NewsIngestionService {
+public class NewsApiServiceImpl implements NewsApiService {
 
     private final NewsApiClient client;
     private final NewsApiParser parser;
 
+    @Override
     public List<Article> fetchArticles() {
         try {
             String json = client.fetchRawJson();

@@ -2,36 +2,45 @@ package com.nova.nova_server.domain.post.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nova.nova_server.domain.post.model.Article;
+import com.nova.nova_server.domain.post.model.CardType;
 import org.springframework.stereotype.Component;
+import org.apache.commons.text.StringEscapeUtils;
 
 import java.net.URI;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 @Component
 public class NaverNewsParser {
 
     private static final DateTimeFormatter NAVER_DATE =
-            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", java.util.Locale.ENGLISH);
+            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
 
     public List<Article> parse(JsonNode json) {
         List<Article> articles = new ArrayList<>();
-
         if (json == null || !json.has("items")) return articles;
 
         for (JsonNode item : json.get("items")) {
 
-            String title = stripHtml(item.get("title").asText());
-            String description = stripHtml(item.get("description").asText());
+            String rawTitle = item.get("title").asText();
+            String rawDescription = item.get("description").asText();
             String link = item.get("link").asText();
-            String pubDate = item.get("pubDate").asText();
+            String pubDate = item.get("pubDate").asText(); // KST(+09)
 
+            // 엔티티 디코딩
+            String title = html(rawTitle);
+            String description = html(rawDescription);
+
+            // 시간대 KST → UTC 변환
             LocalDateTime publishedAt =
-                    ZonedDateTime.parse(pubDate, NAVER_DATE).toLocalDateTime();
+                    ZonedDateTime.parse(pubDate, NAVER_DATE)
+                            .withZoneSameInstant(ZoneOffset.UTC)
+                            .toLocalDateTime();
 
             String source = resolveSourceFromLink(link);
 
@@ -41,16 +50,17 @@ public class NaverNewsParser {
                     null,
                     source,
                     publishedAt,
+                    CardType.NEWS,
                     link
             ));
         }
+
         return articles;
     }
 
-    private String stripHtml(String input) {
-        return input.replaceAll("<[^>]*>", "")
-                .replace("&quot;", "\"")
-                .replace("&amp;", "&");
+    private String html(String input) {
+        if (input == null) return null;
+        return StringEscapeUtils.unescapeHtml4(input);
     }
 
     private String resolveSourceFromLink(String link) {
@@ -62,50 +72,3 @@ public class NaverNewsParser {
         }
     }
 }
-
-//@Component
-//public class NaverNewsParser {
-//
-//    private static final DateTimeFormatter NAVER_DATE =
-//            DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", java.util.Locale.ENGLISH);
-//
-//    public List<Article> parse(JsonNode json) {
-//        List<Article> articles = new ArrayList<>();
-//
-//        if (json == null || !json.has("items")) return articles;
-//
-//        for (JsonNode item : json.get("items")) {
-//
-//            String title = item.get("title").asText();
-//            String description = item.get("description").asText();
-//            String link = item.get("link").asText();
-//            String pubDate = item.get("pubDate").asText();
-//
-//            LocalDateTime publishedAt = LocalDateTime.parse(pubDate, NAVER_DATE)
-//                    .atZone(ZoneId.of("Asia/Seoul"))
-//                    .toLocalDateTime();
-//
-//            // 언론사 추출
-//            String source = resolveSourceFromLink(link);
-//
-//            articles.add(new Article(
-//                    title,
-//                    description, // content = description
-//                    null,        // author 없음
-//                    source,
-//                    publishedAt,
-//                    link
-//            ));
-//        }
-//        return articles;
-//    }
-//
-//    private String resolveSourceFromLink(String link) {
-//        try {
-//            URI uri = new URI(link);
-//            return uri.getHost();
-//        } catch (Exception e) {
-//            return "unknown";
-//        }
-//    }
-//}
