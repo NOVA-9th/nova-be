@@ -1,9 +1,9 @@
 package com.nova.nova_server.domain.post.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.nova.nova_server.domain.post.client.NaverNewsClient;
+import com.nova.nova_server.domain.post.client.NaverNewsSearchClient;
 import com.nova.nova_server.domain.post.model.Article;
-import com.nova.nova_server.domain.post.parser.NaverNewsParser;
+import com.nova.nova_server.domain.post.parser.NaverNewsSearchParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +11,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class NaverNewsServiceImpl implements NaverNewsService {
+public class NaverNewsSearchServiceImpl implements NaverNewsSearchService {
 
-    private final NaverNewsClient naverClient;
-    private final NaverNewsParser naverParser;
+    private final NaverNewsSearchClient naverClient;
+    private final NaverNewsSearchParser naverParser;
 
     @Override
     public List<Article> fetchArticles() {

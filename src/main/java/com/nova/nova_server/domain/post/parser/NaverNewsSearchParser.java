@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Locale;
 
 @Component
-public class NaverNewsParser {
+public class NaverNewsSearchParser {
 
     private static final DateTimeFormatter NAVER_DATE =
             DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH);
