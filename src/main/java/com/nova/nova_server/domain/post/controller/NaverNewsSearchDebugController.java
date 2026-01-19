@@ -10,7 +10,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-public class NaverNewsDebugController {
+public class NaverNewsSearchDebugController {
     private final NewsDataServiceImpl service;
 
     @GetMapping("/debug/naver")

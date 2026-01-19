@@ -6,11 +6,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 //시간대 KST->UTC 수정
 @Component
-public class NaverNewsClient {
+public class NaverNewsSearchClient {
 
     private final WebClient webClient;
 
-    public NaverNewsClient(
+    public NaverNewsSearchClient(
             @Value("${external.navernews.base-url}") String baseUrl,
             @Value("${external.navernews.client-id}") String clientId,
             @Value("${external.navernews.client-secret}") String clientSecret
