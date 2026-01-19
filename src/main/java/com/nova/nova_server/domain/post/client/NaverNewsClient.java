@@ -7,14 +7,22 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-//시간대 KST
+//시간대 KST->UTC 수정
 @Component
 public class NaverNewsClient {
 
     private final WebClient webClient;
 
-    public NaverNewsClient(@Qualifier("naverNewsWebClient") WebClient webClient) {
-        this.webClient = webClient;
+    public NaverNewsClient(
+            @Value("${external.navernews.base-url}") String baseUrl,
+            @Value("${external.navernews.client-id}") String clientId,
+            @Value("${external.navernews.client-secret}") String clientSecret
+    ) {
+        this.webClient = WebClient.builder()
+                .baseUrl(baseUrl)
+                .defaultHeader("X-Naver-Client-Id", clientId)
+                .defaultHeader("X-Naver-Client-Secret", clientSecret)
+                .build();
     }
 
     public JsonNode fetch(String query) {

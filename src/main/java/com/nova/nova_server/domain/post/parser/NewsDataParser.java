@@ -3,6 +3,7 @@ package com.nova.nova_server.domain.post.parser;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nova.nova_server.domain.post.model.Article;
+import com.nova.nova_server.domain.post.model.CardType;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -10,9 +11,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * NewsData Raw JSON → Article 리스트 변환기
- */
 @Component
 public class NewsDataParser {
 
@@ -30,11 +28,11 @@ public class NewsDataParser {
             String title = item.get("title").asText();
             String description = item.get("description").asText(null);
             String author = extractAuthor(item);
-
             String url = item.get("link").asText();
             String source = item.get("source_name").asText();
 
-            String pubDate = item.get("pubDate").asText();//시간 UTC
+            String pubDate = item.get("pubDate").asText(); // UTC 문자열
+
             LocalDateTime publishedAt = LocalDateTime.parse(pubDate, formatter);
 
             result.add(new Article(
@@ -43,6 +41,7 @@ public class NewsDataParser {
                     author,
                     source,
                     publishedAt,
+                    CardType.NEWS,
                     url
             ));
         }
@@ -58,4 +57,3 @@ public class NewsDataParser {
         return null;
     }
 }
-

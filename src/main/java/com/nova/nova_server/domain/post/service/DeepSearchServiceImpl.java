@@ -10,11 +10,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DeepSearchIngestionService {
+public class DeepSearchServiceImpl implements DeepSearchService {
 
     private final DeepSearchClient client;
     private final DeepSearchParser parser;
 
+    @Override
     public List<Article> fetchArticles() {
         try {
             String json = client.fetchRawJson();
@@ -24,3 +25,4 @@ public class DeepSearchIngestionService {
         }
     }
 }
+

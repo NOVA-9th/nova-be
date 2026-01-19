@@ -10,14 +10,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class NewsDataClient {
 
     private final WebClient webClient;
-    private final String apiKey;
 
     public NewsDataClient(
-            @Qualifier("newsDataWebClient") WebClient webClient,
-            @Value("${external.newsdata.key}") String apiKey) {
-        this.webClient = webClient;
+            @Value("${external.newsdata.base-url}") String baseUrl,
+            @Value("${external.newsdata.key}") String apiKey
+    ) {
+        this.webClient = WebClient.builder()
+                .baseUrl(baseUrl)
+                .build();
         this.apiKey = apiKey;
     }
+
+    private final String apiKey;
 
     public String fetchRawJson() {
         return webClient.get()

@@ -11,11 +11,12 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class NaverNewsIngestionService {
+public class NaverNewsServiceImpl implements NaverNewsService {
 
     private final NaverNewsClient naverClient;
     private final NaverNewsParser naverParser;
 
+    @Override
     public List<Article> fetchArticles() {
         JsonNode raw = naverClient.fetch("AI OR 인공지능 OR 블록체인 OR 개발자");
         return naverParser.parse(raw);
