@@ -12,19 +12,19 @@ public class NaverNewsSearchClient {
 
     private final WebClient.Builder webClientBuilder;
 
-    @Value("${external.navernews.base-url}")
+    @Value("${external.navernewssearch.base-url}")
     private String baseUrl;
 
-    @Value("${external.navernews.client-id}")
+    @Value("${external.navernewssearch.client-id}")
     private String clientId;
 
-    @Value("${external.navernews.client-secret}")
+    @Value("${external.navernewssearch.client-secret}")
     private String clientSecret;
 
-    public JsonNode fetch(String query) {
+    public JsonNode fetch() {
         return webClientBuilder.build()
                 .get()
-                .uri(baseUrl + "/news.json?query={query}&display=100&sort=date", query)
+                .uri(baseUrl + "/news.json?query=IT&display=10&sort=date")
                 .header("X-Naver-Client-Id", clientId)
                 .header("X-Naver-Client-Secret", clientSecret)
                 .retrieve()

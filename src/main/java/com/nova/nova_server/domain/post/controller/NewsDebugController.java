@@ -28,7 +28,7 @@ public class NewsDebugController {
 
     @GetMapping("/navernewssearch")
     public List<Article> fetchFromNaverNews() {
-        return getServiceByName("NaverNews").fetchArticles();
+        return getServiceByName("NaverNewsSearch").fetchArticles();
     }
 
     @GetMapping("/deepsearch")
@@ -44,6 +44,11 @@ public class NewsDebugController {
     @GetMapping("/gnews")
     public List<Article> fetchFromGNews() {
         return getServiceByName("GNews").fetchArticles();
+    }
+
+    @GetMapping("/navernewsapi")
+    public List<Article> fetchFromNaverNewsApi() {
+        return getServiceByName("NaverNewsAPI").fetchArticles();
     }
 
     // 모든 Provider 호출 (통합 조회)
