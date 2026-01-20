@@ -34,10 +34,14 @@ external:
   deepsearch:
     base-url: "https://api-v2.deepsearch.com/v1"
     key: ${DEEPSEARCH_KEY:}
-  navernews:
+  navernewssearch:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: ${NAVER_CLIENT_ID:}
     client-secret: ${NAVER_CLIENT_SECRET:}
   gnews:
         base-url: "https://gnews.io/api/v4"
         key: ${GNEWS_KEY:}
+  navernewsapi:
+    base-url: "https://openapi.naver.com/v1/search"
+    client-id: ${NAVERNEWSAPI_CLIENT_ID:}
+    client-secret: ${NAVERNEWSAPI_CLIENT_SECRET:}

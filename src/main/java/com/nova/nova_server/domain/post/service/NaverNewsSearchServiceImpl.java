@@ -6,6 +6,7 @@ import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.parser.NaverNewsSearchParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -17,7 +18,7 @@ public class NaverNewsSearchServiceImpl implements ArticleApiService {
 
     @Override
     public List<Article> fetchArticles() {
-        JsonNode raw = naverClient.fetch("AI OR 인공지능 OR 블록체인 OR 개발자");
+        JsonNode raw = naverClient.fetch();
         return naverParser.parse(raw);
     }
 

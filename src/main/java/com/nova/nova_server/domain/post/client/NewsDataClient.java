@@ -20,7 +20,7 @@ public class NewsDataClient {
     public String fetchRawJson() {
         return webClientBuilder.build()
                 .get()
-                .uri(baseUrl + "/news?q=(AI OR 인공지능 OR 개발자 OR software)&language=ko&apikey={apiKey}", apiKey)
+                .uri(baseUrl + "/news?apikey={apiKey}&q=IT&language=ko", apiKey)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
