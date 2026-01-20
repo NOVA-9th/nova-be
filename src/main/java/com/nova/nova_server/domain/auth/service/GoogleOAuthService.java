@@ -6,7 +6,7 @@ import com.nova.nova_server.domain.auth.dto.GoogleUserInfo;
 import com.nova.nova_server.domain.auth.util.JwtUtil;
 import com.nova.nova_server.domain.member.entity.Member;
 import com.nova.nova_server.domain.member.repository.MemberRepository;
-import com.nova.nova_server.global.apiPayload.code.error.AuthErrorCode;
+import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import com.nova.nova_server.global.config.OAuthConfig;
 import lombok.RequiredArgsConstructor;

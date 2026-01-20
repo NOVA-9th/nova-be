@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth/google")
+@RequestMapping("/auth/google")
 @RequiredArgsConstructor
 public class GoogleOAuthController {
 
@@ -26,8 +26,8 @@ public class GoogleOAuthController {
 	}
 
 	@GetMapping("/callback")
-	public ResponseEntity<ApiResponse<AuthResponse>> callback(@RequestParam("code") String code) {
+	public ApiResponse<AuthResponse> callback(@RequestParam("code") String code) {
 		AuthResponse authResponse = googleOAuthService.handleCallback(code);
-		return ResponseEntity.ok(ApiResponse.success(authResponse));
+		return ApiResponse.success(authResponse);
 	}
 }
