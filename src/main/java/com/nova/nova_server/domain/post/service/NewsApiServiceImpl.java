@@ -5,12 +5,11 @@ import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.parser.NewsApiParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class NewsApiServiceImpl implements NewsApiService {
+public class NewsApiServiceImpl implements ArticleApiService {
 
     private final NewsApiClient client;
     private final NewsApiParser parser;
@@ -23,5 +22,10 @@ public class NewsApiServiceImpl implements NewsApiService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to fetch articles from NewsAPI", e);
         }
+    }
+
+    @Override
+    public String getProviderName() {
+        return "NewsAPI";
     }
 }

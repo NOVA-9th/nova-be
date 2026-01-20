@@ -5,12 +5,11 @@ import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.parser.DeepSearchParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class DeepSearchServiceImpl implements DeepSearchService {
+public class DeepSearchServiceImpl implements ArticleApiService {
 
     private final DeepSearchClient client;
     private final DeepSearchParser parser;
@@ -24,5 +23,9 @@ public class DeepSearchServiceImpl implements DeepSearchService {
             throw new RuntimeException("Failed to fetch articles from DeepSearch", e);
         }
     }
-}
 
+    @Override
+    public String getProviderName() {
+        return "DeepSearch";
+    }
+}
