@@ -29,7 +29,7 @@ external:
   deepsearch:
     base-url: "https://api-v2.deepsearch.com/v1"
     key: "test-key"
-  navernews:
+  navernewssearch:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: "test-id"
     client-secret: "test-secret"
