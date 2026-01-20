@@ -33,6 +33,9 @@ external:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: "test-id"
     client-secret: "test-secret"
+  gnews:
+    base-url: "https://gnews.io/api/v4"
+    key: "test-key"
 
 management:
   endpoints:

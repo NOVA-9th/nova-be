@@ -1,32 +1,27 @@
 package com.nova.nova_server.domain.post.client;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-//시간대 UTC
+
 @Component
+@RequiredArgsConstructor
 public class NewsApiClient {
 
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
-    public NewsApiClient(
-            @Value("${external.newsapi.base-url}") String baseUrl,
-            @Value("${external.newsapi.key}") String apiKey
-    ) {
-        this.webClient = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader("X-Api-Key", apiKey)
-                .build();
-    }
+    @Value("${external.newsapi.base-url}")
+    private String baseUrl;
+
+    @Value("${external.newsapi.key}")
+    private String apiKey;
 
     public String fetchRawJson() {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/everything")
-                        .queryParam("q", "(AI OR 인공지능 OR 개발자 OR software)")
-                        .queryParam("language", "ko")
-                        .queryParam("sortBy", "publishedAt")
-                        .build())
+        return webClientBuilder.build()
+                .get()
+                .uri(baseUrl + "/everything?q=(AI OR 인공지능 OR 개발자 OR software)&language=ko&sortBy=publishedAt")
+                .header("X-Api-Key", apiKey)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();

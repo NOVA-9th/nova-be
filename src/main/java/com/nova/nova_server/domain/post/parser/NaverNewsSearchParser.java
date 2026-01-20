@@ -44,15 +44,15 @@ public class NaverNewsSearchParser {
 
             String source = resolveSourceFromLink(link);
 
-            articles.add(new Article(
-                    title,
-                    description,
-                    null,
-                    source,
-                    publishedAt,
-                    CardType.NEWS,
-                    link
-            ));
+            articles.add(Article.builder()
+                    .title(title)
+                    .content(description)
+                    .author(null)
+                    .source(source)
+                    .publishedAt(publishedAt)
+                    .cardType(CardType.NEWS)
+                    .url(link)
+                    .build());
         }
 
         return articles;

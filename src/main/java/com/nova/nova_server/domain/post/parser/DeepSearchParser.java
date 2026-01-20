@@ -14,39 +14,50 @@ import java.util.List;
 @Component
 public class DeepSearchParser {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public List<Article> parse(String rawJson) throws Exception {
+    public List<Article> parse(String rawJson) {
+        List<Article> articles = new ArrayList<>();
 
-        JsonNode root = objectMapper.readTree(rawJson);
-        JsonNode items = root.get("data");
+        try {
+            JsonNode root = objectMapper.readTree(rawJson);
+            JsonNode items = root.get("data");
 
-        List<Article> result = new ArrayList<>();
+            if (items == null) {
+                return articles;
+            }
 
-        for (JsonNode item : items) {
+            for (JsonNode item : items) {
+                String title = item.get("title").asText();
+                String description = item.has("summary") && !item.get("summary").isNull()
+                        ? item.get("summary").asText()
+                        : null;
+                String author = item.has("author") && !item.get("author").isNull()
+                        ? item.get("author").asText()
+                        : null;
+                String source = item.get("publisher").asText();
+                String url = item.has("content_url") && !item.get("content_url").isNull()
+                        ? item.get("content_url").asText()
+                        : null;
+                String ts = item.get("published_at").asText(); // UTC
 
-            String title = item.get("title").asText();
-            String description = item.get("summary").asText(null);
-            String author = item.get("author").asText(null);
-            String source = item.get("publisher").asText();
-            String url = item.get("content_url").asText(null);
+                LocalDateTime publishedAt = LocalDateTime.parse(ts, FORMATTER);
 
-            String ts = item.get("published_at").asText(); // e.g. 2026-01-18T21:30:49 (UTC)
-
-            LocalDateTime publishedAt = LocalDateTime.parse(ts, formatter);
-
-            result.add(new Article(
-                    title,
-                    description,
-                    author,
-                    source,
-                    publishedAt,
-                    CardType.NEWS,
-                    url
-            ));
+                articles.add(Article.builder()
+                        .title(title)
+                        .content(description)
+                        .author(author)
+                        .source(source)
+                        .publishedAt(publishedAt)
+                        .cardType(CardType.NEWS)
+                        .url(url)
+                        .build());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse DeepSearch response", e);
         }
 
-        return result;
+        return articles;
     }
 }

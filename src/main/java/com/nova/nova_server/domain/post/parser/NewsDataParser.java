@@ -14,39 +14,47 @@ import java.util.List;
 @Component
 public class NewsDataParser {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public List<Article> parse(String rawJson) throws Exception {
-        JsonNode root = objectMapper.readTree(rawJson);
-        JsonNode items = root.get("results");
+    public List<Article> parse(String rawJson) {
+        List<Article> articles = new ArrayList<>();
 
-        List<Article> result = new ArrayList<>();
+        try {
+            JsonNode root = objectMapper.readTree(rawJson);
+            JsonNode items = root.get("results");
 
-        for (JsonNode item : items) {
+            if (items == null) {
+                return articles;
+            }
 
-            String title = item.get("title").asText();
-            String description = item.get("description").asText(null);
-            String author = extractAuthor(item);
-            String url = item.get("link").asText();
-            String source = item.get("source_name").asText();
+            for (JsonNode item : items) {
+                String title = item.get("title").asText();
+                String description = item.has("description") && !item.get("description").isNull()
+                        ? item.get("description").asText()
+                        : null;
+                String author = extractAuthor(item);
+                String url = item.get("link").asText();
+                String source = item.get("source_name").asText();
+                String pubDate = item.get("pubDate").asText(); // UTC
 
-            String pubDate = item.get("pubDate").asText(); // UTC 문자열
+                LocalDateTime publishedAt = LocalDateTime.parse(pubDate, FORMATTER);
 
-            LocalDateTime publishedAt = LocalDateTime.parse(pubDate, formatter);
-
-            result.add(new Article(
-                    title,
-                    description,
-                    author,
-                    source,
-                    publishedAt,
-                    CardType.NEWS,
-                    url
-            ));
+                articles.add(Article.builder()
+                        .title(title)
+                        .content(description)
+                        .author(author)
+                        .source(source)
+                        .publishedAt(publishedAt)
+                        .cardType(CardType.NEWS)
+                        .url(url)
+                        .build());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse NewsData response", e);
         }
 
-        return result;
+        return articles;
     }
 
     private String extractAuthor(JsonNode item) {

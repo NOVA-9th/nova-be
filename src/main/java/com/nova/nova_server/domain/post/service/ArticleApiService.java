@@ -7,11 +7,7 @@ import java.util.List;
  * 외부 뉴스 API로부터 기사를 가져오는 공통 인터페이스
  */
 public interface ArticleApiService {
-
-    /**
-     * 기사 목록 조회
-     * @return 기사 목록
-     */
+    //기사 목록 조회
     List<Article> fetchArticles();
 
     /**
