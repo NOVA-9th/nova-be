@@ -38,3 +38,6 @@ external:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: ${NAVER_CLIENT_ID:}
     client-secret: ${NAVER_CLIENT_SECRET:}
+  gnews:
+        base-url: "https://gnews.io/api/v4"
+        key: ${GNEWS_KEY:}

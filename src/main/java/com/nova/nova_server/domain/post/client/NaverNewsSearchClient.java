@@ -1,35 +1,32 @@
 package com.nova.nova_server.domain.post.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
-//시간대 KST->UTC 수정
+
 @Component
+@RequiredArgsConstructor
 public class NaverNewsSearchClient {
 
-    private final WebClient webClient;
+    private final WebClient.Builder webClientBuilder;
 
-    public NaverNewsSearchClient(
-            @Value("${external.navernews.base-url}") String baseUrl,
-            @Value("${external.navernews.client-id}") String clientId,
-            @Value("${external.navernews.client-secret}") String clientSecret
-    ) {
-        this.webClient = WebClient.builder()
-                .baseUrl(baseUrl)
-                .defaultHeader("X-Naver-Client-Id", clientId)
-                .defaultHeader("X-Naver-Client-Secret", clientSecret)
-                .build();
-    }
+    @Value("${external.navernews.base-url}")
+    private String baseUrl;
+
+    @Value("${external.navernews.client-id}")
+    private String clientId;
+
+    @Value("${external.navernews.client-secret}")
+    private String clientSecret;
 
     public JsonNode fetch(String query) {
-        return webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/news.json")
-                        .queryParam("query", query)
-                        .queryParam("display", 100)
-                        .queryParam("sort", "date")
-                        .build())
+        return webClientBuilder.build()
+                .get()
+                .uri(baseUrl + "/news.json?query={query}&display=100&sort=date", query)
+                .header("X-Naver-Client-Id", clientId)
+                .header("X-Naver-Client-Secret", clientSecret)
                 .retrieve()
                 .bodyToMono(JsonNode.class)
                 .block();

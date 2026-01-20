@@ -23,6 +23,6 @@ public class NaverNewsSearchServiceImpl implements ArticleApiService {
 
     @Override
     public String getProviderName() {
-        return "NaverNews";
+        return "NaverNewsSearch";
     }
 }
