@@ -128,13 +128,8 @@ public class KakaoOAuthService {
 
 	private Member findOrCreateMember(KakaoUserInfo userInfo) {
 		String kakaoId = String.valueOf(userInfo.getId());
-		String email = userInfo.getEmail();
-		String nickname = userInfo.getNickname();
 
-		// 이메일이나 닉네임이 null이면 예외 발생
-		if (email == null || email.isEmpty()) {
-			throw new NovaException(AuthErrorCode.OAUTH_USER_INFO_FAILED);
-		}
+		String nickname = userInfo.getNickname();
 		if (nickname == null || nickname.isEmpty()) {
 			throw new NovaException(AuthErrorCode.OAUTH_USER_INFO_FAILED);
 		}
@@ -142,7 +137,7 @@ public class KakaoOAuthService {
 		// 카카오 ID로 조회, 없으면 새 계정 생성
 		return memberRepository.findByKakaoId(kakaoId)
 			.orElseGet(() -> memberRepository.save(Member.builder()
-					.email(email)
+					.email("example@kakao.com")
 					.name(nickname)
 					.kakaoId(kakaoId)
 					.build()));
