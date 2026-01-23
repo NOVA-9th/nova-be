@@ -2,34 +2,35 @@ package com.nova.nova_server.domain.post.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.ArrayList;
 import java.util.List;
-//해커뉴스 api source 비어있음
+
 @Component
 @RequiredArgsConstructor
 public class HackerNewsClient {
 
     private final WebClient.Builder webClientBuilder;
 
-    private static final String BASE_URL = "https://hacker-news.firebaseio.com/v0";
+    @Value("${external.hackernews.base-url}")
+    private String baseUrl;
 
     public List<JsonNode> fetchMixedStories() {
         List<JsonNode> allItems = new ArrayList<>();
 
-        // 1. Top Stories (일반 인기 글) - content 비어있고, 외부 링크만 던져줌
-        allItems.addAll(fetchStoriesByType("/topstories.json", 10));
+        // 1. Top Stories (일반 인기 글)
+        allItems.addAll(fetchStoriesByType("/topstories.json", 20));
 
         // 2. Show HN (프로젝트)
         allItems.addAll(fetchStoriesByType("/showstories.json", 5));
 
         // 3. Ask HN (질문)
-        allItems.addAll(fetchStoriesByType("/askstories.json", 3));
-
-        // 4. Job (채용)
-        allItems.addAll(fetchStoriesByType("/jobstories.json", 2));
+        allItems.addAll(fetchStoriesByType("/askstories.json", 5));
 
         return allItems;
     }
@@ -40,7 +41,7 @@ public class HackerNewsClient {
         try {
             List<Integer> storyIds = webClientBuilder.build()
                     .get()
-                    .uri(BASE_URL + endpoint)
+                    .uri(baseUrl + endpoint)
                     .retrieve()
                     .bodyToFlux(Integer.class)
                     .collectList()
@@ -56,7 +57,7 @@ public class HackerNewsClient {
                 try {
                     JsonNode item = webClientBuilder.build()
                             .get()
-                            .uri(BASE_URL + "/item/{id}.json", id)
+                            .uri(baseUrl + "/item/{id}.json", id)
                             .retrieve()
                             .bodyToMono(JsonNode.class)
                             .block();
@@ -73,5 +74,38 @@ public class HackerNewsClient {
         }
 
         return items;
+    }
+
+    /**
+     * 외부 URL에서 본문 콘텐츠를 크롤링
+     */
+    public String extractContent(String url) {
+        // 해커뉴스 내부 링크는 크롤링 불필요 (text 필드에 이미 내용 있음)
+        if (url == null || url.isEmpty() || url.contains("news.ycombinator.com")) {
+            return "";
+        }
+
+        try {
+            Document doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0")
+                    .timeout(5000)
+                    .get();
+
+            String content = doc.select("article").text();
+            if (content.isEmpty()) {
+                content = doc.select("p").text();
+            }
+
+            //<article>태그가 없거나, <p> 태그가 있어도 본문이 아닌 다른 내용이거나, Selenium 사용해야하는 동적으로 렌더링되는 사이트
+            if (content.isEmpty()) {
+                return "No Content";//크롤링 성공했으나 본문 없음
+            }
+
+            return content.length() > 500 ? content.substring(0, 500) + "..." : content;
+
+        } catch (Exception e) {
+            System.err.println("Failed to extract content from: " + url);
+            return "Crawling Failed";//크롤링 실패
+        }
     }
 }
