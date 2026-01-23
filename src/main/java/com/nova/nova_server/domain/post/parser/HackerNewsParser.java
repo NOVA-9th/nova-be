@@ -1,10 +1,12 @@
 package com.nova.nova_server.domain.post.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.nova.nova_server.domain.post.client.HackerNewsClient;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.CardType;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -13,7 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class HackerNewsParser {
+
+    private final HackerNewsClient client;
 
     public List<Article> parse(List<JsonNode> items) {
         List<Article> articles = new ArrayList<>();
@@ -50,9 +55,19 @@ public class HackerNewsParser {
                 int id = item.has("id") ? item.get("id").asInt() : 0;
                 if (item.has("url") && !item.get("url").asText().isEmpty()) {
                     url = item.get("url").asText();
+
+                    // content가 비어있고 외부 URL이 있으면 크롤링 시도
+                    if (content.isEmpty()) {
+                        content = client.extractContent(url);
+                    }
                 } else {
                     // Ask HN, Show HN 등은 HN 링크로
                     url = "https://news.ycombinator.com/item?id=" + id;
+                }
+
+                // 크롤링 실패하거나 본문 없는 글은 스킵
+                if (content.isEmpty() || "No Content".equals(content) || "Crawling Failed".equals(content)) {
+                    continue;
                 }
 
                 // Unix timestamp를 LocalDateTime으로 변환
