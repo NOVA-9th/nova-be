@@ -116,23 +116,10 @@ jobs:
             # 3) DockerHub 로그인
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # 4) .env 생성 (docker-compose 변수 주입)
-            {
-              echo "SPRING_PROFILES_ACTIVE=prod"
-              echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}"
-              echo "IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}"
-              echo ""
-              echo "# 일단 필요한것만 채워서"
-              echo "RDS_HOST=${{ secrets.RDS_HOST }}"
-              echo "RDS_PORT=${{ secrets.RDS_PORT }}"
-              echo "RDS_DB=${{ secrets.RDS_DB }}"
-              echo "RDS_USERNAME=${{ secrets.RDS_USERNAME }}"
-              echo "RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}"
-              echo ""
-              echo "JWT_SECRET=${{ secrets.JWT_SECRET }}"
-            } > /home/ubuntu/nova/.env
-
-            chmod 600 /home/ubuntu/nova/.env
+            # 4) application.yml 생성 (secrets.APPLICATION_YML)
+            sudo mkdir -p /home/ubuntu/nova/nova
+            printf "%s" "${{ secrets.APPLICATION_YML }}" > /home/ubuntu/nova/nova/application.yml
+            chmod 600 /home/ubuntu/nova/nova/application.yml
 
             # 5) deploy.sh 실행 권한 & 실행
             chmod +x /home/ubuntu/nova/scripts/deploy.sh
