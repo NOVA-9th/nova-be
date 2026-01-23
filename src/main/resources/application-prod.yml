@@ -44,4 +44,22 @@ external:
   navernewsapi:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: ${NAVERNEWSAPI_CLIENT_ID:}
+<<<<<<< Updated upstream
     client-secret: ${NAVERNEWSAPI_CLIENT_SECRET:}
+=======
+    client-secret: ${NAVERNEWSAPI_CLIENT_SECRET:}
+  hackernews:
+    base-url: https://hacker-news.firebaseio.com/v0
+  devto:
+    base-url: "https://dev.to/api"
+    user-agent: "NOVA-BE/0.1"
+  github:
+    base-url: "https://api.github.com"
+    user-agent: "NOVA-BE/0.1"
+  stackexchange:
+    base-url: "https://api.stackexchange.com/2.3"
+    user-agent: "NOVA-BE/0.1"
+  rss2json:
+    base-url: "https://api.rss2json.com/v1/api.json"
+    user-agent: "NOVA-BE/0.1"
+>>>>>>> Stashed changes
