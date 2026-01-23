@@ -118,7 +118,9 @@ jobs:
 
             # 4) application.yml 생성 (secrets.APPLICATION_YML)
             sudo mkdir -p /home/ubuntu/nova/nova
-            printf "%s" "${{ secrets.APPLICATION_YML }}" > /home/ubuntu/nova/nova/application.yml
+            cat <<'EOF' > /home/ubuntu/nova/nova/application.yml
+            ${{ secrets.APPLICATION_YML }}
+            EOF
             chmod 600 /home/ubuntu/nova/nova/application.yml
 
             # 5) deploy.sh 실행 권한 & 실행
