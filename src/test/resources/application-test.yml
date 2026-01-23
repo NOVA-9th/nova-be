@@ -16,6 +16,31 @@ spring:
       hibernate:
         format_sql: false
 
+jwt:
+  secret: test-jwt-secret-key-for-testing-minimum-256-bits-required
+
+external:
+  newsapi:
+    base-url: "https://newsapi.org/v2"
+    key: "test-key"
+  newsdata:
+    base-url: "https://newsdata.io/api/1"
+    key: "test-key"
+  deepsearch:
+    base-url: "https://api-v2.deepsearch.com/v1"
+    key: "test-key"
+  navernewssearch:
+    base-url: "https://openapi.naver.com/v1/search"
+    client-id: "test-id"
+    client-secret: "test-secret"
+  gnews:
+    base-url: "https://gnews.io/api/v4"
+    key: "test-key"
+  navernewsapi:
+    base-url: "https://openapi.naver.com/v1/search"
+    client-id: "test-id"
+    client-secret: "test-secret"
+
 management:
   endpoints:
     web:
