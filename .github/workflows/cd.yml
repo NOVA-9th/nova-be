@@ -120,7 +120,6 @@ jobs:
 
             # 4) .env 생성 (docker-compose 변수 주입)
             {
-              echo "SPRING_PROFILES_ACTIVE=prod"
               echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}"
               echo "IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}"
               echo ""
