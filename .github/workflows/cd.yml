@@ -118,16 +118,25 @@ jobs:
             # 3) DockerHub 로그인
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-            # 4) application.yml 생성 (secrets.APPLICATION_YML)
+            # 4) .env 생성 (docker-compose 변수 주입)
+            {
+              echo "SPRING_PROFILES_ACTIVE=prod"
+              echo "DOCKER_IMAGE=${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPOSITORY }}"
+              echo "IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}"
+              echo ""
+            } > /home/ubuntu/nova/.env
+            chmod 600 /home/ubuntu/nova/.env
+
+            # 5) application.yml 생성 (secrets.APPLICATION_YML)
             sudo mkdir -p /home/ubuntu/nova/nova
             cat <<'EOF' > /home/ubuntu/nova/nova/application.yml
             ${{ secrets.APPLICATION_YML }}
             EOF
             chmod 600 /home/ubuntu/nova/nova/application.yml
 
-            # 5) deploy.sh 실행 권한 & 실행
+            # 6) deploy.sh 실행 권한 & 실행
             chmod +x /home/ubuntu/nova/scripts/deploy.sh
             /home/ubuntu/nova/scripts/deploy.sh
 
-            # 6) 헬스체크 외부 시 추가
+            # 7) 헬스체크 외부 시 추가
             # curl -f http://localhost:8080/actuator/health && echo "Health OK"
