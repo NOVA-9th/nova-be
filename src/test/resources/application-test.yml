@@ -16,8 +16,20 @@ spring:
       hibernate:
         format_sql: false
 
+oauth:
+  google:
+    client-id: test-id
+    client-secret: test-secret
+    redirect-uri: http://localhost:8080/auth/google/callback
+
+  kakao:
+    client-id: test-id
+    client-secret: test-secret
+    redirect-uri: http://localhost:8080/auth/kakao/callback
+
 jwt:
   secret: test-jwt-secret-key-for-testing-minimum-256-bits-required
+  expiration: 86400000 # 24 hours in milliseconds
 
 external:
   newsapi:
