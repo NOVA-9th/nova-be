@@ -132,7 +132,9 @@ jobs:
             cat <<'EOF' > /home/ubuntu/nova/nova/application.yml
             ${{ secrets.APPLICATION_YML }}
             EOF
+            sudo cp /home/ubuntu/nova/nova/application.yml /home/ubuntu/nova/nova/application-prod.yml
             chmod 600 /home/ubuntu/nova/nova/application.yml
+            chmod 600 /home/ubuntu/nova/nova/application-prod.yml
 
             # 6) deploy.sh 실행 권한 & 실행
             chmod +x /home/ubuntu/nova/scripts/deploy.sh
