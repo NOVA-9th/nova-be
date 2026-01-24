@@ -7,11 +7,24 @@ services:
     restart: always
     ports:
       - "8080:8080"
-    env_file:
-      - .env
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1" ]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 60s
+    environment:
+      - "SPRING_PROFILES_ACTIVE=prod"
+    volumes:
+      - ./nova:/app/config
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    restart: always
+    depends_on:
+      - app
