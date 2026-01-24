@@ -45,7 +45,7 @@ public class GoogleOAuthService {
 		String encodedScope = URLEncoder.encode(scope, StandardCharsets.UTF_8);
 
 		return String.format(
-			"https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=%s&scope=%s&access_type=offline",
+			"https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=%s&scope=%s",
 			clientId, encodedRedirectUri, responseType, encodedScope
 		);
 	}
@@ -128,7 +128,7 @@ public class GoogleOAuthService {
 	}
 
 	private Member findOrCreateMember(GoogleUserInfo userInfo) {
-		return memberRepository.findByGoogleId(userInfo.getEmail())
+		return memberRepository.findByGoogleId(userInfo.getId())
 			.orElseGet(() -> memberRepository.save(Member.builder()
 							.email(userInfo.getEmail())
 							.name(userInfo.getName())

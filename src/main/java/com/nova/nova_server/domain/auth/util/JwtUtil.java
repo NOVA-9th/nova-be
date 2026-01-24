@@ -17,6 +17,7 @@ public class JwtUtil {
 
 	private final JwtConfig jwtConfig;
 
+	/// JwtConfig 에 설정된 expiration 값의 수명을 가지는 JWT 생성
 	public String generateToken(Long memberId) {
 		Date now = new Date();
 		Date expiryDate = new Date(now.getTime() + jwtConfig.getExpiration());
@@ -31,7 +32,8 @@ public class JwtUtil {
 			.compact();
 	}
 
-	public String generateTokenWithExpiration(Long memberId, long expirationMillis) {
+	/// expirationMillis 의 수명을 가지는 JWT 생성
+	public String generateToken(Long memberId, long expirationMillis) {
 		Date now = new Date();
 		Date expiryDate = new Date(now.getTime() + expirationMillis);
 
