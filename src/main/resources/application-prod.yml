@@ -45,3 +45,5 @@ external:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: ${NAVERNEWSAPI_CLIENT_ID:}
     client-secret: ${NAVERNEWSAPI_CLIENT_SECRET:}
+  hackernews:
+    base-url: https://hacker-news.firebaseio.com/v0

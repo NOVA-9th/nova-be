@@ -40,6 +40,8 @@ external:
     base-url: "https://openapi.naver.com/v1/search"
     client-id: "test-id"
     client-secret: "test-secret"
+  hackernews:
+    base-url: "https://hacker-news.firebaseio.com/v0"
 
 management:
   endpoints:
