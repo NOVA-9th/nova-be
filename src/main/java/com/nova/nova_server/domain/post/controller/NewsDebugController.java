@@ -51,6 +51,11 @@ public class NewsDebugController {
         return getServiceByName("NaverNewsAPI").fetchArticles();
     }
 
+    @GetMapping("/hackernews")
+    public List<Article> fetchFromHackerNews() {
+        return getServiceByName("HackerNews").fetchArticles();
+    }
+
     // 모든 Provider 호출 (통합 조회)
     @GetMapping("/all")
     public Map<String, List<Article>> fetchFromAllSources() {
