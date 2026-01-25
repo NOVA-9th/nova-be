@@ -9,9 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberResponseDto {
+public class MemberUpdateResponseDto {
     private Long id;
     private String name;
-    private String email;
-    private String profileImage; // 이미지 URL
 }
