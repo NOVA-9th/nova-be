@@ -48,4 +48,12 @@ public class Member extends BaseEntity {
         INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
     }
+
+    // Entity
+    public void updateName(String name) {
+//        if (name == null || name.trim().isEmpty()) {
+//            throw new IllegalArgumentException("이름은 필수입니다.");
+//        }
+        this.name = name;
+    }
 }
