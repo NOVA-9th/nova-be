@@ -23,8 +23,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 프로필 이미지가 없으면 null, 있으면 이미지를 다운로드할 수 있는 URL 경로 반환
-        // 예: /api/members/1/profile-image
+        // 프로필 이미지가 없으면 null, 있으면 이미지 URL 경로 반환
         String profileImageUrl = (member.getProfileImage() != null)
                 ? "/api/members/" + member.getId() + "/profile-image"
                 : null;
