@@ -39,10 +39,6 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberUpdateResponseDto updateMemberName(Long memberId, Long authenticatedMemberId, MemberRequestDto requestDto) {
-        // 본인 확인
-        if (!memberId.equals(authenticatedMemberId)) {
-            throw new IllegalArgumentException("본인의 정보만 수정할 수 있습니다.");
-        }
 
         // 회원 조회
         Member member = memberRepository.findById(memberId)
