@@ -13,5 +13,5 @@ public class MemberResponseDto {
     private Long id;
     private String name;
     private String email;
-    private String profileImage; // 이미지 URL
+    private String profileImage; // Base64 문자열
 }
