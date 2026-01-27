@@ -14,7 +14,7 @@ services:
       retries: 5
       start_period: 60s
     environment:
-        - "SPRING_PROFILES_ACTIVE=prod"
+      - "SPRING_PROFILES_ACTIVE=prod"
     volumes:
       - ./nova:/app/config
 
