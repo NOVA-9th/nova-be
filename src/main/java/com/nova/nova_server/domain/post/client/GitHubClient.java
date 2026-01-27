@@ -84,5 +84,27 @@ public class GitHubClient {
         String query = "topic:backend created:>" + date;
         return fetchRepositories(query, limit);
     }
+
+    // 레포지토리 README 가져오기
+    public String fetchReadme(String owner, String repo) {
+        try {
+            WebClient client = WebClient.builder()
+                    .baseUrl(baseUrl)
+                    .defaultHeader("User-Agent", userAgent)
+                    .build();
+
+            return client.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/repos/{owner}/{repo}/readme")
+                            .build(owner, repo))
+                    .header("Accept", "application/vnd.github.raw") // 마크다운으로 가져옴
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (Exception e) {
+            log.warn("README 가져오기 실패: {}/{}", owner, repo, e);
+        }
+        return "";
+    }
 }
 

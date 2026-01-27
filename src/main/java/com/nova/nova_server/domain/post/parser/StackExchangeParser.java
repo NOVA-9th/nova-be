@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.CardType;
 import org.apache.commons.text.StringEscapeUtils;
+import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -23,7 +24,7 @@ public class StackExchangeParser {
         for (JsonNode item : items) {
             try {
                 // 제목
-                String title = item.has("title") ? item.get("title").asText() : "No Title";
+                String title = item.has("title") ? Jsoup.parse(item.get("title").asText()).text() : "No Title";
 
                 // 작성자
                 String author = "Unknown";
@@ -61,8 +62,8 @@ public class StackExchangeParser {
 
                 // 질문 본문 처리
                 if (item.has("body")) {
-                    String cleanBody = cleanHtml(item.get("body").asText());
-                    contentBuilder.append("Question Body:\n").append(cleanBody).append("\n\n");
+                    String body = Jsoup.parse(item.get("body").asText()).text();
+                    contentBuilder.append("Body: ").append(body);
                 }
 
                 // 답변 처리
@@ -88,8 +89,8 @@ public class StackExchangeParser {
 
                         // 답변 본문
                         if (topAnswer.has("body")) {
-                            String answerBody = cleanHtml(topAnswer.get("body").asText());
-                            contentBuilder.append(answerBody);
+                            String body = Jsoup.parse(item.get("body").asText()).text();
+                            contentBuilder.append("Body: ").append(body);
                         }
                     }
                 }
@@ -112,17 +113,5 @@ public class StackExchangeParser {
         }
 
         return articles;
-    }
-
-    // HTML 태그 정제 헬퍼
-    private String cleanHtml(String rawHtml) {
-        String formatted = rawHtml
-                .replaceAll("(?i)<br[^>]*>", "\n")
-                .replaceAll("(?i)</p>", "\n\n")
-                .replaceAll("(?i)</div>", "\n")
-                .replaceAll("(?s)<pre>.*?</pre>", "[Code Block]") // 코드가 너무 길면 대체
-                .replaceAll("<[^>]*>", "");
-
-        return StringEscapeUtils.unescapeHtml4(formatted).trim();
     }
 }
