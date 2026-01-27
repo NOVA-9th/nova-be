@@ -57,6 +57,16 @@ external:
   devto:
     base-url: "https://dev.to"
     user-agent: "test-useragent"
+  github:
+    base-url: "https://api.github.com"
+    user-agent: "test-useragent"
+  stackexchange:
+    base-url: "https://api.stackexchange.com/2.3"
+    user-agent: "test-useragent"
+    key: "test-key"
+  rss2json:
+    base-url: "https://api.rss2json.com/v1/api.json"
+    user-agent: "test-useragent"
 
 management:
   endpoints:

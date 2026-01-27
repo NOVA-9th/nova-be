@@ -117,4 +117,3 @@ public class GitHubParser {
         return noLinks.replaceAll("\\n{3,}", "\n\n").trim();
     }
 }
-
