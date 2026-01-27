@@ -51,8 +51,6 @@ public class NewsDebugController {
         return getServiceByName("NaverNewsAPI").fetchArticles();
     }
 
-<<<<<<< Updated upstream
-=======
     @GetMapping("/hackernews")
     public List<Article> fetchFromHackerNews() {
         return getServiceByName("HackerNews").fetchArticles();
@@ -71,7 +69,6 @@ public class NewsDebugController {
     @GetMapping("/techblog")
     public List<Article> fetchFromTechBlog() { return getServiceByName("TechBlog").fetchArticles(); }
 
->>>>>>> Stashed changes
     // 모든 Provider 호출 (통합 조회)
     @GetMapping("/all")
     public Map<String, List<Article>> fetchFromAllSources() {

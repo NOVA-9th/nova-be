@@ -30,6 +30,21 @@ public class GitHubServiceImpl implements ArticleApiService {
 
         allItems.addAll(client.fetchBackendTrending(3));
 
+        // README
+        for (JsonNode item : allItems) {
+            if (item.has("full_name") && item.get("full_name").asText().contains("/")) {
+                String fullName = item.get("full_name").asText();
+                String[] parts = fullName.split("/");
+                String owner = parts[0];
+                String repo = parts[1];
+
+                String readme = client.fetchReadme(owner, repo);
+                if (item instanceof com.fasterxml.jackson.databind.node.ObjectNode objectNode) {
+                    objectNode.put("readme_content", readme);
+                }
+            }
+        }
+
         return parser.parse(allItems);
     }
 

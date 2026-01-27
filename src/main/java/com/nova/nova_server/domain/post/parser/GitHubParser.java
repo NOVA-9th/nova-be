@@ -60,6 +60,15 @@ public class GitHubParser {
                     contentBuilder.append("- Topics: ").append(String.join(", ", topics)).append("\n");
                 }
 
+                // README 추가
+                if (item.has("readme_content")) {
+                    String readme = item.get("readme_content").asText();
+                    if (readme != null && !readme.isEmpty()) {
+                        String cleanedReadme = cleanMarkdown(readme);
+                        contentBuilder.append("\n[README]\n").append(cleanedReadme).append("\n");
+                    }
+                }
+
                 String content = contentBuilder.toString();
 
                 // 레포 url
@@ -90,6 +99,22 @@ public class GitHubParser {
         }
 
         return articles;
+    }
+
+    // 마크다운 정제
+    private String cleanMarkdown(String markdown) {
+        if (markdown == null || markdown.isEmpty())
+            return "";
+        // HTML 주석
+        String noComment = markdown.replaceAll("<!--[\\s\\S]*?-->", "");
+        // HTML 태그
+        String noHtml = noComment.replaceAll("<[^>]+>", "");
+        // 이미지 삭제
+        String noImages = noHtml.replaceAll("!\\[.*?\\]\\(.*?\\)", "");
+        // 링크 텍스트 추출
+        String noLinks = noImages.replaceAll("\\[(.*?)\\]\\(.*?\\)", "$1");
+        // 연속공백&줄바꿈
+        return noLinks.replaceAll("\\n{3,}", "\n\n").trim();
     }
 }
 
