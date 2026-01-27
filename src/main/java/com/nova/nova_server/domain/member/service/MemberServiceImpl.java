@@ -20,6 +20,7 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberResponseDto getMemberInfo(Long memberId) {
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
@@ -38,6 +39,16 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberUpdateResponseDto updateMemberName(Long memberId, Long authenticatedMemberId, MemberRequestDto requestDto) {
+
+        // 다른 사람의 이름을 수정하는 것을 방지
+        if (!memberId.equals(authenticatedMemberId)) {
+            throw new IllegalArgumentException("본인의 정보만 수정할 수 있습니다.");
+        }
+
+        // ===== 2. 이름 null 체크 (추가 검증) ===== //
+        if (requestDto.getName() == null || requestDto.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("이름은 필수입니다.");
+        }
 
         // 회원 조회
         Member member = memberRepository.findById(memberId)
