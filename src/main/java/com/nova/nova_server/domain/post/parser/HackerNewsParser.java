@@ -39,10 +39,8 @@ public class HackerNewsParser {
                 String title = item.has("title") ? item.get("title").asText() : null;
                 String author = item.has("by") ? item.get("by").asText() : null;
 
-                // source 필드 확인 (있으면 가져오고 없으면 null)
-                String source = item.has("source") && !item.get("source").isNull()
-                        ? item.get("source").asText()
-                        : null;
+                // source 필드 하드코딩
+                String source = "Hacker News";
 
                 // text 필드에서 content 추출
                 String content = "";
