@@ -56,6 +56,19 @@ public class NewsDebugController {
         return getServiceByName("HackerNews").fetchArticles();
     }
 
+    // COMMUNITY
+    @GetMapping("/devto")
+    public List<Article> fetchFromDevTo() { return getServiceByName("DevTo").fetchArticles(); }
+
+    @GetMapping("/github")
+    public List<Article> fetchFromGitHub() { return getServiceByName("GitHub").fetchArticles(); }
+
+    @GetMapping("/stackexchange")
+    public List<Article> fetchFromStackExchange() { return getServiceByName("StackExchange").fetchArticles(); }
+
+    @GetMapping("/techblog")
+    public List<Article> fetchFromTechBlog() { return getServiceByName("TechBlog").fetchArticles(); }
+
     // 모든 Provider 호출 (통합 조회)
     @GetMapping("/all")
     public Map<String, List<Article>> fetchFromAllSources() {
