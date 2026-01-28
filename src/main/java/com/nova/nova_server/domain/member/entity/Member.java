@@ -48,4 +48,9 @@ public class Member extends BaseEntity {
         INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
     }
+
+    // Entity
+    public void updateName(String name) {
+        this.name = name;
+    }
 }
