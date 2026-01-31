@@ -1,6 +1,7 @@
 package com.nova.nova_server.domain.batch.service;
 
 import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import java.util.List;
  * 뉴스/커뮤니티 API에서 아티클 수집
  * - 각 클라이언트당 최대 3개
  * - 증분 처리: 마지막 배치 실행 시점 이후 발행된 글만 수집
+ * - URL 중복 방지: 이미 DB에 존재하는 URL 제외
  */
 @Slf4j
 @Service
@@ -26,6 +28,7 @@ public class ArticleFetchService {
 
     private final List<ArticleApiService> articleApiServices;
     private final BatchRunMetadataRepository batchRunMetadataRepository;
+    private final CardNewsRepository cardNewsRepository;
 
     /**
      * 모든 Provider에서 아티클 수집 (클라이언트당 최대 3개, 증분 필터 적용)
@@ -44,6 +47,7 @@ public class ArticleFetchService {
                 List<Article> limited = articles.stream()
                         .limit(MAX_ARTICLES_PER_PROVIDER)
                         .filter(a -> isAfterLastRun(a, lastRunAt))
+                        .filter(this::isNotDuplicateByUrl)
                         .toList();
                 allArticles.addAll(limited);
                 log.debug("Fetched {} articles from {} (after filter)", limited.size(), service.getProviderName());
@@ -62,5 +66,12 @@ public class ArticleFetchService {
         }
         // 마지막 배치 실행 시점 이후 발행된 글만 수집
         return article.publishedAt().isAfter(lastRunAt);
+    }
+
+    private boolean isNotDuplicateByUrl(Article article) {
+        if (article.url() == null || article.url().isBlank()) {
+            return false;
+        }
+        return !cardNewsRepository.existsByOriginalUrl(article.url());
     }
 }
