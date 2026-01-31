@@ -70,29 +70,26 @@ public class MemberServiceImpl implements MemberService {
                 .build();
     }
 
-    //프로필 이미지 업로드 & 수정(PUT도 해당 메서드 사용)
+    //프로필 이미지 업로드
     @Override
-    public byte[] uploadProfileImage(Long memberId, MultipartFile file) throws IOException {
+    public byte[] uploadProfileImageRaw(Long memberId, MultipartFile file) throws IOException {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        // 이미지 압축 (ImageProcessor 사용)
         byte[] compressedImage = imageProcessor.compressImage(file);
+        member.updateProfileImage(compressedImage); // DB 저장
 
-        // DB에 저장(덮어쓰기)
-        member.updateProfileImage(compressedImage);
-
-        return compressedImage;
+        return compressedImage; // 바이너리 그대로 반환
     }
 
     //프로필 이미지 조회
     @Override
     @Transactional(readOnly = true)
-    public byte[] getProfileImage(Long memberId) {
+    public byte[] getProfileImageRaw(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
 
-        return member.getProfileImage();
+        return member.getProfileImage(); // DB의 BLOB 데이터를 그대로 반환
     }
 
     //프로필 이미지 삭제

@@ -15,11 +15,10 @@ public interface MemberService {
     //사용자 정보(이름) 수정
     MemberUpdateResponseDto updateMemberName(Long memberId, Long authenticatedMemberId, MemberRequestDto requestDto);
 
-    //프로필 이미지 업로드 & 수정
-    byte[] uploadProfileImage(Long memberId, MultipartFile file) throws IOException;
+    byte[] getProfileImageRaw(Long memberId);
 
-    //프로필 이미지 조회
-    byte[] getProfileImage(Long memberId);
+    // 바이너리 응답용 메서드 추가
+    byte[] uploadProfileImageRaw(Long memberId, MultipartFile file) throws IOException;
 
     //프로필 이미지 삭제
     void deleteProfileImage(Long memberId);
