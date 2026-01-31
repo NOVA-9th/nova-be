@@ -5,10 +5,13 @@ import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberUpdateResponseDto;
 import com.nova.nova_server.domain.member.entity.Member;
 import com.nova.nova_server.domain.member.repository.MemberRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+import com.nova.nova_server.domain.member.util.ImageProcessor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Base64;
 
 @Service
@@ -17,7 +20,9 @@ import java.util.Base64;
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final ImageProcessor imageProcessor;
 
+    //사용자 정보 조회 로직
     @Override
     public MemberResponseDto getMemberInfo(Long memberId) {
 
@@ -37,6 +42,7 @@ public class MemberServiceImpl implements MemberService {
                 .build();
     }
 
+    //사용자 이름 수정 로직
     @Override
     public MemberUpdateResponseDto updateMemberName(Long memberId, Long authenticatedMemberId, MemberRequestDto requestDto) {
 
@@ -45,7 +51,7 @@ public class MemberServiceImpl implements MemberService {
             throw new IllegalArgumentException("본인의 정보만 수정할 수 있습니다.");
         }
 
-        // ===== 2. 이름 null 체크 (추가 검증) ===== //
+        //2. 이름 null 체크
         if (requestDto.getName() == null || requestDto.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("이름은 필수입니다.");
         }
@@ -62,5 +68,40 @@ public class MemberServiceImpl implements MemberService {
                 .id(member.getId())
                 .name(member.getName())
                 .build();
+    }
+
+    //프로필 이미지 업로드 & 수정(PUT도 해당 메서드 사용)
+    @Override
+    public byte[] uploadProfileImage(Long memberId, MultipartFile file) throws IOException {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        // 이미지 압축 (ImageProcessor 사용)
+        byte[] compressedImage = imageProcessor.compressImage(file);
+
+        // DB에 저장(덮어쓰기)
+        member.updateProfileImage(compressedImage);
+
+        return compressedImage;
+    }
+
+    //프로필 이미지 조회
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] getProfileImage(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        return member.getProfileImage();
+    }
+
+    //프로필 이미지 삭제
+    @Override
+    public void deleteProfileImage(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        // null로 업데이트하여 이미지 데이터 제거
+        member.updateProfileImage(null);
     }
 }
