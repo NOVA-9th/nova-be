@@ -12,6 +12,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,64 +79,79 @@ public class OpenAiBatchService implements AiBatchService {
     }
 
     private String uploadFile(String jsonlContent) {
-        byte[] bytes = jsonlContent.getBytes(StandardCharsets.UTF_8);
-        ByteArrayResource resource = new ByteArrayResource(bytes) {
-            @Override
-            public String getFilename() {
-                return "batch_input.jsonl";
-            }
-        };
+        try {
+            byte[] bytes = jsonlContent.getBytes(StandardCharsets.UTF_8);
+            ByteArrayResource resource = new ByteArrayResource(bytes) {
+                @Override
+                public String getFilename() {
+                    return "batch_input.jsonl";
+                }
+            };
 
-        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
-        formData.add("file", resource);
-        formData.add("purpose", "batch");
+            MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+            formData.add("file", resource);
+            formData.add("purpose", "batch");
 
-        String response = webClient.post()
-                .uri("/v1/files")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData(formData))
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+            String response = webClient.post()
+                    .uri("/v1/files")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(formData))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        JsonNode root = parseJson(response);
-        return root.get("id").asText();
+            JsonNode root = parseJson(response);
+            return root.get("id").asText();
+        } catch (WebClientResponseException e) {
+            log.error("OpenAI Files API error: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("OpenAI 파일 업로드 실패: " + e.getMessage(), e);
+        }
     }
 
     private String createBatchRequest(String fileId) {
-        String requestBody = String.format(
-                "{\"input_file_id\":\"%s\",\"endpoint\":\"%s\",\"completion_window\":\"24h\"}",
-                fileId, CHAT_COMPLETIONS_URL);
+        try {
+            String requestBody = String.format(
+                    "{\"input_file_id\":\"%s\",\"endpoint\":\"%s\",\"completion_window\":\"24h\"}",
+                    fileId, CHAT_COMPLETIONS_URL);
 
-        String response = webClient.post()
-                .uri("/v1/batches")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(requestBody)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+            String response = webClient.post()
+                    .uri("/v1/batches")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        JsonNode root = parseJson(response);
-        return root.get("id").asText();
+            JsonNode root = parseJson(response);
+            return root.get("id").asText();
+        } catch (WebClientResponseException e) {
+            log.error("OpenAI Batches API error: status={}, body={}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("OpenAI 배치 생성 실패: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public boolean isCompleted(String batchId) {
-        String response = webClient.get()
-                .uri("/v1/batches/{batchId}", batchId)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        try {
+            String response = webClient.get()
+                    .uri("/v1/batches/{batchId}", batchId)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
 
-        JsonNode root = parseJson(response);
-        String status = root.get("status").asText();
+            JsonNode root = parseJson(response);
+            String status = root.get("status").asText();
 
-        if ("completed".equals(status) || "failed".equals(status) || "expired".equals(status) ||
-                "cancelled".equals(status) || "canceled".equals(status)) {
-            log.info("OpenAI Batch finished: batchId={}, status={}", batchId, status);
-            return true;
+            if ("completed".equals(status) || "failed".equals(status) || "expired".equals(status) ||
+                    "cancelled".equals(status) || "canceled".equals(status)) {
+                log.info("OpenAI Batch finished: batchId={}, status={}", batchId, status);
+                return true;
+            }
+            return false;
+        } catch (WebClientResponseException e) {
+            log.error("OpenAI Batch status check error: batchId={}, status={}", batchId, e.getStatusCode());
+            throw new RuntimeException("OpenAI 배치 상태 조회 실패: " + e.getMessage(), e);
         }
-        return false;
     }
 
     @Override
