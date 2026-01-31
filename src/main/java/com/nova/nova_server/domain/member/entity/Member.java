@@ -74,4 +74,8 @@ public class Member extends BaseEntity {
     public void updateName(String name) {
         this.name = name;
     }
+
+    public void updateProfileImage(byte[] profileImage) {
+        this.profileImage = profileImage;
+    }
 }
