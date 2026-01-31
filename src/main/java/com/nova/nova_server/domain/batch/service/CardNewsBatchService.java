@@ -1,30 +1,91 @@
 package com.nova.nova_server.domain.batch.service;
 
 import com.nova.nova_server.domain.batch.converter.ArticleToPromptConverter;
+import com.nova.nova_server.domain.batch.entity.BatchRunMetadata;
+import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 카드뉴스 배치 작업 오케스트레이션
- * Article → 프롬프트 변환 → OpenAI Batch 생성
+ * 전체 플로우: 아티클 수집 → 배치 생성 → 폴링 → 결과 저장
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CardNewsBatchService {
 
+    private static final String JOB_NAME = "card-news-batch";
+    private static final int POLLING_INTERVAL_MS = 30_000; // 30초
+    private static final int MAX_POLLING_COUNT = 2880; // 최대 24시간 (30초 * 2880)
+
+    private final ArticleFetchService articleFetchService;
     private final ArticleToPromptConverter articleToPromptConverter;
     private final AiBatchService aiBatchService;
+    private final CardNewsSaveService cardNewsSaveService;
+    private final BatchRunMetadataRepository batchRunMetadataRepository;
+
+    /**
+     * 전체 배치 작업 실행
+     * 1. 아티클 수집 (증분, URL 중복 제외)
+     * 2. LLM 배치 생성
+     * 3. 폴링 (완료 대기)
+     * 4. 결과 저장
+     * 5. 메타데이터 기록
+     */
+    public void executeBatch() {
+        LocalDateTime startTime = LocalDateTime.now();
+        log.info("CardNews batch started at {}", startTime);
+
+        BatchRunMetadata metadata = BatchRunMetadata.builder()
+                .jobName(JOB_NAME)
+                .executedAt(startTime)
+                .status("RUNNING")
+                .build();
+        batchRunMetadataRepository.save(metadata);
+
+        try {
+            // 1. 아티클 수집
+            List<Article> articles = articleFetchService.fetchAllArticles();
+            if (articles.isEmpty()) {
+                log.info("No new articles to process");
+                updateMetadataStatus(metadata, "COMPLETED");
+                return;
+            }
+
+            // 2. 배치 생성
+            String batchId = createBatchFromArticles(articles);
+
+            // 3. 폴링 (완료 대기)
+            boolean completed = waitForCompletion(batchId);
+            if (!completed) {
+                log.error("Batch did not complete in time: batchId={}", batchId);
+                updateMetadataStatus(metadata, "TIMEOUT");
+                return;
+            }
+
+            // 4. 결과 조회 및 저장
+            Map<String, String> results = aiBatchService.fetchResults(batchId);
+            int savedCount = cardNewsSaveService.saveCardNews(articles, results);
+
+            log.info("CardNews batch completed: saved={}/{}", savedCount, articles.size());
+            updateMetadataStatus(metadata, "COMPLETED");
+
+        } catch (Exception e) {
+            log.error("CardNews batch failed", e);
+            updateMetadataStatus(metadata, "FAILED");
+            throw new RuntimeException("Batch execution failed", e);
+        }
+    }
 
     /**
      * Article 목록을 LLM 프롬프트로 변환 후 배치 생성
-     *
-     * @param articles 아티클 목록
-     * @return OpenAI Batch ID (custom_id: article-0, article-1, ... 순서)
      */
     public String createBatchFromArticles(List<Article> articles) {
         if (articles == null || articles.isEmpty()) {
@@ -35,5 +96,30 @@ public class CardNewsBatchService {
         String batchId = aiBatchService.createBatch(promptStrings);
         log.info("Batch created from {} articles: batchId={}", articles.size(), batchId);
         return batchId;
+    }
+
+    private boolean waitForCompletion(String batchId) {
+        for (int i = 0; i < MAX_POLLING_COUNT; i++) {
+            if (aiBatchService.isCompleted(batchId)) {
+                return true;
+            }
+            try {
+                Thread.sleep(POLLING_INTERVAL_MS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private void updateMetadataStatus(BatchRunMetadata metadata, String status) {
+        // 새 레코드로 상태 기록 (또는 업데이트)
+        BatchRunMetadata updated = BatchRunMetadata.builder()
+                .jobName(metadata.getJobName())
+                .executedAt(metadata.getExecutedAt())
+                .status(status)
+                .build();
+        batchRunMetadataRepository.save(updated);
     }
 }

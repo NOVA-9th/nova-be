@@ -4,6 +4,7 @@ import com.nova.nova_server.domain.cardType.entity.CardType;
 import com.nova.nova_server.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -43,4 +44,17 @@ public class CardNews extends BaseEntity {
 
     @Column(name = "source_site_name", length = 100)
     private String sourceSiteName;
+
+    @Builder
+    public CardNews(CardType cardType, String title, String author, LocalDateTime publishedAt,
+                    String summary, String evidence, String originalUrl, String sourceSiteName) {
+        this.cardType = cardType;
+        this.title = title;
+        this.author = author;
+        this.publishedAt = publishedAt;
+        this.summary = summary;
+        this.evidence = evidence;
+        this.originalUrl = originalUrl;
+        this.sourceSiteName = sourceSiteName;
+    }
 }
