@@ -30,7 +30,7 @@ public class Member extends BaseEntity {
     private String email;
 
     @Lob
-    @Column(name = "profile_image")
+    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
     private byte[] profileImage;
 
     @Column(name = "google_id", length = 255, nullable = true)
