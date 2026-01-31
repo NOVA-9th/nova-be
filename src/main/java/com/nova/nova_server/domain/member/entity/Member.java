@@ -1,8 +1,13 @@
 package com.nova.nova_server.domain.member.entity;
 
+import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
+import com.nova.nova_server.domain.cardNews.entity.CardNewsRelevance;
 import com.nova.nova_server.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -41,6 +46,22 @@ public class Member extends BaseEntity {
 
     @Column(name = "github_id", length = 255, nullable = true)
     private String githubId;
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<MemberPreferKeyword> preferKeywords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<MemberPreferInterest> preferInterests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<CardNewsBookmark> cardNewsBookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<CardNewsRelevance> cardNewsRelevances = new ArrayList<>();
 
     public enum MemberLevel {
         NOVICE, // 입문자

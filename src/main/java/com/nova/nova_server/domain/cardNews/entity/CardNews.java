@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "card_news")
@@ -41,4 +43,13 @@ public class CardNews extends BaseEntity {
 
     @Column(name = "source_site_name", length = 100)
     private String sourceSiteName;
+
+    @OneToMany(mappedBy = "cardNews", fetch = FetchType.LAZY)
+    private List<CardNewsBookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cardNews", fetch = FetchType.LAZY)
+    private List<CardNewsRelevance> relevances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cardNews", fetch = FetchType.LAZY)
+    private List<CardNewsKeyword> keywords = new ArrayList<>();
 }
