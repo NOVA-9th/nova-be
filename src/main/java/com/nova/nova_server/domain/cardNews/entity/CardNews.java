@@ -1,6 +1,5 @@
 package com.nova.nova_server.domain.cardNews.entity;
 
-import com.nova.nova_server.domain.cardType.entity.CardType;
 import com.nova.nova_server.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -8,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "card_news")
@@ -19,8 +20,7 @@ public class CardNews extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "card_type_id", nullable = false, foreignKey = @ForeignKey(name = "FK_card_type_TO_card_news"))
+    @Column
     private CardType cardType;
 
     @Column(nullable = false, length = 255)
@@ -43,4 +43,13 @@ public class CardNews extends BaseEntity {
 
     @Column(name = "source_site_name", length = 100)
     private String sourceSiteName;
+
+    @OneToMany(mappedBy = "cardNews", fetch = FetchType.LAZY)
+    private List<CardNewsBookmark> bookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cardNews", fetch = FetchType.LAZY)
+    private List<CardNewsRelevance> relevances = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cardNews", fetch = FetchType.LAZY)
+    private List<CardNewsKeyword> keywords = new ArrayList<>();
 }
