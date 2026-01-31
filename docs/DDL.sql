@@ -116,6 +116,17 @@ CREATE TABLE `card_news_relevance` (
     CONSTRAINT `FK_card_news_TO_relevance` FOREIGN KEY (`card_news_id`) REFERENCES `card_news` (`id`) ON DELETE CASCADE
 );
 
+-- 배치 실행 메타데이터 (Batch Run Metadata)
+CREATE TABLE `batch_run_metadata` (
+    `id`            BIGINT          NOT NULL AUTO_INCREMENT COMMENT 'PK',
+    `job_name`      VARCHAR(100)    NOT NULL COMMENT '작업명',
+    `executed_at`   DATETIME        NOT NULL COMMENT '실행 시점',
+    `status`        VARCHAR(20)     NULL     COMMENT '상태 (RUNNING, COMPLETED, FAILED)',
+    `created_at`    DATETIME        DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`    DATETIME        DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`)
+);
+
 -- 카드뉴스 북마크 (Card News Bookmark)
 -- (기존 Untitled6)
 CREATE TABLE `card_news_bookmark` (
