@@ -14,7 +14,7 @@ public record CardNewsSearchCondition(
         FeedSort sort,
         LocalDateTime startDate,
         LocalDateTime endDate,
-        CardType type,
+        List<CardType> type,
         List<String> keywords,
         Boolean saved,
         Pageable pageable

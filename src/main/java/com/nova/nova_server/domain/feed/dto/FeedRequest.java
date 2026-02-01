@@ -10,7 +10,7 @@ public record FeedRequest(
         FeedSort sort,
         OffsetDateTime startDate,
         OffsetDateTime endDate,
-        CardType type,
+        List<CardType> type,
         List<String> keywords,
         Integer page,
         Integer size,

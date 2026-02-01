@@ -36,7 +36,7 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                 .select(cardNews.id)
                 .from(cardNews)
                 .where(
-                        cardTypeEq(condition.type()),
+                        cardTypeIn(condition.type()),
                         keywordIn(condition.keywords()),
                         publishedAfter(condition.startDate()),
                         publishedBefore(condition.endDate()),
@@ -52,7 +52,7 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                 .select(cardNews.count())
                 .from(cardNews)
                 .where(
-                        cardTypeEq(condition.type()),
+                        cardTypeIn(condition.type()),
                         keywordIn(condition.keywords()),
                         publishedAfter(condition.startDate()),
                         publishedBefore(condition.endDate()),
@@ -85,12 +85,12 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
         return cardNews.id.in(idList);
     }
 
-    private BooleanExpression cardTypeEq(CardType type) {
-        if (type == null) {
+    private BooleanExpression cardTypeIn(List<CardType> typeList) {
+        if (typeList == null || typeList.isEmpty()) {
             return null;
         }
 
-        return cardNews.cardType.eq(type);
+        return cardNews.cardType.in(typeList);
     }
 
     private BooleanExpression keywordIn(List<String> keywords) {
