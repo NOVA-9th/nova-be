@@ -17,14 +17,15 @@ import java.util.Map;
 public class BookmarkService {
 
     private final CardNewsBookmarkRepository bookmarkRepository;
-
+    
+    //북마크 interest 통계
     public Map<String, List<BookmarkInterestCountResponse>> getBookmarkCountsByInterest(Long memberId) {
         List<BookmarkInterestCountResponse> counts = bookmarkRepository.findBookmarkCountsByInterest(memberId);
         Map<String, List<BookmarkInterestCountResponse>> result = new HashMap<>();
         result.put("bookmarkCounts", counts);
         return result;
     }
-
+    // 북마크 소스타입 통계
     public Map<String, List<BookmarkSourceTypeCountResponse>> getBookmarkCountsBySourceType(
             Long memberId) {
         List<BookmarkSourceTypeCountResponse> counts = bookmarkRepository
