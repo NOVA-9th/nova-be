@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.feed.controller;
 
+import com.nova.nova_server.domain.feed.docs.FeedControllerDocs;
 import com.nova.nova_server.domain.feed.dto.FeedListResponse;
 import com.nova.nova_server.domain.feed.dto.FeedRequest;
 import com.nova.nova_server.domain.feed.service.FeedService;
@@ -17,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cardnews")
-public class FeedController {
+public class FeedController implements FeedControllerDocs {
 
     private final FeedService feedService;
 
