@@ -1,7 +1,7 @@
 package com.nova.nova_server.domain.feed.dto;
 
+import com.nova.nova_server.domain.cardNews.entity.CardType;
 import com.nova.nova_server.domain.feed.enums.FeedSort;
-import com.nova.nova_server.domain.post.model.CardType;
 
 import java.time.OffsetDateTime;
 import java.util.List;

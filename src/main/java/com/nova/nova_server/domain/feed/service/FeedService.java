@@ -3,7 +3,7 @@ package com.nova.nova_server.domain.feed.service;
 import com.nova.nova_server.domain.feed.dto.FeedListResponse;
 import com.nova.nova_server.domain.feed.dto.FeedRequest;
 import com.nova.nova_server.domain.feed.dto.FeedResponse;
-import com.nova.nova_server.domain.post.model.CardType;
+import com.nova.nova_server.domain.cardNews.entity.CardType;
 import org.springframework.stereotype.Service;
 
 import java.time.OffsetDateTime;

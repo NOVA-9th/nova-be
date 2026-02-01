@@ -1,6 +1,6 @@
 package com.nova.nova_server.domain.feed.dto;
 
-import com.nova.nova_server.domain.post.model.CardType;
+import com.nova.nova_server.domain.cardNews.entity.CardType;
 import lombok.Builder;
 
 import java.time.OffsetDateTime;
