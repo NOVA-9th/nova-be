@@ -7,8 +7,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
- * 카드뉴스 배치 스케줄러
- * 매일 새벽 5시에 배치 작업 실행
+ * 카드 뉴스 배치를 주기적으로 관리하는 스케줄러입니다.
  */
 @Slf4j
 @Component
@@ -18,7 +17,7 @@ public class CardNewsBatchScheduler {
     private final CardNewsBatchService cardNewsBatchService;
 
     /**
-     * 매일 새벽 5시 배치 실행
+     * 매일 정해진 시간(새벽 5시)에 배치를 실행합니다.
      */
     @Scheduled(cron = "0 0 5 * * ?")
     public void runDailyBatch() {

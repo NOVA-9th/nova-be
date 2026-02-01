@@ -25,7 +25,7 @@ public class StackExchangeClient {
 
     public List<JsonNode> fetchQuestions(String tags, String sort, int limit) {
         try {
-            WebClient client = webClientBuilder
+            WebClient client = webClientBuilder.clone()
                     .baseUrl(baseUrl)
                     .defaultHeader("User-Agent", userAgent)
                     .build();

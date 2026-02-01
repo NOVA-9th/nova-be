@@ -27,7 +27,7 @@ public class GitHubClient {
     // github 공통 검색 메소드
     public List<JsonNode> fetchRepositories(String query, int limit) {
         try {
-            WebClient client = webClientBuilder
+            WebClient client = webClientBuilder.clone()
                     .baseUrl(baseUrl)
                     .defaultHeader("User-Agent", userAgent)
                     .build();
@@ -107,4 +107,3 @@ public class GitHubClient {
         return "";
     }
 }
-

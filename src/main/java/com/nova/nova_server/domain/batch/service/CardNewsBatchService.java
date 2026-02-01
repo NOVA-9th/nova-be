@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 카드뉴스 배치 작업 오케스트레이션
- * 전체 플로우: 아티클 수집 → 배치 생성 → 폴링 → 결과 저장
+ * 카드 뉴스 생성 배치의 전체 흐름을 관리하는 클래스입니다.
+ * 수집 -> AI 요약 요청 -> 완료 대기(Polling) -> 결과 저장 순서로 진행됩니다.
  */
 @Slf4j
 @Service
@@ -32,12 +32,7 @@ public class CardNewsBatchService {
     private final BatchRunMetadataRepository batchRunMetadataRepository;
 
     /**
-     * 전체 배치 작업 실행
-     * 1. 아티클 수집 (증분, URL 중복 제외)
-     * 2. LLM 배치 생성
-     * 3. 폴링 (완료 대기)
-     * 4. 결과 저장
-     * 5. 메타데이터 기록
+     * 메인 배치 프로세스를 실행합니다.
      */
     public void executeBatch() {
         LocalDateTime startTime = LocalDateTime.now();

@@ -2,6 +2,7 @@ package com.nova.nova_server.domain.post.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class HackerNewsClient {
@@ -39,7 +41,7 @@ public class HackerNewsClient {
         List<JsonNode> items = new ArrayList<>();
 
         try {
-            List<Integer> storyIds = webClientBuilder.build()
+            List<Integer> storyIds = webClientBuilder.clone().build()
                     .get()
                     .uri(baseUrl + endpoint)
                     .retrieve()
@@ -48,6 +50,7 @@ public class HackerNewsClient {
                     .block();
 
             if (storyIds == null || storyIds.isEmpty()) {
+                log.warn("No HN story IDs returned from: {}", endpoint);
                 return items;
             }
 
@@ -55,7 +58,7 @@ public class HackerNewsClient {
 
             for (Integer id : topN) {
                 try {
-                    JsonNode item = webClientBuilder.build()
+                    JsonNode item = webClientBuilder.clone().build()
                             .get()
                             .uri(baseUrl + "/item/{id}.json", id)
                             .retrieve()
@@ -66,11 +69,13 @@ public class HackerNewsClient {
                         items.add(item);
                     }
                 } catch (Exception e) {
-                    System.err.println("Failed to fetch item: " + id);
+                    log.warn("Failed to fetch HN item: {}", id);
                 }
             }
-        } catch (Exception e) {
-            System.err.println("Failed to fetch stories from: " + endpoint);
+        } catch (
+
+        Exception e) {
+            log.error("Failed to fetch HN stories from: {}", endpoint, e);
         }
 
         return items;
@@ -96,16 +101,16 @@ public class HackerNewsClient {
                 content = doc.select("p").text();
             }
 
-            //<article>태그가 없거나, <p> 태그가 있어도 본문이 아닌 다른 내용이거나, Selenium 사용해야하는 동적으로 렌더링되는 사이트
+            // <article>태그가 없거나, <p> 태그가 있어도 본문이 아닌 다른 내용이거나, Selenium 사용해야하는 동적으로 렌더링되는 사이트
             if (content.isEmpty()) {
-                return "No Content";//크롤링 성공했으나 본문 없음
+                return "No Content";// 크롤링 성공했으나 본문 없음
             }
 
             return content.length() > 500 ? content.substring(0, 500) + "..." : content;
 
         } catch (Exception e) {
-            System.err.println("Failed to extract content from: " + url);
-            return "Crawling Failed";//크롤링 실패
+            log.warn("Failed to extract HN content from: {}", url);
+            return "Crawling Failed";// 크롤링 실패
         }
     }
 }

@@ -34,7 +34,7 @@ public class OpenAiBatchService implements AiBatchService {
             WebClient.Builder webClientBuilder,
             @Value("${ai.openai.token}") String token,
             @Value("${ai.openai.model:gpt-4o-mini}") String model) {
-        this.webClient = webClientBuilder
+        this.webClient = webClientBuilder.clone()
                 .baseUrl(OPENAI_BASE_URL)
                 .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .build();
@@ -74,7 +74,8 @@ public class OpenAiBatchService implements AiBatchService {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
-        return String.format("{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"당신은 기사를 요약하고 핵심 정보를 추출하는 전문가입니다.\"},{\"role\":\"user\",\"content\":\"%s\"}],\"max_tokens\":1000}",
+        return String.format(
+                "{\"model\":\"%s\",\"messages\":[{\"role\":\"system\",\"content\":\"당신은 기사를 요약하고 핵심 정보를 추출하는 전문가입니다.\"},{\"role\":\"user\",\"content\":\"%s\"}],\"max_tokens\":1000}",
                 model, escapedContent);
     }
 
@@ -185,11 +186,13 @@ public class OpenAiBatchService implements AiBatchService {
         Map<String, String> results = new HashMap<>();
 
         for (String line : contentStr.split("\n")) {
-            if (line.isBlank()) continue;
+            if (line.isBlank())
+                continue;
             try {
                 JsonNode root = objectMapper.readTree(line);
                 String customId = root.has("custom_id") ? root.get("custom_id").asText() : null;
-                if (customId == null) continue;
+                if (customId == null)
+                    continue;
 
                 JsonNode responseNode = root.get("response");
                 if (responseNode == null || responseNode.isNull()) {

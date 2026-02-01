@@ -28,7 +28,7 @@ public class DevToClient {
 
         try {
             // 인기글 목록 조회
-            List<JsonNode> articles = webClientBuilder.build()
+            List<JsonNode> articles = webClientBuilder.clone().build()
                     .get()
                     .uri(baseUrl + "/articles?top=1&per_page=" + limit)
                     .header("User-Agent", userAgent)
@@ -61,7 +61,7 @@ public class DevToClient {
 
     private JsonNode fetchArticleDetail(long id) {
         try {
-            return webClientBuilder.build()
+            return webClientBuilder.clone().build()
                     .get()
                     .uri(baseUrl + "/articles/{id}", id)
                     .header("User-Agent", userAgent)
@@ -74,4 +74,3 @@ public class DevToClient {
         }
     }
 }
-

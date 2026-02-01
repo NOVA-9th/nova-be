@@ -22,7 +22,7 @@ public class NaverNewsSearchClient {
     private String clientSecret;
 
     public JsonNode fetch() {
-        return webClientBuilder.build()
+        return webClientBuilder.clone().build()
                 .get()
                 .uri(baseUrl + "/news.json?query=IT&display=10&sort=date")
                 .header("X-Naver-Client-Id", clientId)

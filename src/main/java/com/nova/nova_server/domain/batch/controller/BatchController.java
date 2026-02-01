@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 배치 작업 수동 실행 API (테스트/개발용)
+ * 테스트나 개발용으로 배치를 직접 실행해볼 수 있는 API입니다.
  */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/batch")
+@RequestMapping("/batch")
 @Tag(name = "Batch", description = "배치 작업 API")
 public class BatchController {
 

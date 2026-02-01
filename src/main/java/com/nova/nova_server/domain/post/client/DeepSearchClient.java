@@ -18,7 +18,7 @@ public class DeepSearchClient {
     private String apiKey;
 
     public String fetchRawJson() {
-        return webClientBuilder.build()
+        return webClientBuilder.clone().build()
                 .get()
                 .uri(baseUrl + "/articles?keyword=(AI OR 인공지능 OR 블록체인 OR 개발자)&api_key={apiKey}", apiKey)
                 .header("Accept", "application/json")

@@ -26,9 +26,13 @@ public class TechBlogClient {
                     .build()
                     .toUriString();
 
-            return webClientBuilder
-                    .exchangeStrategies(builder ->
-                            builder.codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))) // 크기 증가(길이 긴 본문 풀로 받아오기위해)
+            return webClientBuilder.clone()
+                    .exchangeStrategies(builder -> builder
+                            .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))) // 크기
+                                                                                                                 // 증가(길이
+                                                                                                                 // 긴 본문
+                                                                                                                 // 풀로
+                                                                                                                 // 받아오기위해)
                     .build()
                     .get()
                     .uri(uri)
