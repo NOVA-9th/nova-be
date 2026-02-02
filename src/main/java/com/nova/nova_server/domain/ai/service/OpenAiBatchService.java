@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static com.openai.models.batches.Batch.Status.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -57,26 +59,18 @@ public class OpenAiBatchService implements AiBatchService {
         validateBatchId(batchId);
 
         Batch batch = client.batches().retrieve(batchId);
-        Batch.Status status = batch.status();
 
-        // Expired, Cancelled라도 일부 항목이 완료되었을 수 있으므로 이후 단계 수행
-        if (status.equals(Batch.Status.COMPLETED)
-                || status.equals(Batch.Status.EXPIRED)
-                || status.equals(Batch.Status.CANCELLED))
-            return true;
-        if (status.equals(Batch.Status.FAILED))
-            throw new AiException.InvalidBatchInputException("배치 입력 검증에 실패했습니다. batchId: " + batchId);
-
-        return false;
+        return isCompleted(batch);
     }
 
     @Override
     public List<String> getResultList(String batchId) {
-        if (!isCompleted(batchId)) {
+        Batch batch = client.batches().retrieve(batchId);
+        if (!isCompleted(batch)) {
             throw new AiException.PendingBatchException("배치 작업이 아직 완료되지 않았습니다. batchId: " + batchId);
         }
 
-        String batchOutput = fetchBatchOutput(batchId);
+        String batchOutput = fetchBatchOutput(batch);
 
         return parseBatchOutput(batchOutput);
     }
@@ -153,14 +147,34 @@ public class OpenAiBatchService implements AiBatchService {
     }
 
     /**
+     * 배치 작업 완료 여부를 확인한다.
+     * 배치 입력 검증에 실패한 경우 InvalidBatchInputException을 던진다.
+     *
+     * @param batch 배치 작업 객체
+     * @return 완료 여부
+     */
+    private boolean isCompleted(Batch batch) {
+        Batch.Status status = batch.status();
+
+        // Expired, Cancelled라도 일부 항목이 완료되었을 수 있으므로 이후 단계 수행
+        if (status.equals(COMPLETED)
+                || status.equals(EXPIRED)
+                || status.equals(CANCELLED))
+            return true;
+        if (status.equals(FAILED))
+            throw new AiException.InvalidBatchInputException("배치 입력 검증에 실패했습니다. batchId: " + batch.id());
+
+        return false;
+    }
+
+    /**
      * 배치 작업 결과를 가져온다.
      *
-     * @param batchId 배치 작업 ID
+     * @param batch 배치 작업 객체
      * @return 배치 작업 결과 문자열 (jsonl 형식)
      */
-    private String fetchBatchOutput(String batchId) {
+    private String fetchBatchOutput(Batch batch) {
         StringBuffer outputBuffer = new StringBuffer();
-        Batch batch = client.batches().retrieve(batchId);
 
         batch.outputFileId().ifPresent(fileId -> {
             outputBuffer.append(fetchBatchOutputFile(fileId));
