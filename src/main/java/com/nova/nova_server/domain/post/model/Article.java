@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.post.model;
 
+import com.nova.nova_server.domain.cardNews.entity.CardType;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
