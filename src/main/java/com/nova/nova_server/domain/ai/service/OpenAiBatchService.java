@@ -25,9 +25,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import static com.openai.models.batches.Batch.Status.*;
 
@@ -71,8 +71,11 @@ public class OpenAiBatchService implements AiBatchService {
         }
 
         String batchOutput = fetchBatchOutput(batch);
+        long total = batch.requestCounts()
+                .orElseThrow(() -> new AiException.InvalidBatchOutputException("배치 요청 수를 확인할 수 없습니다. batchId: " + batchId))
+                .total();
 
-        return parseBatchOutput(batchOutput);
+        return parseBatchOutput(batchOutput, total);
     }
 
     /**
@@ -207,9 +210,8 @@ public class OpenAiBatchService implements AiBatchService {
      * @param batchOutput 배치 작업 결과 문자열 (jsonl 형식)
      * @return 배치 응답 리스트
      */
-    private List<String> parseBatchOutput(String batchOutput) {
-        Map<Integer, String> resultMap = new TreeMap<>();
-        int maxCustomId = 0;
+    private List<String> parseBatchOutput(String batchOutput, long total) {
+        Map<Integer, String> resultMap = new HashMap<>();
 
         String[] lines = batchOutput.split("\n");
         for (String line : lines) {
@@ -221,7 +223,6 @@ public class OpenAiBatchService implements AiBatchService {
                 JsonNode resultNode = objectMapper.readTree(line);
                 String customId = resultNode.get("custom_id").asText();
                 int requestNumber = Integer.parseInt(customId);
-                maxCustomId = Math.max(maxCustomId, requestNumber);
 
                 String content = resultNode.at("/response/body/choices/0/message/content").asText();
                 resultMap.put(requestNumber, content);
@@ -232,7 +233,7 @@ public class OpenAiBatchService implements AiBatchService {
         }
 
         List<String> resultList = new java.util.ArrayList<>();
-        for (int i = 1; i <= maxCustomId; i++) {
+        for (int i = 1; i <= total; i++) {
             resultList.add(resultMap.getOrDefault(i, null));
         }
 
