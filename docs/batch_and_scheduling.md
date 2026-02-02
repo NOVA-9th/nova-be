@@ -10,6 +10,7 @@
 2.  **LLM Batch Processing (분석):** 수집된 기사를 바탕으로 OpenAI Batch API용 JSONL 파일을 생성하여 전송합니다.
 3.  **Persistence (저장):** AI 분석 결과(요약, 근거, 키워드)를 파싱하여 `card_news` 테이블에 저장합니다.
 
+
 ---
 
 ### 2. 주요 기능 및 제약 사항
