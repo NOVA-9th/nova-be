@@ -53,18 +53,18 @@ public class MemberServiceImpl implements MemberService {
 
         // 이름 null 체크
         if (requestDto.getName() == null || requestDto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("이름은 필수입니다."); // 이 부분도 필요시 에러코드화 가능합니다.
+            throw new IllegalArgumentException("이름은 필수입니다.");
         }
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND)); //
 
-        member.updateName(requestDto.getName()); //
+        member.updateName(requestDto.getName());
 
         return MemberUpdateResponseDto.builder()
                 .id(member.getId())
                 .name(member.getName())
-                .build(); //
+                .build();
     }
 
     @Override
