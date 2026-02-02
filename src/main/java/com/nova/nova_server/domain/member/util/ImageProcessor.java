@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.member.util;
 
+import lombok.extern.slf4j.Slf4j; // Lombok 로그 어노테이션 임포트
 import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -7,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+@Slf4j
 @Component
 public class ImageProcessor {
     private static final int MAX_WIDTH = 500;
@@ -24,9 +26,8 @@ public class ImageProcessor {
 
         byte[] result = outputStream.toByteArray();
 
-        // 로그로 압축 결과 확인
-        System.out.println("Original size: " + file.getSize() + " bytes");
-        System.out.println("Compressed size: " + result.length + " bytes");
+        log.info("Original size: {} bytes", file.getSize());
+        log.info("Compressed size: {} bytes", result.length);
 
         return result;
     }
