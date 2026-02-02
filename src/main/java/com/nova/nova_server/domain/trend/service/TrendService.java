@@ -20,7 +20,6 @@ public class TrendService {
     private final KeywordStatisticsRepository keywordStatisticsRepository;
 
     public TrendResponse getTopKeywords(LocalDate baseDate) {
-        LocalDate endDate = baseDate;
         // 오늘 포함 최근 7일: [baseDate-6, baseDate]
         LocalDate startDate = baseDate.minusDays(6);
         // 지난 주: [startDate-7, startDate-1]
@@ -29,7 +28,7 @@ public class TrendService {
         // 조회 범위: [prevWeekStart ~ endDate]
 
         // 이번 주(startDate ~ endDate) Top 10 키워드 ID 조회
-        List<Long> topKeywordIds = keywordStatisticsRepository.findTopKeywordIds(startDate, endDate,
+        List<Long> topKeywordIds = keywordStatisticsRepository.findTopKeywordIds(startDate, baseDate,
                 PageRequest.of(0, 10));
 
         if (topKeywordIds.isEmpty()) {
@@ -42,7 +41,7 @@ public class TrendService {
         // 해당 키워드들에 대한 전체 통계 조회 (지난 주 + 이번 주)
         // 범위: prevWeekStart ~ endDate
         List<KeywordStatistics> stats = keywordStatisticsRepository.findByKeywordIdsInAndStatDateBetween(
-                topKeywordIds, prevWeekStart, endDate);
+                topKeywordIds, prevWeekStart, baseDate);
 
         // 데이터 처리
         // 키워드 ID별 그룹화
@@ -56,11 +55,11 @@ public class TrendService {
         for (Long keywordId : topKeywordIds) {
             List<KeywordStatistics> keywordStats = statsByKeyword.getOrDefault(keywordId, Collections.emptyList());
             if (keywordStats.isEmpty())
-                continue; // 방어 코드, 발생하지 않아야 함
+                continue;
 
             // 합계 계산
             long currentWeekSum = keywordStats.stream()
-                    .filter(ks -> !ks.getStatDate().isBefore(startDate) && !ks.getStatDate().isAfter(endDate))
+                    .filter(ks -> !ks.getStatDate().isBefore(startDate) && !ks.getStatDate().isAfter(baseDate))
                     .mapToLong(KeywordStatistics::getMentionCount)
                     .sum();
 
@@ -114,12 +113,11 @@ public class TrendService {
     }
 
     public com.nova.nova_server.domain.trend.dto.SkillTrendResponse getSkillTrend(LocalDate baseDate) {
-        LocalDate endDate = baseDate;
         // 오늘 포함 최근 7일
         LocalDate startDate = baseDate.minusDays(6);
 
         // 전체 기간 동안의 각 Interest 별 총 언급량 집계 및 정렬 (내림차순)
-        List<Object[]> interestRankings = keywordStatisticsRepository.findInterestRankings(startDate, endDate);
+        List<Object[]> interestRankings = keywordStatisticsRepository.findInterestRankings(startDate, baseDate);
 
         List<com.nova.nova_server.domain.trend.dto.SkillTrendResponse.RankingItem> rankingItems = new ArrayList<>();
         int rank = 1;
@@ -130,7 +128,7 @@ public class TrendService {
 
             // 해당 Interest 내에서 언급량 상위 4개 키워드 다시 조회
             List<String> topKeywords = keywordStatisticsRepository.findTopKeywordsByInterestId(
-                    interestId, startDate, endDate, PageRequest.of(0, 4));
+                    interestId, startDate, baseDate, PageRequest.of(0, 4));
 
             rankingItems.add(com.nova.nova_server.domain.trend.dto.SkillTrendResponse.RankingItem.builder()
                     .rank(rank++)
