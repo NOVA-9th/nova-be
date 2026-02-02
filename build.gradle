@@ -49,6 +49,12 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
+	// QueryDSL (OpenFeign)
+	// Source: https://mvnrepository.com/artifact/io.github.openfeign.querydsl/querydsl-jpa
+	implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.1'
+	// Source: https://mvnrepository.com/artifact/io.github.openfeign.querydsl/querydsl-apt
+	annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.1:jpa'
+
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -61,3 +67,18 @@ tasks.named('test') {
 	useJUnitPlatform()
 	systemProperty 'spring.profiles.active', 'test'
 }
+
+def querydslDir = layout.buildDirectory.dir("generated/querydsl").get().asFile
+
+sourceSets {
+	main.java.srcDirs += [querydslDir]
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.generatedSourceOutputDirectory.set(querydslDir)
+}
+
+clean.doLast {
+	file(querydslDir).deleteDir()
+}
+

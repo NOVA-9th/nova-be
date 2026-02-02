@@ -2,8 +2,7 @@ package com.nova.nova_server.domain.post.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nova.nova_server.domain.post.model.Article;
-import com.nova.nova_server.domain.post.model.CardType;
-import org.apache.commons.text.StringEscapeUtils;
+import com.nova.nova_server.domain.cardNews.entity.CardType;
 import org.jsoup.Jsoup;
 import org.springframework.stereotype.Component;
 
