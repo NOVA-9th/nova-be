@@ -5,7 +5,7 @@ import com.nova.nova_server.domain.bookmark.dto.BookmarkSourceTypeCountResponse;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CardNewsBookmarkRepository extends JpaRepository<CardNewsBookmark, Long> {
+public interface BookmarkAnalyticsRepository extends JpaRepository<CardNewsBookmark, Long> {
 
     @org.springframework.data.jpa.repository.Query("SELECT new com.nova.nova_server.domain.bookmark.dto.BookmarkInterestCountResponse(i.id, i.name, COUNT(DISTINCT cn.id)) "
             +
