@@ -46,18 +46,19 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberUpdateResponseDto updateMemberName(Long memberId, Long authenticatedMemberId, MemberRequestDto requestDto) {
-        // 본인 확인 로직 수정
+        //본인 확인 로직
         if (!memberId.equals(authenticatedMemberId)) {
             throw new NovaException(MemberErrorCode.MEMBER_FORBIDDEN);
         }
 
-        // 이름 null 체크
+        //이름 null 및 빈 문자열 체크 로직 수정
         if (requestDto.getName() == null || requestDto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("이름은 필수입니다.");
+            throw new NovaException(MemberErrorCode.MEMBER_NAME_REQUIRED);
         }
 
+        //회원 조회 및 수정
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND)); //
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         member.updateName(requestDto.getName());
 
