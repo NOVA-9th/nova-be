@@ -58,3 +58,5 @@
 
 *   **OpenAI 상태 확인:** `OpenAiBatchService` 로그에서 `batchId`를 확인하여 OpenAI 대시보드에서 진행 상황을 모니터링할 수 있습니다.
 *   **데이터 필터링 확인:** 기사가 수집되지 않는다면 `isAfterLastRun` 로직에 의해 '최신 글이 없음'으로 판정되었거나, 이미 DB에 있는 URL인지 확인하십시오.
+
+### openai 부분은 수정 필요
