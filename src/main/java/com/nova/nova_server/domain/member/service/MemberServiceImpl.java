@@ -87,7 +87,10 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        return member.getProfileImage();
+        if (member.getProfileImage() == null) {
+            return null;
+        }
+        return member.getProfileImage().getImage();
     }
 
     @Override
