@@ -5,6 +5,7 @@ import com.nova.nova_server.domain.auth.dto.GoogleTokenResponse;
 import com.nova.nova_server.domain.auth.dto.GoogleUserInfo;
 import com.nova.nova_server.domain.auth.util.JwtUtil;
 import com.nova.nova_server.domain.member.entity.Member;
+import com.nova.nova_server.domain.member.error.MemberErrorCode;
 import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
@@ -53,22 +54,12 @@ public class GoogleOAuthService {
 	@Transactional
 	public AuthResponse handleCallback(String code) {
 		try {
-			// 1. Authorization code로 access token 교환
-			GoogleTokenResponse tokenResponse = exchangeCodeForToken(code);
-			if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
-				throw new NovaException(AuthErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED);
-			}
+			GoogleUserInfo userInfo = authorize(code);
 
-			// 2. Access token으로 사용자 정보 조회
-			GoogleUserInfo userInfo = getUserInfo(tokenResponse.getAccessToken());
-			if (userInfo == null || userInfo.getEmail() == null) {
-				throw new NovaException(AuthErrorCode.OAUTH_USER_INFO_FAILED);
-			}
-
-			// 3. 사용자 정보로 Member 조회 또는 생성
+			// 사용자 정보로 Member 조회 또는 생성
 			Member member = findOrCreateMember(userInfo);
 
-			// 4. JWT 토큰 발급
+			// JWT 토큰 발급
 			String jwtToken = jwtUtil.generateToken(member.getId());
 
 			return new AuthResponse(jwtToken, member.getId(), member.getEmail(), member.getName());
@@ -78,6 +69,53 @@ public class GoogleOAuthService {
 			log.error("Google OAuth callback 처리 중 오류 발생", e);
 			throw new NovaException(AuthErrorCode.OAUTH_AUTHORIZATION_FAILED);
 		}
+	}
+
+	@Transactional
+	public void connect(Long memberId, String code) {
+		try {
+			GoogleUserInfo userInfo = authorize(code);
+
+			// 구글 계정이 이미 다른 사용자에게 연결되었음
+			if (memberRepository.existsByGoogleId(userInfo.getId())) {
+				throw new NovaException(AuthErrorCode.ALREADY_CONNECTED_ACCOUNT);
+			}
+
+			// 현재 로그인한 멤버 찾기
+			Member member = memberRepository.findById(memberId)
+					.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+			// 로그인한 멤버에게 구글 계정 연결
+			member.setGoogleId(userInfo.getId());
+		} catch (NovaException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error("Google OAuth callback 처리 중 오류 발생", e);
+			throw new NovaException(AuthErrorCode.OAUTH_AUTHORIZATION_FAILED);
+		}
+	}
+
+	@Transactional
+	public void disconnect(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+		member.setGoogleId(null);
+	}
+
+	private GoogleUserInfo authorize(String code) {
+		// Authorization code로 access token 교환
+		GoogleTokenResponse tokenResponse = exchangeCodeForToken(code);
+		if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
+			throw new NovaException(AuthErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED);
+		}
+
+		// Access token으로 사용자 정보 조회
+		GoogleUserInfo userInfo = getUserInfo(tokenResponse.getAccessToken());
+		if (userInfo == null || userInfo.getEmail() == null) {
+			throw new NovaException(AuthErrorCode.OAUTH_USER_INFO_FAILED);
+		}
+
+		return userInfo;
 	}
 
 	private GoogleTokenResponse exchangeCodeForToken(String code) {

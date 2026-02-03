@@ -6,6 +6,7 @@ import com.nova.nova_server.domain.auth.dto.KakaoUserInfo;
 import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.domain.auth.util.JwtUtil;
 import com.nova.nova_server.domain.member.entity.Member;
+import com.nova.nova_server.domain.member.error.MemberErrorCode;
 import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import com.nova.nova_server.global.config.OAuthConfig;
@@ -51,22 +52,12 @@ public class KakaoOAuthService {
 	@Transactional
 	public AuthResponse handleCallback(String code) {
 		try {
-			// 1. Authorization code로 access token 교환
-			KakaoTokenResponse tokenResponse = exchangeCodeForToken(code);
-			if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
-				throw new NovaException(AuthErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED);
-			}
+			KakaoUserInfo userInfo = authorize(code);
 
-			// 2. Access token으로 사용자 정보 조회
-			KakaoUserInfo userInfo = getUserInfo(tokenResponse.getAccessToken());
-			if (userInfo == null || userInfo.getId() == null) {
-				throw new NovaException(AuthErrorCode.OAUTH_USER_INFO_FAILED);
-			}
-
-			// 3. 사용자 정보로 Member 조회 또는 생성
+			// 사용자 정보로 Member 조회 또는 생성
 			Member member = findOrCreateMember(userInfo);
 
-			// 4. JWT 토큰 발급
+			// JWT 토큰 발급
 			String jwtToken = jwtUtil.generateToken(member.getId());
 
 			return new AuthResponse(jwtToken, member.getId(), member.getEmail(), member.getName());
@@ -76,6 +67,54 @@ public class KakaoOAuthService {
 			log.error("Kakao OAuth callback 처리 중 오류 발생", e);
 			throw new NovaException(AuthErrorCode.OAUTH_AUTHORIZATION_FAILED);
 		}
+	}
+
+	@Transactional
+	public void connect(Long memberId, String code) {
+		try {
+			KakaoUserInfo userInfo = authorize(code);
+			String kakaoId = String.valueOf(userInfo.getId());
+
+			// 카카오 계정이 이미 다른 사용자에게 연결되었음
+			if (memberRepository.existsByKakaoId(kakaoId)) {
+				throw new NovaException(AuthErrorCode.ALREADY_CONNECTED_ACCOUNT);
+			}
+
+			// 현재 로그인한 멤버 찾기
+			Member member = memberRepository.findById(memberId)
+				.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+			// 로그인한 멤버에게 카카오 계정 연결
+			member.setKakaoId(kakaoId);
+		} catch (NovaException e) {
+			throw e;
+		} catch (Exception e) {
+			log.error("Kakao OAuth callback 처리 중 오류 발생", e);
+			throw new NovaException(AuthErrorCode.OAUTH_AUTHORIZATION_FAILED);
+		}
+	}
+
+	@Transactional
+	public void disconnect(Long memberId) {
+		Member member = memberRepository.findById(memberId)
+			.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+		member.setKakaoId(null);
+	}
+
+	private KakaoUserInfo authorize(String code) {
+		// Authorization code로 access token 교환
+		KakaoTokenResponse tokenResponse = exchangeCodeForToken(code);
+		if (tokenResponse == null || tokenResponse.getAccessToken() == null) {
+			throw new NovaException(AuthErrorCode.OAUTH_TOKEN_EXCHANGE_FAILED);
+		}
+
+		// Access token으로 사용자 정보 조회
+		KakaoUserInfo userInfo = getUserInfo(tokenResponse.getAccessToken());
+		if (userInfo == null || userInfo.getId() == null) {
+			throw new NovaException(AuthErrorCode.OAUTH_USER_INFO_FAILED);
+		}
+
+		return userInfo;
 	}
 
 	private KakaoTokenResponse exchangeCodeForToken(String code) {

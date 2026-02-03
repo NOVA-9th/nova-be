@@ -5,6 +5,7 @@ import com.nova.nova_server.domain.auth.service.GoogleOAuthService;
 import com.nova.nova_server.global.apiPayload.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,5 +30,22 @@ public class GoogleOAuthController {
 	public ApiResponse<AuthResponse> callback(@RequestParam("code") String code) {
 		AuthResponse authResponse = googleOAuthService.handleCallback(code);
 		return ApiResponse.success(authResponse);
+	}
+
+	@GetMapping("/connect")
+	public ApiResponse<Void> connect(
+			@AuthenticationPrincipal Long memberId,
+			@RequestParam("code") String code
+	) {
+		googleOAuthService.connect(memberId, code);
+		return ApiResponse.success(null);
+	}
+
+	@GetMapping("/disconnect")
+	public ApiResponse<Void> connect(
+			@AuthenticationPrincipal Long memberId
+	) {
+		googleOAuthService.disconnect(memberId);
+		return ApiResponse.success(null);
 	}
 }

@@ -38,12 +38,15 @@ public class Member extends BaseEntity {
     @Column(name = "profile_image", columnDefinition = "LONGBLOB")
     private byte[] profileImage;
 
+    @Setter
     @Column(name = "google_id", length = 255, nullable = true)
     private String googleId;
 
+    @Setter
     @Column(name = "kakao_id", length = 255, nullable = true)
     private String kakaoId;
 
+    @Setter
     @Column(name = "github_id", length = 255, nullable = true)
     private String githubId;
 
