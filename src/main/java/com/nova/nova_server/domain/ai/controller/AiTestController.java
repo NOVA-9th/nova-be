@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Map;
 
 @Profile("local")
 @RestController
@@ -21,12 +21,12 @@ public class AiTestController {
     private final AiBatchService aiBatchService;
 
     @PostMapping("/batch")
-    public ApiResponse<String> createBatchTest(@RequestBody(required = false) List<String> prompts) {
+    public ApiResponse<String> createBatchTest(@RequestBody(required = false) Map<String, String> prompts) {
         if (prompts == null || prompts.isEmpty()) {
-            prompts = List.of(
-                    "네 이름은 뭐야?",
-                    "Hello world라고 응답해줘.",
-                    "네 이름은 뭐야?"  // temperature 설정 확인용 동일 요청
+            prompts = Map.of(
+                    "request-1", "네 이름은 뭐야?",
+                    "request-2", "Hello world라고 응답해줘.",
+                    "request-3", "네 이름은 뭐야?"  // temperature 설정 확인용 동일 요청
             );
         }
         return ApiResponse.created(aiBatchService.createBatch(prompts));
@@ -38,8 +38,8 @@ public class AiTestController {
     }
 
     @GetMapping("/batch/{batchId}/result")
-    public ApiResponse<List<String>> getResultListTest(@PathVariable String batchId) {
-        return ApiResponse.success(aiBatchService.getResultList(batchId));
+    public ApiResponse<Map<String, String>> getResultListTest(@PathVariable String batchId) {
+        return ApiResponse.success(aiBatchService.getResults(batchId));
     }
 
     @ExceptionHandler

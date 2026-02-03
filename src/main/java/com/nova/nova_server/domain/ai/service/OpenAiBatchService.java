@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.openai.models.batches.Batch.Status.*;
@@ -41,7 +40,7 @@ public class OpenAiBatchService implements AiBatchService {
     private final ObjectMapper objectMapper;
 
     @Override
-    public String createBatch(List<String> prompts) {
+    public String createBatch(Map<String, String> prompts) {
         validatePrompts(prompts);
 
         String batchInput = createBatchInput(
@@ -64,7 +63,7 @@ public class OpenAiBatchService implements AiBatchService {
     }
 
     @Override
-    public List<String> getResultList(String batchId) {
+    public Map<String, String> getResults(String batchId) {
         Batch batch = client.batches().retrieve(batchId);
         if (!isCompleted(batch)) {
             throw new AiException.PendingBatchException("배치 작업이 아직 완료되지 않았습니다. batchId: " + batchId);
@@ -75,23 +74,23 @@ public class OpenAiBatchService implements AiBatchService {
                 .orElseThrow(() -> new AiException.InvalidBatchOutputException("배치 요청 수를 확인할 수 없습니다. batchId: " + batchId))
                 .total();
 
-        return parseBatchOutput(batchOutput, total);
+        return parseBatchOutput(batchOutput);
     }
 
     /**
      * OpenAI 배치 작업에 필요한 jsonl 형식의 입력 문자열을 생성한다.
      *
-     * @param prompts     프롬프트 리스트
+     * @param prompts     prompt map
      * @param model       OpenAI LLM 모델 이름
      * @param temperature temperature 값
      * @return 배치 입력 문자열 (jsonl 형식)
      */
-    private String createBatchInput(List<String> prompts, String model, double temperature) {
+    private String createBatchInput(Map<String, String> prompts, String model, double temperature) {
         StringBuilder jsonlBuilder = new StringBuilder();
 
-        for (int i = 0; i < prompts.size(); i++) {
+        for (String key : prompts.keySet()) {
             ObjectNode requestNode = objectMapper.createObjectNode();
-            requestNode.put("custom_id", String.valueOf(i + 1));
+            requestNode.put("custom_id", key);
             requestNode.put("method", "POST");
             requestNode.put("url", "/v1/chat/completions");
 
@@ -101,7 +100,7 @@ public class OpenAiBatchService implements AiBatchService {
 
             ObjectNode messageNode = objectMapper.createObjectNode();
             messageNode.put("role", "user");
-            messageNode.put("content", prompts.get(i));
+            messageNode.put("content", prompts.get(key));
 
             bodyNode.putArray("messages").add(messageNode);
             requestNode.set("body", bodyNode);
@@ -182,9 +181,6 @@ public class OpenAiBatchService implements AiBatchService {
         batch.outputFileId().ifPresent(fileId -> {
             outputBuffer.append(fetchBatchOutputFile(fileId));
         });
-        batch.errorFileId().ifPresent(fileId -> {
-            outputBuffer.append(fetchBatchOutputFile(fileId));
-        });
 
         return outputBuffer.toString();
     }
@@ -204,43 +200,35 @@ public class OpenAiBatchService implements AiBatchService {
     }
 
     /**
-     * 배치 작업 결과를 파싱해서 응답을 요청 순서와 동일하게 정렬하여 반환한다.
-     * 상태가 Expired인 경우 미완료된 요청이 포함될 수 있으며, 이 경우 null로 처리한다.
+     * 배치 작업 결과를 파싱해서 지정된 ID별 응답을 Map으로 반환한다.
+     * 상태가 Expired, Cancelled인 경우 일부 요청이 미완료되었을 수 있으며, 해당 결과는 Map에 포함하지 않는다.
      *
      * @param batchOutput 배치 작업 결과 문자열 (jsonl 형식)
-     * @return 배치 응답 리스트
+     * @return 요청에서 지정된 ID를 key로, LLM 응답을 value로 갖는 Map
      */
-    private List<String> parseBatchOutput(String batchOutput, long total) {
-        Map<Integer, String> resultMap = new HashMap<>();
+    private Map<String, String> parseBatchOutput(String batchOutput) {
+        Map<String, String> resultMap = new HashMap<>();
 
         String[] lines = batchOutput.split("\n");
         for (String line : lines) {
             if (line.isBlank()) {
                 continue;
             }
-
             try {
                 JsonNode resultNode = objectMapper.readTree(line);
-                String customId = resultNode.get("custom_id").asText();
-                int requestNumber = Integer.parseInt(customId);
-
+                String customId = resultNode.at("/custom_id").asText();
                 String content = resultNode.at("/response/body/choices/0/message/content").asText();
-                resultMap.put(requestNumber, content);
+                resultMap.put(customId, content);
 
             } catch (Exception e) {
                 log.warn("배치 결과 파싱 중 오류가 발생했습니다.\n{}", e.getMessage());
             }
         }
 
-        List<String> resultList = new java.util.ArrayList<>();
-        for (int i = 1; i <= total; i++) {
-            resultList.add(resultMap.getOrDefault(i, null));
-        }
-
-        return resultList;
+        return resultMap;
     }
 
-    private void validatePrompts(List<String> prompts) {
+    private void validatePrompts(Map<String, String> prompts) {
         if (CollectionUtils.isEmpty(prompts))
             throw new AiException.InvalidBatchInputException("배치 입력이 누락되었습니다.");
         if (prompts.size() > config.getMaxRequestPerBatch())
