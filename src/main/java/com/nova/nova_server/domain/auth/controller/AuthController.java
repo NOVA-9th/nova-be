@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "API 테스트, 로그인 테스트", description = "테스트 목적으로 사용")
+@Tag(name = "로그인", description = "로그인 관련 API")
 @RestController
-@RequestMapping("/auth/test")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
-public class AuthTestController {
+public class AuthController {
 
 	private final MemberRepository memberRepository;
 	private final JwtUtil jwtUtil;
@@ -51,6 +51,21 @@ public class AuthTestController {
 	}
 
 	@Operation(
+		summary = "토큰 무효화",
+		description = "토큰을 무효화합니다."
+	)
+	@PostMapping("/invalidate")
+	public ApiResponse<Void> invalidate(
+		@AuthenticationPrincipal Long memberId
+	) {
+		// JWT 토큰 무효화를 구현하기 위해서 blacklist 를 사용하는 방법이 있음
+		// 이걸 구현하기 위해 RDB 에 테이블을 만드는건 JWT의 장점을 모두 잃어버리는 것이기 때문에 구현하지 않음
+		// 혹은 redis 를 사용하는 방법이 있으나, 현재 프로젝트에서 redis 도입을 결정하지 않았음
+		// 따라서 이 API 는 의도적으로 구현하지 않은 채로 남겨둠
+		return ApiResponse.success(null);
+	}
+
+	@Operation(
 		summary = "테스트 사용자 생성",
 		description = "2번 ID 를 가진 사용자를 생성합니다."
 	)
@@ -74,7 +89,7 @@ public class AuthTestController {
 		summary = "테스트 토큰 발급",
 		description = "요청한 사용자 ID로 7일 유효 테스트용 JWT를 발급합니다."
 	)
-	@PostMapping("/token")
+	@PostMapping("/generate-test-token")
 	public ApiResponse<AuthResponse> generateTestToken(
 		@Parameter(description = "토큰 발급 대상 사용자 ID (null이면 비회원 토큰)")
 		@RequestBody Long userId

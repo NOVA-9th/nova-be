@@ -29,6 +29,14 @@ public class MemberInfoController {
         return ApiResponse.success(response);
     }
 
+    @DeleteMapping("/{member_id}")
+    public ApiResponse<Void> deleteMember(
+        @PathVariable("member_id") Long memberId
+    ) {
+        // TODO: 삭제 구현
+        return ApiResponse.success(null);
+    }
+
     // 사용자 정보 수정(이름만 수정 가능)
     @PatchMapping("/{member_id}")
     public ApiResponse<MemberUpdateResponseDto> updateMemberName(
