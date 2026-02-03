@@ -21,19 +21,23 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(length = 255, nullable = true)
     private String background;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private MemberLevel level;
 
+    @Setter
     @Column(nullable = false, length = 100)
     private String name;
 
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
+    @Setter
     @Lob
     @Column(name = "profile_image", columnDefinition = "LONGBLOB")
     private byte[] profileImage;
@@ -68,14 +72,5 @@ public class Member extends BaseEntity {
         BEGINNER, // 초급자
         INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
-    }
-
-    // Entity
-    public void updateName(String name) {
-        this.name = name;
-    }
-
-    public void updateProfileImage(byte[] profileImage) {
-        this.profileImage = profileImage;
     }
 }

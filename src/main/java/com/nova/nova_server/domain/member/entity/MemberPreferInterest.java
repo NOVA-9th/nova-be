@@ -4,6 +4,8 @@ import com.nova.nova_server.domain.common.BaseEntity;
 import com.nova.nova_server.domain.interest.entity.Interest;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,23 +16,19 @@ import lombok.NoArgsConstructor;
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class MemberPreferInterest extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "member_id", nullable = false)
-    private Long memberId;
-
-    @Column(name = "interest_id", nullable = false)
-    private Long interestId;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "FK_member_TO_mpi"))
+    @JoinColumn(name = "member_id", nullable = false, foreignKey = @ForeignKey(name = "FK_member_TO_mpi"))
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "interest_id", insertable = false, updatable = false, foreignKey = @ForeignKey(name = "FK_interest_TO_mpi"))
+    @JoinColumn(name = "interest_id", nullable = false, foreignKey = @ForeignKey(name = "FK_interest_TO_mpi"))
     private Interest interest;
 }
