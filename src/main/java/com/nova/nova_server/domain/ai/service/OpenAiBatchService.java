@@ -66,12 +66,15 @@ public class OpenAiBatchService implements AiBatchService {
     public Map<String, String> getResults(String batchId) {
         Batch batch = client.batches().retrieve(batchId);
         if (!isCompleted(batch)) {
-            throw new AiException.PendingBatchException("배치 작업이 아직 완료되지 않았습니다. batchId: " + batchId);
+            throw new AiException.PendingBatchException("배치 작업이 아직 완료되지 않았습니다.");
         }
 
         String batchOutput = fetchBatchOutput(batch);
         long total = batch.requestCounts()
-                .orElseThrow(() -> new AiException.InvalidBatchOutputException("배치 요청 수를 확인할 수 없습니다. batchId: " + batchId))
+                .orElseThrow(() -> {
+                    log.error("배치 요청 수를 확인할 수 없습니다. batchId={}", batchId);
+                    return new AiException.InvalidBatchOutputException("배치 요청 수를 확인할 수 없습니다.");
+                })
                 .total();
 
         return parseBatchOutput(batchOutput);
@@ -161,10 +164,13 @@ public class OpenAiBatchService implements AiBatchService {
         // Expired, Cancelled라도 일부 항목이 완료되었을 수 있으므로 이후 단계 수행
         if (status.equals(COMPLETED)
                 || status.equals(EXPIRED)
-                || status.equals(CANCELLED))
+                || status.equals(CANCELLED)) {
             return true;
-        if (status.equals(FAILED))
-            throw new AiException.InvalidBatchInputException("배치 입력 검증에 실패했습니다. batchId: " + batch.id());
+        }
+        if (status.equals(FAILED)) {
+            log.warn("배치 입력 검증에 실패했습니다. batchId={}", batch.id());
+            throw new AiException.InvalidBatchInputException("배치 입력 검증에 실패했습니다.");
+        }
 
         return false;
     }
@@ -195,7 +201,8 @@ public class OpenAiBatchService implements AiBatchService {
         try (HttpResponse response = client.files().content(fileId)) {
             return new String(response.body().readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new AiException.InvalidBatchOutputException("배치 결과 파일을 읽는 중 오류가 발생했습니다. fileId: " + fileId);
+            log.error("배치 결과 파일을 읽는 중 오류가 발생했습니다. fileId={}", fileId, e);
+            throw new AiException.InvalidBatchOutputException("배치 결과 파일을 읽는 중 오류가 발생했습니다.");
         }
     }
 
