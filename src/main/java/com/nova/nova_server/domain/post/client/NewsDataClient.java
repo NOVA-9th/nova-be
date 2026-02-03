@@ -18,7 +18,7 @@ public class NewsDataClient {
     private String apiKey;
 
     public String fetchRawJson() {
-        return webClientBuilder.clone().build()
+        return webClientBuilder.build()
                 .get()
                 .uri(baseUrl + "/news?apikey={apiKey}&q=IT&language=ko", apiKey)
                 .retrieve()

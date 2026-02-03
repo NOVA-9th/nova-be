@@ -4,25 +4,34 @@ import com.nova.nova_server.domain.member.dto.MemberRequestDto;
 import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberUpdateResponseDto;
 import com.nova.nova_server.domain.member.entity.Member;
+import com.nova.nova_server.domain.member.error.MemberErrorCode;
 import com.nova.nova_server.domain.member.repository.MemberRepository;
-import jakarta.transaction.Transactional;
+import com.nova.nova_server.domain.member.util.ImageProcessor;
+import com.nova.nova_server.global.apiPayload.exception.NovaException;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Base64;
+import java.io.IOException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
+    private final ImageProcessor imageProcessor;
 
     @Override
+    @Transactional(readOnly = true)
     public MemberResponseDto getMemberInfo(Long memberId) {
 
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 프로필 이미지가 없으면 null, 있으면 이미지 URL 경로 반환
         String profileImageUrl = (member.getProfileImage() != null)
@@ -39,20 +48,19 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberUpdateResponseDto updateMemberName(Long memberId, Long authenticatedMemberId, MemberRequestDto requestDto) {
-
-        // 다른 사람의 이름을 수정하는 것을 방지
+        //본인 확인 로직
         if (!memberId.equals(authenticatedMemberId)) {
-            throw new IllegalArgumentException("본인의 정보만 수정할 수 있습니다.");
+            throw new NovaException(MemberErrorCode.MEMBER_FORBIDDEN);
         }
 
-        // ===== 2. 이름 null 체크 (추가 검증) ===== //
+        //이름 null 및 빈 문자열 체크 로직 수정
         if (requestDto.getName() == null || requestDto.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("이름은 필수입니다.");
+            throw new NovaException(MemberErrorCode.MEMBER_NAME_REQUIRED);
         }
 
-        // 회원 조회
+        //회원 조회 및 수정
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 이름 수정
         member.updateName(requestDto.getName());
@@ -62,5 +70,35 @@ public class MemberServiceImpl implements MemberService {
                 .id(member.getId())
                 .name(member.getName())
                 .build();
+    }
+
+    @Override
+    public byte[] uploadProfileImageRaw(Long memberId, MultipartFile file) throws IOException {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        log.info("Original size: {} bytes", file.getSize());
+
+        byte[] compressedImage = imageProcessor.compressImage(file);
+        member.updateProfileImage(compressedImage);
+
+        return compressedImage;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] getProfileImageRaw(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        return member.getProfileImage();
+    }
+
+    @Override
+    public void deleteProfileImage(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        member.updateProfileImage(null);
     }
 }

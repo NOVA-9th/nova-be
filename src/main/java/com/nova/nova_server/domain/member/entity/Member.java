@@ -1,8 +1,13 @@
 package com.nova.nova_server.domain.member.entity;
 
+import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
+import com.nova.nova_server.domain.cardNews.entity.CardNewsRelevance;
 import com.nova.nova_server.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -30,7 +35,7 @@ public class Member extends BaseEntity {
     private String email;
 
     @Lob
-    @Column(name = "profile_image")
+    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
     private byte[] profileImage;
 
     @Column(name = "google_id", length = 255, nullable = true)
@@ -42,6 +47,22 @@ public class Member extends BaseEntity {
     @Column(name = "github_id", length = 255, nullable = true)
     private String githubId;
 
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<MemberPreferKeyword> preferKeywords = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<MemberPreferInterest> preferInterests = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<CardNewsBookmark> cardNewsBookmarks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<CardNewsRelevance> cardNewsRelevances = new ArrayList<>();
+
     public enum MemberLevel {
         NOVICE, // 입문자
         BEGINNER, // 초급자
@@ -52,5 +73,9 @@ public class Member extends BaseEntity {
     // Entity
     public void updateName(String name) {
         this.name = name;
+    }
+
+    public void updateProfileImage(byte[] profileImage) {
+        this.profileImage = profileImage;
     }
 }

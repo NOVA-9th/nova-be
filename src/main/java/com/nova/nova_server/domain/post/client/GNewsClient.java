@@ -18,7 +18,7 @@ public class GNewsClient {
     private String apiKey;
 
     public String fetchRawJson() {
-        return webClientBuilder.clone().build()
+        return webClientBuilder.build()
                 .get()
                 .uri(baseUrl + "/search?q=IT&token={token}&lang=ko", apiKey)
                 .retrieve()

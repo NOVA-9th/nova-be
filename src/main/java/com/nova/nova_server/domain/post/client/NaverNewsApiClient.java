@@ -38,7 +38,7 @@ public class NaverNewsApiClient {
 
         for (String keyword : keywords) {
             try {
-                JsonNode result = webClientBuilder.clone().build()
+                JsonNode result = webClientBuilder.build()
                         .get()
                         .uri(baseUrl + "/news.json?query={query}&display=10&sort=date", keyword)
                         .header("X-Naver-Client-Id", clientId)

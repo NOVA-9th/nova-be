@@ -41,7 +41,7 @@ public class HackerNewsClient {
         List<JsonNode> items = new ArrayList<>();
 
         try {
-            List<Integer> storyIds = webClientBuilder.clone().build()
+            List<Integer> storyIds = webClientBuilder.build()
                     .get()
                     .uri(baseUrl + endpoint)
                     .retrieve()
@@ -58,7 +58,7 @@ public class HackerNewsClient {
 
             for (Integer id : topN) {
                 try {
-                    JsonNode item = webClientBuilder.clone().build()
+                    JsonNode item = webClientBuilder.build()
                             .get()
                             .uri(baseUrl + "/item/{id}.json", id)
                             .retrieve()

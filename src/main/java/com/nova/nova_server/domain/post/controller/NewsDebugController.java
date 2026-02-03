@@ -107,7 +107,8 @@ public class NewsDebugController {
                                 log.warn("Failed to fetch articles from {}", service.getProviderName(), e);
                                 return List.of();
                             }
-                        }));
+                        }
+                ));
     }
 
     // 사용 가능한 API 목록 조회

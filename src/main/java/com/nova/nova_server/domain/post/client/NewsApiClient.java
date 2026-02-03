@@ -18,7 +18,7 @@ public class NewsApiClient {
     private String apiKey;
 
     public String fetchRawJson() {
-        return webClientBuilder.clone().build()
+        return webClientBuilder.build()
                 .get()
                 .uri(baseUrl + "/everything?q=(AI OR 인공지능 OR 개발자 OR software)&language=ko&sortBy=publishedAt")
                 .header("X-Api-Key", apiKey)

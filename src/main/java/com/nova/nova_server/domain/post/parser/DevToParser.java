@@ -2,7 +2,7 @@ package com.nova.nova_server.domain.post.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nova.nova_server.domain.post.model.Article;
-import com.nova.nova_server.domain.post.model.CardType;
+import com.nova.nova_server.domain.cardNews.entity.CardType;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
