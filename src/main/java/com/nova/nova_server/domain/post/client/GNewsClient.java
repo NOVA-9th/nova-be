@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class GNewsClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.gnews.base-url}")
     private String baseUrl;
@@ -18,7 +18,7 @@ public class GNewsClient {
     private String apiKey;
 
     public String fetchRawJson() {
-        return webClientBuilder.build()
+        return webClient
                 .get()
                 .uri(baseUrl + "/search?q=IT&token={token}&lang=ko", apiKey)
                 .retrieve()

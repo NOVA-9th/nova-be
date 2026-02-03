@@ -17,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HackerNewsClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.hackernews.base-url}")
     private String baseUrl;
@@ -41,7 +41,7 @@ public class HackerNewsClient {
         List<JsonNode> items = new ArrayList<>();
 
         try {
-            List<Integer> storyIds = webClientBuilder.build()
+            List<Integer> storyIds = webClient
                     .get()
                     .uri(baseUrl + endpoint)
                     .retrieve()
@@ -58,7 +58,7 @@ public class HackerNewsClient {
 
             for (Integer id : topN) {
                 try {
-                    JsonNode item = webClientBuilder.build()
+                    JsonNode item = webClient
                             .get()
                             .uri(baseUrl + "/item/{id}.json", id)
                             .retrieve()

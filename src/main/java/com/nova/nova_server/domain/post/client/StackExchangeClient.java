@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StackExchangeClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.stackexchange.base-url}")
     private String baseUrl;
@@ -25,26 +26,23 @@ public class StackExchangeClient {
 
     public List<JsonNode> fetchQuestions(String tags, String sort, int limit) {
         try {
-            WebClient client = webClientBuilder.clone()
-                    .baseUrl(baseUrl)
-                    .defaultHeader("User-Agent", userAgent)
-                    .build();
+            UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(baseUrl)
+                    .path("/questions")
+                    .queryParam("order", "desc")
+                    .queryParam("sort", sort)
+                    .queryParam("site", "stackoverflow")
+                    .queryParam("pagesize", limit)
+                    .queryParam("filter", "!T*hPNRA69ofM1izkPP"); // stackoverflow 커스텀필터(질문+본문+답변포함)
 
-            JsonNode response = client.get()
-                    .uri(uriBuilder -> {
-                        uriBuilder
-                                .path("/questions")
-                                .queryParam("order", "desc")
-                                .queryParam("sort", sort)
-                                .queryParam("site", "stackoverflow")
-                                .queryParam("pagesize", limit)
-                                .queryParam("filter", "!T*hPNRA69ofM1izkPP"); // stackoverflow 커스텀필터(질문+본문+답변포함)
+            if (tags != null && !tags.isEmpty()) {
+                uriBuilder.queryParam("tagged", tags);
+            }
 
-                        if (tags != null && !tags.isEmpty()) {
-                            uriBuilder.queryParam("tagged", tags);
-                        }
-                        return uriBuilder.build();
-                    })
+            String uri = uriBuilder.build().toUriString();
+
+            JsonNode response = webClient.get()
+                    .uri(uri)
+                    .header("User-Agent", userAgent)
                     .retrieve()
                     .bodyToMono(JsonNode.class)
                     .block();

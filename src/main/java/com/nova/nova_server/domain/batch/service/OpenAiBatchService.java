@@ -28,17 +28,16 @@ public class OpenAiBatchService implements AiBatchService {
 
     private final WebClient webClient;
     private final String model;
+    private final String token;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public OpenAiBatchService(
-            WebClient.Builder webClientBuilder,
+            WebClient webClient,
             @Value("${ai.openai.token}") String token,
             @Value("${ai.openai.model:gpt-4o-mini}") String model) {
-        this.webClient = webClientBuilder.clone()
-                .baseUrl(OPENAI_BASE_URL)
-                .defaultHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                .build();
+        this.webClient = webClient;
         this.model = model;
+        this.token = token;
     }
 
     @Override
@@ -94,7 +93,8 @@ public class OpenAiBatchService implements AiBatchService {
             formData.add("purpose", "batch");
 
             String response = webClient.post()
-                    .uri("/v1/files")
+                    .uri(OPENAI_BASE_URL + "/v1/files")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(BodyInserters.fromMultipartData(formData))
                     .retrieve()
@@ -116,7 +116,8 @@ public class OpenAiBatchService implements AiBatchService {
                     fileId, CHAT_COMPLETIONS_URL);
 
             String response = webClient.post()
-                    .uri("/v1/batches")
+                    .uri(OPENAI_BASE_URL + "/v1/batches")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(requestBody)
                     .retrieve()
@@ -135,7 +136,8 @@ public class OpenAiBatchService implements AiBatchService {
     public boolean isCompleted(String batchId) {
         try {
             String response = webClient.get()
-                    .uri("/v1/batches/{batchId}", batchId)
+                    .uri(OPENAI_BASE_URL + "/v1/batches/{batchId}", batchId)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
@@ -158,7 +160,8 @@ public class OpenAiBatchService implements AiBatchService {
     @Override
     public Map<String, String> fetchResults(String batchId) {
         String batchResponse = webClient.get()
-                .uri("/v1/batches/{batchId}", batchId)
+                .uri(OPENAI_BASE_URL + "/v1/batches/{batchId}", batchId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
@@ -173,7 +176,8 @@ public class OpenAiBatchService implements AiBatchService {
         String outputFileId = outputFileIdNode.asText();
 
         byte[] content = webClient.get()
-                .uri("/v1/files/{fileId}/content", outputFileId)
+                .uri(OPENAI_BASE_URL + "/v1/files/{fileId}/content", outputFileId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                 .retrieve()
                 .bodyToMono(byte[].class)
                 .block();

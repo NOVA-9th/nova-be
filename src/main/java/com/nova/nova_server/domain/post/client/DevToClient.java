@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DevToClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.devto.base-url}")
     private String baseUrl;
@@ -28,8 +28,7 @@ public class DevToClient {
 
         try {
             // 인기글 목록 조회
-            List<JsonNode> articles = webClientBuilder.build()
-                    .get()
+            List<JsonNode> articles = webClient.get()
                     .uri(baseUrl + "/articles?top=1&per_page=" + limit)
                     .header("User-Agent", userAgent)
                     .retrieve()
@@ -61,8 +60,7 @@ public class DevToClient {
 
     private JsonNode fetchArticleDetail(long id) {
         try {
-            return webClientBuilder.build()
-                    .get()
+            return webClient.get()
                     .uri(baseUrl + "/articles/{id}", id)
                     .header("User-Agent", userAgent)
                     .retrieve()
