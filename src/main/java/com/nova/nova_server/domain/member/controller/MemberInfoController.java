@@ -31,9 +31,10 @@ public class MemberInfoController {
 
     @DeleteMapping("/{member_id}")
     public ApiResponse<Void> deleteMember(
-        @PathVariable("member_id") Long memberId
+        @PathVariable("member_id") Long memberId,
+        @AuthenticationPrincipal Long authenticatedMemberId
     ) {
-        // TODO: 삭제 구현
+        memberService.deleteMember(memberId);
         return ApiResponse.success(null);
     }
 

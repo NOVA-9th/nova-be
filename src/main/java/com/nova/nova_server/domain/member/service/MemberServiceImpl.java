@@ -97,4 +97,12 @@ public class MemberServiceImpl implements MemberService {
 
         member.updateProfileImage(null);
     }
+
+    @Override
+    public void deleteMember(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        memberRepository.delete(member);
+    }
 }
