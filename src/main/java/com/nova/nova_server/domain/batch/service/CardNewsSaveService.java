@@ -4,10 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nova.nova_server.domain.batch.dto.LlmSummaryResult;
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsKeyword;
+import com.nova.nova_server.domain.cardNews.entity.CardType;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsKeywordRepository;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
-import com.nova.nova_server.domain.cardType.entity.CardType;
-import com.nova.nova_server.domain.cardType.repository.CardTypeRepository;
 import com.nova.nova_server.domain.keyword.repository.KeywordRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,6 @@ import java.util.Map;
 public class CardNewsSaveService {
 
     private final CardNewsRepository cardNewsRepository;
-    private final CardTypeRepository cardTypeRepository;
     private final KeywordRepository keywordRepository;
     private final CardNewsKeywordRepository cardNewsKeywordRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -68,10 +66,9 @@ public class CardNewsSaveService {
     @Transactional
     public void saveSingleCardNews(Article article, String llmJson, String customId) {
         LlmSummaryResult result = parseLlmResult(llmJson);
-        CardType cardType = resolveCardType(article.cardType());
 
         CardNews cardNews = CardNews.builder()
-                .cardType(cardType)
+                .cardType(article.cardType())
                 .title(article.title())
                 .author(article.author())
                 .publishedAt(article.publishedAt())
@@ -120,16 +117,5 @@ public class CardNewsSaveService {
             }
         }
         return content.trim();
-    }
-
-    private CardType resolveCardType(com.nova.nova_server.domain.post.model.CardType articleCardType) {
-        String typeName = switch (articleCardType) {
-            case NEWS -> "NEWS";
-            case JOB -> "JOB";
-            case COMMUNITY -> "COMMUNITY";
-        };
-
-        return cardTypeRepository.findByName(typeName)
-                .orElseThrow(() -> new IllegalStateException("CardType not found: " + typeName));
     }
 }
