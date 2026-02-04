@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.cardNews.controller;
 
+import com.nova.nova_server.domain.cardNews.docs.CardNewsHiddenControllerDocs;
 import com.nova.nova_server.domain.cardNews.service.CardNewsHiddenService;
 import com.nova.nova_server.global.apiPayload.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/cardnews")
-public class CardNewsHiddenController {
+public class CardNewsHiddenController implements CardNewsHiddenControllerDocs {
 
     private final CardNewsHiddenService cardNewsHiddenService;
 
