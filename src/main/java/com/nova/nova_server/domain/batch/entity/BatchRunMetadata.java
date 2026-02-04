@@ -38,4 +38,8 @@ public class BatchRunMetadata extends BaseEntity {
         this.executedAt = executedAt;
         this.status = status;
     }
+
+    public void updateStatus(String status) {
+        this.status = status;
+    }
 }

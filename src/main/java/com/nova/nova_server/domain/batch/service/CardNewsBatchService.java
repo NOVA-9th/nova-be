@@ -7,7 +7,9 @@ import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +37,14 @@ public class CardNewsBatchService {
     /**
      * 메인 배치 프로세스를 실행합니다.
      */
+    @Async
+    @Transactional
     public void executeBatch() {
+        if (batchRunMetadataRepository.existsByJobNameAndStatus(JOB_NAME, "RUNNING")) {
+            log.warn("CardNews batch is already running. Skipping this execution.");
+            return;
+        }
+
         LocalDateTime startTime = LocalDateTime.now();
         log.info("CardNews batch started at {}", startTime);
 
@@ -55,10 +64,10 @@ public class CardNewsBatchService {
                 return;
             }
 
-            // 2. 배치 생성
+            // 2. 배치 생성 (AI 요청)
             String batchId = createBatchFromArticles(articles);
 
-            // 3. 폴링 (완료 대기)
+            // 3. 폴링 (완료 대기) - 이 과정은 별도 스레드에서 블로킹됨
             boolean completed = waitForCompletion(batchId);
             if (!completed) {
                 log.error("Batch did not complete in time: batchId={}", batchId);
@@ -76,7 +85,7 @@ public class CardNewsBatchService {
         } catch (Exception e) {
             log.error("CardNews batch failed", e);
             updateMetadataStatus(metadata, "FAILED");
-            throw new RuntimeException("Batch execution failed", e);
+            // 비동기 작업이므로 호출자에게 예외를 던지기보다 로그만 남김
         }
     }
 
@@ -110,12 +119,7 @@ public class CardNewsBatchService {
     }
 
     private void updateMetadataStatus(BatchRunMetadata metadata, String status) {
-        // 새 레코드로 상태 기록 (또는 업데이트)
-        BatchRunMetadata updated = BatchRunMetadata.builder()
-                .jobName(metadata.getJobName())
-                .executedAt(metadata.getExecutedAt())
-                .status(status)
-                .build();
-        batchRunMetadataRepository.save(updated);
+        metadata.updateStatus(status);
+        batchRunMetadataRepository.save(metadata);
     }
 }

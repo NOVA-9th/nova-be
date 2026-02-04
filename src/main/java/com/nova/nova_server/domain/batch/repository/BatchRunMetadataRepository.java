@@ -11,4 +11,9 @@ public interface BatchRunMetadataRepository extends JpaRepository<BatchRunMetada
      * 특정 job의 마지막 실행 시점 조회 (증분 처리용, 현재 실행 중인 건 제외)
      */
     Optional<BatchRunMetadata> findTopByJobNameAndStatusNotOrderByExecutedAtDesc(String jobName, String status);
+
+    /**
+     * 특정 job이 특정 상태로 실행 중인지 확인
+     */
+    boolean existsByJobNameAndStatus(String jobName, String status);
 }

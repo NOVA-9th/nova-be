@@ -27,6 +27,6 @@ public class BatchController {
     public ApiResponse<String> executeCardNewsBatch() {
         log.info("Manual CardNews batch triggered via API");
         cardNewsBatchService.executeBatch();
-        return ApiResponse.success("배치 작업이 완료되었습니다.");
+        return ApiResponse.success("배치 작업이 백그라운드에서 시작되었습니다. 완료까지 시간이 소요될 수 있습니다.");
     }
 }
