@@ -6,6 +6,7 @@ import com.nova.nova_server.global.apiPayload.code.error.CommonErrorCode;
 import com.nova.nova_server.global.apiPayload.code.error.ErrorCode;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 		ErrorCode errorCode = CommonErrorCode.INVALID_PARAMETER;
 		return handleExceptionInternal(errorCode, ex.getMessage());
 	}
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        log.error("DataIntegrityViolationException: {}", ex.getMessage());
+        ErrorCode errorCode = CommonErrorCode.CONFLICT;
+        return handleExceptionInternal(errorCode);
+    }
 
 	@Override
 	protected ResponseEntity<Object> handleHttpRequestMethodNotSupported(
