@@ -85,7 +85,7 @@ public class KakaoOAuthService {
 				.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
 			// 로그인한 멤버에게 카카오 계정 연결
-			member.setKakaoId(kakaoId);
+			member.connectKakao(kakaoId);
 		} catch (NovaException e) {
 			throw e;
 		} catch (Exception e) {
@@ -98,7 +98,7 @@ public class KakaoOAuthService {
 	public void disconnect(Long memberId) {
 		Member member = memberRepository.findById(memberId)
 			.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
-		member.setKakaoId(null);
+		member.disconnectKakao();
 	}
 
 	private KakaoUserInfo authorize(String code) {

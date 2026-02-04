@@ -86,7 +86,7 @@ public class GoogleOAuthService {
 					.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
 			// 로그인한 멤버에게 구글 계정 연결
-			member.setGoogleId(userInfo.getId());
+			member.connectGoogle(userInfo.getId());
 		} catch (NovaException e) {
 			throw e;
 		} catch (Exception e) {
@@ -99,7 +99,7 @@ public class GoogleOAuthService {
 	public void disconnect(Long memberId) {
 		Member member = memberRepository.findById(memberId)
 				.orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
-		member.setGoogleId(null);
+		member.disconnectGoogle();
 	}
 
 	private GoogleUserInfo authorize(String code) {
