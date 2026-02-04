@@ -16,6 +16,65 @@ spring:
       hibernate:
         format_sql: false
 
+oauth:
+  google:
+    client-id: test-id
+    client-secret: test-secret
+    redirect-uri: http://localhost:8080/auth/google/callback
+
+  kakao:
+    client-id: test-id
+    client-secret: test-secret
+    redirect-uri: http://localhost:8080/auth/kakao/callback
+
+jwt:
+  secret: test-jwt-secret-key-for-testing-minimum-256-bits-required
+  expiration: 86400000 # 24 hours in milliseconds
+
+ai:
+  openai:
+    key: test-key
+    model: gpt-5.1
+    project-id: test-prj-id
+    temperature: 1  # gpt-5 계열은 temp 변경 불가
+
+external:
+  newsapi:
+    base-url: "https://newsapi.org/v2"
+    key: "test-key"
+  newsdata:
+    base-url: "https://newsdata.io/api/1"
+    key: "test-key"
+  deepsearch:
+    base-url: "https://api-v2.deepsearch.com/v1"
+    key: "test-key"
+  navernewssearch:
+    base-url: "https://openapi.naver.com/v1/search"
+    client-id: "test-id"
+    client-secret: "test-secret"
+  gnews:
+    base-url: "https://gnews.io/api/v4"
+    key: "test-key"
+  navernewsapi:
+    base-url: "https://openapi.naver.com/v1/search"
+    client-id: "test-id"
+    client-secret: "test-secret"
+  hackernews:
+    base-url: "https://hacker-news.firebaseio.com/v0"
+  devto:
+    base-url: "https://dev.to"
+    user-agent: "test-useragent"
+  github:
+    base-url: "https://api.github.com"
+    user-agent: "test-useragent"
+  stackexchange:
+    base-url: "https://api.stackexchange.com/2.3"
+    user-agent: "test-useragent"
+    key: "test-key"
+  rss2json:
+    base-url: "https://api.rss2json.com/v1/api.json"
+    user-agent: "test-useragent"
+
 management:
   endpoints:
     web:
