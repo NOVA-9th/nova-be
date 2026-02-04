@@ -35,27 +35,39 @@ public class ArticleFetchService {
      * 등록된 모든 API 소스에서 기사를 수집합니다.
      */
     public List<Article> fetchAllArticles() {
-        LocalDateTime lastRunAt = batchRunMetadataRepository
-                .findTopByJobNameAndStatusNotOrderByExecutedAtDesc(CARD_NEWS_BATCH_JOB_NAME, "RUNNING")
-                .map(BatchRunMetadata::getExecutedAt)
-                .orElse(LocalDateTime.MIN);
+        // 테스트 편의성을 위해 마지막 성공 시간 대신 최근 5일 이내의 글을 모두 후보로 둡니다. (중복 URL은 자동으로 걸러짐)
+        LocalDateTime lastRunAt = LocalDateTime.now().minusDays(5);
 
         List<Article> allArticles = new ArrayList<>();
-        log.info("Starting article fetch. lastRunAt: {}", lastRunAt);
+        log.info("Starting article fetch. lastRunAt (fixed to 5 days ago): {}", lastRunAt);
 
         for (ArticleApiService service : articleApiServices) {
             try {
                 List<Article> articles = service.fetchArticles();
                 log.info("Fetched {} raw articles from {}", articles.size(), service.getProviderName());
                 List<Article> limited = articles.stream()
-                        .filter(a -> isAfterLastRun(a, lastRunAt))
-                        .filter(this::isNotDuplicateByUrl)
+                        .filter(a -> {
+                            boolean isAfter = isAfterLastRun(a, lastRunAt);
+                            if (!isAfter) {
+                                log.debug("Skipping article (too old): {} (publishedAt: {})", a.title(),
+                                        a.publishedAt());
+                            }
+                            return isAfter;
+                        })
+                        .filter(a -> {
+                            boolean isNotDup = isNotDuplicateByUrl(a);
+                            if (!isNotDup) {
+                                log.debug("Skipping article (duplicate URL): {}", a.title());
+                            }
+                            return isNotDup;
+                        })
                         .limit(MAX_ARTICLES_PER_PROVIDER)
                         .toList();
                 allArticles.addAll(limited);
-                log.info("Fetched {} articles from {} (after filter)", limited.size(), service.getProviderName());
+                log.info("Finished processing {}: {} selected / {} raw fetched", service.getProviderName(),
+                        limited.size(), articles.size());
             } catch (Exception e) {
-                log.warn("Failed to fetch articles from {}: {}", service.getProviderName(), e.getMessage(), e);
+                log.warn("Error in provider {}: {}", service.getProviderName(), e.getMessage());
             }
         }
 

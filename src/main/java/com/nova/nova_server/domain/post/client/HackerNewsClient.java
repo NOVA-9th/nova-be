@@ -38,8 +38,6 @@ public class HackerNewsClient {
     }
 
     private List<JsonNode> fetchStoriesByType(String endpoint, int limit) {
-        List<JsonNode> items = new ArrayList<>();
-
         try {
             List<Integer> storyIds = webClient
                     .get()
@@ -51,34 +49,27 @@ public class HackerNewsClient {
 
             if (storyIds == null || storyIds.isEmpty()) {
                 log.warn("No HN story IDs returned from: {}", endpoint);
-                return items;
+                return new ArrayList<>();
             }
 
             List<Integer> topN = storyIds.subList(0, Math.min(limit, storyIds.size()));
 
-            for (Integer id : topN) {
-                try {
-                    JsonNode item = webClient
-                            .get()
+            // 병렬 실시간 호출로 성능 최적화 (N+1 문제 해결)
+            return reactor.core.publisher.Flux.fromIterable(topN)
+                    .flatMap(id -> webClient.get()
                             .uri(baseUrl + "/item/{id}.json", id)
                             .retrieve()
                             .bodyToMono(JsonNode.class)
-                            .block();
-
-                    if (item != null) {
-                        items.add(item);
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to fetch HN item: {}", id);
-                }
-            }
-        } catch (
-
-        Exception e) {
+                            .onErrorResume(e -> {
+                                log.warn("Failed to fetch HN item: {}", id);
+                                return reactor.core.publisher.Mono.empty();
+                            }))
+                    .collectList()
+                    .block();
+        } catch (Exception e) {
             log.error("Failed to fetch HN stories from: {}", endpoint, e);
+            return new ArrayList<>();
         }
-
-        return items;
     }
 
     /**

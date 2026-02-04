@@ -25,6 +25,9 @@ public class GitHubClient {
     @Value("${external.github.user-agent}")
     private String userAgent;
 
+    @Value("${external.github.token:}") // 토큰이 없으면 빈 문자열
+    private String token;
+
     // github 공통 검색 메소드
     public List<JsonNode> fetchRepositories(String query, int limit) {
         try {
@@ -37,9 +40,15 @@ public class GitHubClient {
                     .build()
                     .toUriString();
 
-            JsonNode response = webClient.get()
+            var request = webClient.get()
                     .uri(uri)
-                    .header("User-Agent", userAgent)
+                    .header("User-Agent", userAgent);
+
+            if (token != null && !token.isBlank()) {
+                request.header("Authorization", "Bearer " + token);
+            }
+
+            JsonNode response = request
                     .retrieve()
                     .bodyToMono(JsonNode.class)
                     .block();
@@ -92,11 +101,16 @@ public class GitHubClient {
                     .buildAndExpand(owner, repo)
                     .toUriString();
 
-            return webClient.get()
+            var request = webClient.get()
                     .uri(uri)
                     .header("User-Agent", userAgent)
-                    .header("Accept", "application/vnd.github.raw") // 마크다운으로 가져옴
-                    .retrieve()
+                    .header("Accept", "application/vnd.github.raw"); // 마크다운으로 가져옴
+
+            if (token != null && !token.isBlank()) {
+                request.header("Authorization", "Bearer " + token);
+            }
+
+            return request.retrieve()
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception e) {
