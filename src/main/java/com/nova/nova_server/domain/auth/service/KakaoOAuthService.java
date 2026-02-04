@@ -176,7 +176,7 @@ public class KakaoOAuthService {
 		// 카카오 ID로 조회, 없으면 새 계정 생성
 		return memberRepository.findByKakaoId(kakaoId)
 			.orElseGet(() -> memberRepository.save(Member.builder()
-					.email("example@kakao.com")
+					.email(null)
 					.name(nickname)
 					.kakaoId(kakaoId)
 					.build()));
