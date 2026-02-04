@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.batch.service;
 
+import com.nova.nova_server.domain.ai.service.AiBatchService;
 import com.nova.nova_server.domain.batch.converter.ArticleToPromptConverter;
 import com.nova.nova_server.domain.batch.entity.BatchRunMetadata;
 import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
@@ -66,7 +67,7 @@ public class CardNewsBatchService {
             }
 
             // 4. 결과 조회 및 저장
-            Map<String, String> results = aiBatchService.fetchResults(batchId);
+            Map<String, String> results = aiBatchService.getResults(batchId);
             int savedCount = cardNewsSaveService.saveCardNews(articles, results);
 
             log.info("CardNews batch completed: saved={}/{}", savedCount, articles.size());
@@ -87,8 +88,8 @@ public class CardNewsBatchService {
             throw new IllegalArgumentException("articles cannot be empty");
         }
 
-        List<String> promptStrings = articleToPromptConverter.toPromptStrings(articles);
-        String batchId = aiBatchService.createBatch(promptStrings);
+        Map<String, String> prompts = articleToPromptConverter.toPromptMap(articles);
+        String batchId = aiBatchService.createBatch(prompts);
         log.info("Batch created from {} articles: batchId={}", articles.size(), batchId);
         return batchId;
     }

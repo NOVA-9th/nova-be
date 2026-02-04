@@ -4,7 +4,6 @@ import com.nova.nova_server.domain.post.model.Article;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,19 +46,20 @@ public class ArticleToPromptConverter {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     /**
-     * Article 목록을 LLM 배치 입력용 문자열 목록으로 변환
-     * 각 문자열 = 프롬프트 + 기사 내용 (title, content, source 등)
+     * Article 목록을 LLM 배치 입력용 Map으로 변환
      *
      * @param articles 아티클 목록
-     * @return 프롬프트+아티클 조합 문자열 목록 (custom_id: article-0, article-1, ... 순서)
+     * @return custom_id(key) -> 프롬프트+아티클 조합 문자열(value)의 Map
      */
-    public List<String> toPromptStrings(List<Article> articles) {
-        List<String> result = new ArrayList<>();
-        for (Article article : articles) {
-            String articleText = formatArticle(article);
-            result.add(SUMMARY_PROMPT + articleText);
+    public java.util.Map<String, String> toPromptMap(List<Article> articles) {
+        java.util.Map<String, String> resultMap = new java.util.HashMap<>();
+        for (int i = 0; i < articles.size(); i++) {
+            Article article = articles.get(i);
+            String customId = "article-" + i;
+            String promptContent = SUMMARY_PROMPT + formatArticle(article);
+            resultMap.put(customId, promptContent);
         }
-        return result;
+        return resultMap;
     }
 
     private String formatArticle(Article article) {
