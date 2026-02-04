@@ -22,4 +22,7 @@ public interface MemberService {
 
     //프로필 이미지 삭제
     void deleteProfileImage(Long memberId);
+
+    // 사용자 삭제
+    void deleteMember(Long memberId);
 }
