@@ -36,9 +36,8 @@ public class Member extends BaseEntity {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Lob
-    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
-    private byte[] profileImage;
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private MemberProfileImage profileImage;
 
     @Column(name = "google_id", length = 255, nullable = true)
     private String googleId;
@@ -76,8 +75,21 @@ public class Member extends BaseEntity {
         this.name = name;
     }
 
-    public void updateProfileImage(byte[] profileImage) {
-        this.profileImage = profileImage;
+    public void updateProfileImage(byte[] newImage) {
+        if (newImage == null) {
+            this.profileImage = null;
+            return;
+        }
+
+        if (this.profileImage == null) {
+            this.profileImage = MemberProfileImage.builder()
+                    .member(this)
+                    .image(newImage)
+                    .build();
+            return;
+        }
+
+        this.profileImage.updateImage(newImage);
     }
 
     public void connectGoogle(String googleId) {
