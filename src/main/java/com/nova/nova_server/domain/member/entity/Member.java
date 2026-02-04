@@ -74,8 +74,8 @@ public class Member extends BaseEntity {
         this.name = name;
     }
 
-    public void updateProfileImage(byte[] profileImage) {
-        if (profileImage == null) {
+    public void updateProfileImage(byte[] newImage) {
+        if (newImage == null) {
             this.profileImage = null;
             return;
         }
@@ -83,11 +83,11 @@ public class Member extends BaseEntity {
         if (this.profileImage == null) {
             this.profileImage = MemberProfileImage.builder()
                     .member(this)
-                    .image(profileImage)
+                    .image(newImage)
                     .build();
             return;
         }
 
-        this.profileImage.updateImage(profileImage);
+        this.profileImage.updateImage(newImage);
     }
 }
