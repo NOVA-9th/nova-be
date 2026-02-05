@@ -17,6 +17,8 @@ public interface CardNewsBookmarkRepository extends JpaRepository<CardNewsBookma
 
     Optional<CardNewsBookmark> findByMemberIdAndCardNewsId(Long memberId, Long cardNewsId);
 
+    boolean existsByMemberIdAndCardNewsId(Long memberId, Long cardNewsId);
+
     void deleteByMemberIdAndCardNewsId(Long memberId, Long cardNewsId);
 
     @Query("select cnb.cardNews from CardNewsBookmark cnb where cnb.memberId = :memberId and cnb.cardNews.title like %:title%")

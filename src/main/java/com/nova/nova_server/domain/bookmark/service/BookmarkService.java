@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +32,7 @@ public class BookmarkService {
     @Transactional
     public void addBookmark(Long memberId, Long cardNewsId) {
         // 이미 북마크 되어있는지 확인
-        Optional<CardNewsBookmark> existingBookmark = bookmarkRepository.findByMemberIdAndCardNewsId(memberId,
-                cardNewsId);
-        if (existingBookmark.isPresent()) {
+        if (bookmarkRepository.existsByMemberIdAndCardNewsId(memberId, cardNewsId)) {
             return;
         }
 
