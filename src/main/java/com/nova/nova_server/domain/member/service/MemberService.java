@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.member.service;
 
+import com.nova.nova_server.domain.member.dto.MemberConnectedAccountsResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberRequestDto;
 import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberUpdateResponseDto;
@@ -25,4 +26,7 @@ public interface MemberService {
 
     // 사용자 삭제
     void deleteMember(Long memberId);
+
+    //연결된 계정 목록 조회
+    MemberConnectedAccountsResponseDto getConnectedAccounts(Long memberId);
 }

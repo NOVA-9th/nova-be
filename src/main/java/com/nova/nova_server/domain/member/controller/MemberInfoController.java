@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.member.controller;
 
+import com.nova.nova_server.domain.member.dto.MemberConnectedAccountsResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberRequestDto;
 import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberUpdateResponseDto;
@@ -82,5 +83,14 @@ public class MemberInfoController {
         memberService.deleteProfileImage(memberId);
         //ApiResponse.success(null) 반환
         return ApiResponse.success(null);
+    }
+
+    //연결된 계정 조회
+    @GetMapping("/{member_id}/connected-accounts")
+    public ApiResponse<MemberConnectedAccountsResponseDto> getConnectedAccounts(
+            @PathVariable("member_id") Long memberId) {
+
+        MemberConnectedAccountsResponseDto response = memberService.getConnectedAccounts(memberId);
+        return ApiResponse.success(response);
     }
 }
