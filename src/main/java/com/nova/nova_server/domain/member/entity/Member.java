@@ -4,9 +4,13 @@ import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsRelevance;
 import com.nova.nova_server.domain.common.BaseEntity;
+import com.nova.nova_server.domain.member.dto.MemberConnectedAccountsResponseDto;
+import com.nova.nova_server.global.apiPayload.ApiResponse;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
