@@ -39,9 +39,6 @@ public class Member extends BaseEntity {
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private MemberProfileImage profileImage;
-
     @Column(name = "google_id", length = 255, nullable = true)
     private String googleId;
 
@@ -72,23 +69,6 @@ public class Member extends BaseEntity {
         BEGINNER, // 초급자
         INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
-    }
-
-    public void updateProfileImage(byte[] newImage) {
-        if (newImage == null) {
-            this.profileImage = null;
-            return;
-        }
-
-        if (this.profileImage == null) {
-            this.profileImage = MemberProfileImage.builder()
-                    .member(this)
-                    .image(newImage)
-                    .build();
-            return;
-        }
-
-        this.profileImage.updateImage(newImage);
     }
 
     public void connectGoogle(String googleId) {
