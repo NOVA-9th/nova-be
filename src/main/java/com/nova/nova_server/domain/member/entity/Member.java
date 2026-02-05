@@ -36,7 +36,7 @@ public class Member extends BaseEntity {
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = true, unique = false, length = 255)
     private String email;
 
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
