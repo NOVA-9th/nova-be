@@ -38,4 +38,9 @@ public class CardNewsHiddenService {
         );
     }
 
+    @Transactional
+    public void deleteAllHiddenCardNews(Long memberId) {
+        cardNewsHiddenRepository.deleteAllByMemberId(memberId);
+    }
+
 }

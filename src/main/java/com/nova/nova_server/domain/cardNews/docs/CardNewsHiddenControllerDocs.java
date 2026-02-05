@@ -22,4 +22,12 @@ public interface CardNewsHiddenControllerDocs {
             @PathVariable Long cardNewsId
     );
 
+    @Operation(
+            summary = "카드뉴스 숨김 내역 초기화",
+            description = "현재 로그인된 유저가 숨김 처리했던 내역을 모두 삭제합니다."
+    )
+    ResponseEntity<ApiResponse<Void>> deleteAllHiddenCardNews(
+            @AuthenticationPrincipal Long memberId
+    );
+
 }

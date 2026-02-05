@@ -9,4 +9,6 @@ public interface CardNewsHiddenRepository extends JpaRepository<CardNewsHidden, 
 
     boolean existsByMemberIdAndCardNewsId(Long memberId, Long cardNewsId);
 
+    void deleteAllByMemberId(Long memberId);
+
 }

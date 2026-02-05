@@ -7,10 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -26,6 +23,14 @@ public class CardNewsHiddenController implements CardNewsHiddenControllerDocs {
             @PathVariable Long cardNewsId
     ) {
         cardNewsHiddenService.hideCardNews(memberId, cardNewsId);
+        return ResponseEntity.ok(ApiResponse.successWithNoData());
+    }
+
+    @DeleteMapping("/hidden")
+    public ResponseEntity<ApiResponse<Void>> deleteAllHiddenCardNews(
+            @AuthenticationPrincipal Long memberId
+    ) {
+        cardNewsHiddenService.deleteAllHiddenCardNews(memberId);
         return ResponseEntity.ok(ApiResponse.successWithNoData());
     }
 
