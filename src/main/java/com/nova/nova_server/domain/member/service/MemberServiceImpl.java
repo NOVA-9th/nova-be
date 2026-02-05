@@ -91,7 +91,7 @@ public class MemberServiceImpl implements MemberService {
         log.info("Original size: {} bytes", file.getSize());
 
         byte[] compressedImage = imageProcessor.compressImage(file);
-        member.setProfileImage(compressedImage);
+        member.updateProfileImage(compressedImage);
 
         return compressedImage;
     }
@@ -113,7 +113,7 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        member.setProfileImage(null);
+        member.updateProfileImage(null);
     }
 
     @Override
