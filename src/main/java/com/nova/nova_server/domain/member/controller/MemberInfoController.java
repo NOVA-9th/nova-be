@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.member.controller;
 
+import com.nova.nova_server.domain.member.dto.MemberPersonalizationDto;
 import com.nova.nova_server.domain.member.dto.MemberRequestDto;
 import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberUpdateResponseDto;
@@ -28,6 +29,15 @@ public class MemberInfoController {
 
         MemberResponseDto response = memberService.getMemberInfo(memberId);
         return ApiResponse.success(response);
+    }
+
+    @DeleteMapping("/{member_id}")
+    public ApiResponse<Void> deleteMember(
+        @PathVariable("member_id") Long memberId,
+        @AuthenticationPrincipal Long authenticatedMemberId
+    ) {
+        memberService.deleteMember(memberId);
+        return ApiResponse.success(null);
     }
 
     // 사용자 정보 수정(이름만 수정 가능)
@@ -73,7 +83,20 @@ public class MemberInfoController {
     @DeleteMapping("/{memberId}/profile-image")
     public ApiResponse<Object> deleteProfileImage(@PathVariable Long memberId) {
         memberService.deleteProfileImage(memberId);
-        //ApiResponse.success(null) 반환
+        return ApiResponse.success(null);
+    }
+
+    @GetMapping("/{memberId}/personalization")
+    public ApiResponse<MemberPersonalizationDto> getPersonalization(@PathVariable Long memberId) {
+        MemberPersonalizationDto personalization = memberService.getMemberPersonalization(memberId);
+        return ApiResponse.success(personalization);
+    }
+
+    @PutMapping("/{memberId}/personalization")
+    public ApiResponse<Void> updatePersonalization(
+            @PathVariable Long memberId,
+            @RequestBody MemberPersonalizationDto request) {
+        memberService.updateMemberPersonalization(memberId, request);
         return ApiResponse.success(null);
     }
 }

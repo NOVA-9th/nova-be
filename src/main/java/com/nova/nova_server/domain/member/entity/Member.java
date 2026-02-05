@@ -1,8 +1,10 @@
 package com.nova.nova_server.domain.member.entity;
 
+import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsRelevance;
 import com.nova.nova_server.domain.common.BaseEntity;
+import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,22 +23,24 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(length = 255, nullable = true)
     private String background;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private MemberLevel level;
 
+    @Setter
     @Column(nullable = false, length = 100)
     private String name;
 
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
-    @Lob
-    @Column(name = "profile_image", columnDefinition = "LONGBLOB")
-    private byte[] profileImage;
+    @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private MemberProfileImage profileImage;
 
     @Column(name = "google_id", length = 255, nullable = true)
     private String googleId;
@@ -70,12 +74,67 @@ public class Member extends BaseEntity {
         ADVANCED // 숙련자
     }
 
-    // Entity
-    public void updateName(String name) {
-        this.name = name;
+    public void updateProfileImage(byte[] newImage) {
+        if (newImage == null) {
+            this.profileImage = null;
+            return;
+        }
+
+        if (this.profileImage == null) {
+            this.profileImage = MemberProfileImage.builder()
+                    .member(this)
+                    .image(newImage)
+                    .build();
+            return;
+        }
+
+        this.profileImage.updateImage(newImage);
     }
 
-    public void updateProfileImage(byte[] profileImage) {
-        this.profileImage = profileImage;
+    public void connectGoogle(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public void disconnectGoogle() {
+        ensureDisconnectAvailable();
+        this.googleId = null;
+    }
+
+    public void connectKakao(String kakaoId) {
+        this.kakaoId = kakaoId;
+    }
+
+    public void disconnectKakao() {
+        ensureDisconnectAvailable();
+        this.kakaoId = null;
+    }
+
+    public void connectGithub(String githubId) {
+        this.githubId = githubId;
+    }
+
+    public void disconnectGithub() {
+        ensureDisconnectAvailable();
+        this.githubId = null;
+    }
+
+    private void ensureDisconnectAvailable() {
+        int connectedAccountCount = 0;
+
+        if (this.googleId != null) {
+            connectedAccountCount++;
+        }
+
+        if (this.kakaoId != null) {
+            connectedAccountCount++;
+        }
+
+        if (this.githubId != null) {
+            connectedAccountCount++;
+        }
+
+        if (connectedAccountCount <= 1) {
+            throw new NovaException(AuthErrorCode.NO_REMAINING_ACCOUNT);
+        }
     }
 }
