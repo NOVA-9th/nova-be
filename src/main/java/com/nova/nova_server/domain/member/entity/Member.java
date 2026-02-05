@@ -27,17 +27,20 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(length = 255, nullable = true)
     private String background;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private MemberLevel level;
 
+    @Setter
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = true, unique = false, length = 255)
     private String email;
 
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -73,10 +76,6 @@ public class Member extends BaseEntity {
         BEGINNER, // 초급자
         INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
-    }
-
-    public void updateName(String name) {
-        this.name = name;
     }
 
     public void updateProfileImage(byte[] newImage) {
