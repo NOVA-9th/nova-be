@@ -138,60 +138,61 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         // 수준
-        if (memberPersonalizationDto.level() != null) {
-            member.setLevel(memberPersonalizationDto.level());
-        }
+        member.setLevel(memberPersonalizationDto.level());
 
         // 배경
-        if (memberPersonalizationDto.background() != null) {
-            member.setBackground(memberPersonalizationDto.background());
-        }
+        member.setBackground(memberPersonalizationDto.background());
 
         // 관심분야
         List<Long> interestIds = memberPersonalizationDto.interests();
-        if (interestIds != null) {
-            memberPreferInterestRepository.deleteByMember(member);
-
-            if (!interestIds.isEmpty()) {
-                List<Interest> interests = interestRepository.findByIdIn(interestIds);
-                if (interests.size() != interestIds.size()) {
-                    throw new NovaException(KeywordErrorCode.INTEREST_NOT_FOUND_BAD_REQUEST);
-                }
-
-                List<MemberPreferInterest> preferInterests = interests.stream()
-                        .map(interest -> MemberPreferInterest.builder()
-                                .member(member)
-                                .interest(interest)
-                                .build())
-                        .toList();
-
-                if (!preferInterests.isEmpty()) {
-                    memberPreferInterestRepository.saveAll(preferInterests);
-                }
-            }
-        }
+        updateMemberInterests(member, interestIds);
 
         // 키워드
         List<String> keywordNames = memberPersonalizationDto.keywords();
-        if (keywordNames != null) {
-            memberPreferKeywordRepository.deleteByMember(member);
+        updateMemberKeywords(member, keywordNames);
+    }
 
-            if (!keywordNames.isEmpty()) {
-                List<Keyword> keywords = keywordRepository.findByNameIn(keywordNames);
-                if (keywords.size() != keywordNames.size()) {
-                    throw new NovaException(KeywordErrorCode.KEYWORD_NOT_FOUND_BAD_REQUEST);
-                }
+    private void updateMemberInterests(Member member, List<Long> interestIds) {
+        memberPreferInterestRepository.deleteByMember(member);
 
-                List<MemberPreferKeyword> preferKeywords = keywords.stream()
-                        .map(keyword -> MemberPreferKeyword.builder()
-                                .member(member)
-                                .keyword(keyword)
-                                .build())
-                        .toList();
-                if (!preferKeywords.isEmpty()) {
-                    memberPreferKeywordRepository.saveAll(preferKeywords);
-                }
-            }
+        if (interestIds == null || interestIds.isEmpty()) {
+            return;
         }
+
+        List<Interest> interests = interestRepository.findByIdIn(interestIds);
+        if (interests.size() != interestIds.size()) {
+            throw new NovaException(KeywordErrorCode.INTEREST_NOT_FOUND_BAD_REQUEST);
+        }
+
+        List<MemberPreferInterest> preferInterests = interests.stream()
+                .map(interest -> MemberPreferInterest.builder()
+                        .member(member)
+                        .interest(interest)
+                        .build())
+                .toList();
+
+        memberPreferInterestRepository.saveAll(preferInterests);
+    }
+
+    private void updateMemberKeywords(Member member, List<String> keywordNames) {
+        memberPreferKeywordRepository.deleteByMember(member);
+
+        if (keywordNames == null || keywordNames.isEmpty()) {
+            return;
+        }
+
+        List<Keyword> keywords = keywordRepository.findByNameIn(keywordNames);
+        if (keywords.size() != keywordNames.size()) {
+            throw new NovaException(KeywordErrorCode.KEYWORD_NOT_FOUND_BAD_REQUEST);
+        }
+
+        List<MemberPreferKeyword> preferKeywords = keywords.stream()
+                .map(keyword -> MemberPreferKeyword.builder()
+                        .member(member)
+                        .keyword(keyword)
+                        .build())
+                .toList();
+
+        memberPreferKeywordRepository.saveAll(preferKeywords);
     }
 }
