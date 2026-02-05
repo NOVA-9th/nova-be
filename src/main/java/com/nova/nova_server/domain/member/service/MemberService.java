@@ -27,4 +27,7 @@ public interface MemberService {
     MemberPersonalizationDto getMemberPersonalization(Long memberId);
 
     void updateMemberPersonalization(Long memberId, MemberPersonalizationDto memberPersonalizationDto);
+
+    // 사용자 삭제
+    void deleteMember(Long memberId);
 }
