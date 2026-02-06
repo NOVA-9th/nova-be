@@ -73,7 +73,7 @@ public class CardNewsSaveService {
                 .author(article.author())
                 .publishedAt(article.publishedAt())
                 .summary(result.summary())
-                .evidence(result.evidence())
+                .evidence(result.evidence() != null ? String.join("\n", result.evidence()) : null)
                 .originalUrl(article.url())
                 .sourceSiteName(article.source())
                 .build();

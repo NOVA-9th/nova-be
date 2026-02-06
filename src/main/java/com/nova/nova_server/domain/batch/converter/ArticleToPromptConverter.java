@@ -15,12 +15,15 @@ public class ArticleToPromptConverter {
 
     private static final String SUMMARY_PROMPT = """
             다음 기사 내용을 바탕으로 JSON 형태로 요약(summary), 근거(evidence), 키워드 5개(keywords)를 추출해주세요.
-            반드시 아래 형식으로만 응답하세요: {"summary":"...", "evidence":"...", "keywords":["...","...","...","...","..."]}
+            반드시 아래 형식으로만 응답하세요: {"summary":"...", "evidence":["근거1", "근거2", "근거3"], "keywords":["...","...","...","...","..."]}
 
             [중요 지침]
-            1. keywords는 반드시 아래 제공된 '허용된 키워드 목록'에서만 정확히 선택해야 합니다.
-            2. 기사의 내용과 가장 관련이 깊은 키워드 5개를 선택하세요.
-            3. 목록에 없는 키워드는 절대로 사용하지 마세요.
+            1. summary(요약)는 반드시 공백 포함 **200자 이내**의 단일 문장으로 작성하세요.
+            2. evidence(근거)는 기사의 핵심 내용을 뒷받침하는 구체적인 사실 3가지를 리스트 형태로 추출하세요.
+            3. 각 근거 문장은 **60자 이내**로 작성하여, 전체 합계가 DB 제한을 넘지 않도록 하세요.
+            4. keywords는 반드시 아래 제공된 '허용된 키워드 목록'에서만 정확히 선택해야 합니다.
+            5. 기사의 내용과 가장 관련이 깊은 키워드 5개를 선택하세요.
+            6. 응답은 반드시 순수 JSON 형식이어야 하며, ```json 형태의 마크다운이나 다른 설명 텍스트를 절대로 포함하지 마세요.
 
             [허용된 키워드 목록]
             - Mobile App: Android, iOS, Flutter, React Native, Kotlin, Swift, SwiftUI, Jetpack Compose, Firebase, Mobile CI/CD

@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +37,6 @@ public class CardNewsBatchService {
      * 메인 배치 프로세스를 실행합니다.
      */
     @Async
-    @Transactional
     public void executeBatch() {
         if (batchRunMetadataRepository.existsByJobNameAndStatus(JOB_NAME, "RUNNING")) {
             log.warn("CardNews batch is already running. Skipping this execution.");
@@ -105,7 +103,14 @@ public class CardNewsBatchService {
 
     private boolean waitForCompletion(String batchId) {
         for (int i = 0; i < MAX_POLLING_COUNT; i++) {
+            // 30초 간격이므로 2번에 한 번(1분) 로그 출력
+            if (i % 2 == 0) {
+                log.info("Waiting for OpenAI batch completion... (attempt {}/{}): batchId={}", i + 1, MAX_POLLING_COUNT,
+                        batchId);
+            }
+
             if (aiBatchService.isCompleted(batchId)) {
+                log.info("OpenAI batch completed successfully! batchId={}", batchId);
                 return true;
             }
             try {
