@@ -71,7 +71,7 @@ public class Member extends BaseEntity {
     public enum MemberLevel {
         NOVICE, // 입문자
         BEGINNER, // 초급자
-        INTERMEDIATE, //// 중급자
+        INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
     }
 
