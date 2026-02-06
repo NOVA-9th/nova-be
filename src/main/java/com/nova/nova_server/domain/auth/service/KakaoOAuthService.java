@@ -60,7 +60,12 @@ public class KakaoOAuthService {
 			// JWT 토큰 발급
 			String jwtToken = jwtUtil.generateToken(member.getId());
 
-			return new AuthResponse(jwtToken, member.getId(), member.getEmail(), member.getName());
+			return AuthResponse.builder()
+					.accessToken(jwtToken)
+					.memberId(member.getId())
+					.email(member.getEmail())
+					.name(member.getName())
+					.build();
 		} catch (NovaException e) {
 			throw e;
 		} catch (Exception e) {
@@ -176,7 +181,7 @@ public class KakaoOAuthService {
 		// 카카오 ID로 조회, 없으면 새 계정 생성
 		return memberRepository.findByKakaoId(kakaoId)
 			.orElseGet(() -> memberRepository.save(Member.builder()
-					.email("example@kakao.com")
+					.email(null)
 					.name(nickname)
 					.kakaoId(kakaoId)
 					.build()));

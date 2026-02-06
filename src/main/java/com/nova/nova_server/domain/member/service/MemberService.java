@@ -10,11 +10,10 @@ import com.nova.nova_server.domain.keyword.repository.KeywordRepository;
 import com.nova.nova_server.domain.member.entity.MemberPreferInterest;
 import com.nova.nova_server.domain.member.entity.MemberPreferKeyword;
 import com.nova.nova_server.domain.member.error.MemberErrorCode;
-import com.nova.nova_server.domain.member.repository.MemberProfileImageRepository;
 import com.nova.nova_server.domain.member.repository.MemberPreferInterestRepository;
 import com.nova.nova_server.domain.member.repository.MemberPreferKeywordRepository;
 import com.nova.nova_server.domain.member.repository.MemberRepository;
-import com.nova.nova_server.domain.member.util.ImageProcessor;
+import com.nova.nova_server.domain.member.repository.MemberProfileImageRepository;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 
 import lombok.RequiredArgsConstructor;
@@ -181,5 +180,19 @@ public class MemberService {
                 .kakaoConnected(member.getKakaoId() != null)
                 .githubConnected(member.getGithubId() != null)
                 .build();
+    }
+
+    public MemberResponseDto createTestMember() {
+        Member mockUser = Member.builder()
+                .id(2L)
+                .name("테스트 유저")
+                .email("test@example.com")
+                .level(Member.MemberLevel.NOVICE)
+                .background("테스트 배경")
+                .googleId("test-google-id")
+                .build();
+
+        memberRepository.save(mockUser);
+        return getMemberInfo(2L);
     }
 }

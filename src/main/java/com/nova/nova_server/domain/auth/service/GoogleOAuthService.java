@@ -62,7 +62,12 @@ public class GoogleOAuthService {
 			// JWT 토큰 발급
 			String jwtToken = jwtUtil.generateToken(member.getId());
 
-			return new AuthResponse(jwtToken, member.getId(), member.getEmail(), member.getName());
+			return AuthResponse.builder()
+					.accessToken(jwtToken)
+					.memberId(member.getId())
+					.email(member.getEmail())
+					.name(member.getName())
+					.build();
 		} catch (NovaException e) {
 			throw e;
 		} catch (Exception e) {
