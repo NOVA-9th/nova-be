@@ -9,7 +9,7 @@ import lombok.*;
 @Table(
         name = "card_news_hidden",
         uniqueConstraints = @UniqueConstraint(
-                name = "UK_hidden_member_card_news",
+                name = CardNewsHidden.UNIQUE_CONSTRAINT_NAME,
                 columnNames = {"member_id", "card_news_id"}
         )
 )
@@ -19,6 +19,10 @@ import lombok.*;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CardNewsHidden extends BaseEntity {
 
+    public static final String UNIQUE_CONSTRAINT_NAME = "UK_hidden_member_card_news";
+    public static final String FK_NAME_MEMBER = "FK_member_TO_cnh";
+    public static final String FK_NAME_CARD_NEWS = "FK_card_news_TO_cnh";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,14 +30,14 @@ public class CardNewsHidden extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "member_id", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_member_TO_cnh")
+            foreignKey = @ForeignKey(name = FK_NAME_MEMBER)
     )
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "card_news_id", nullable = false,
-            foreignKey = @ForeignKey(name = "FK_card_news_TO_cnh")
+            foreignKey = @ForeignKey(name = FK_NAME_CARD_NEWS)
     )
     private CardNews cardNews;
 
