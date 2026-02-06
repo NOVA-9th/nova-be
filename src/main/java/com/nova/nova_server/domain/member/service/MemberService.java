@@ -1,5 +1,8 @@
 package com.nova.nova_server.domain.member.service;
 
+
+import com.nova.nova_server.domain.member.dto.MemberConnectedAccountsResponseDto;
+import com.nova.nova_server.domain.member.dto.MemberPersonalizationDto;
 import com.nova.nova_server.domain.member.dto.MemberRequestDto;
 import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.dto.MemberUpdateResponseDto;
@@ -23,6 +26,13 @@ public interface MemberService {
     //프로필 이미지 삭제
     void deleteProfileImage(Long memberId);
 
+    MemberPersonalizationDto getMemberPersonalization(Long memberId);
+
+    void updateMemberPersonalization(Long memberId, MemberPersonalizationDto memberPersonalizationDto);
+
     // 사용자 삭제
     void deleteMember(Long memberId);
+
+    //연결된 계정 목록 조회
+    MemberConnectedAccountsResponseDto getConnectedAccounts(Long memberId);
 }

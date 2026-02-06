@@ -4,9 +4,13 @@ import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsRelevance;
 import com.nova.nova_server.domain.common.BaseEntity;
+import com.nova.nova_server.domain.member.dto.MemberConnectedAccountsResponseDto;
+import com.nova.nova_server.global.apiPayload.ApiResponse;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,17 +27,20 @@ public class Member extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
     @Column(length = 255, nullable = true)
     private String background;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = true)
     private MemberLevel level;
 
+    @Setter
     @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(nullable = true, unique = false, length = 255)
     private String email;
 
     @OneToOne(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -69,10 +76,6 @@ public class Member extends BaseEntity {
         BEGINNER, // 초급자
         INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
-    }
-
-    public void updateName(String name) {
-        this.name = name;
     }
 
     public void updateProfileImage(byte[] newImage) {
