@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class DeepSearchClient {
 
-    //private final WebClient webClient;
+    // private final WebClient webClient;
     private final WebClient.Builder webClientBuilder;
 
     @Value("${external.deepsearch.base-url}")
@@ -18,23 +18,14 @@ public class DeepSearchClient {
     @Value("${external.deepsearch.key}")
     private String apiKey;
 
-    // public String fetchRawJson() {
-    //     return webClient.get()
-    //             .uri(baseUrl + "/articles?keyword=(AI OR 인공지능 OR 블록체인 OR 개발자)&api_key={apiKey}", apiKey)
-    //             .header("Accept", "application/json")
-    //             .retrieve()
-    //             .bodyToMono(String.class)
-    //             .block();
-    // }
-
     public String fetchRawJson() {
         return webClientBuilder.build()
-            .get()
-            .uri(baseUrl + "/articles?keyword=(개발자)&api_key={apiKey}", apiKey)
-            .header("Accept", "application/json")
-            .retrieve()
-            .bodyToMono(String.class)
-            .block();
+                .get()
+                .uri(baseUrl + "/articles?keyword=(개발자)&api_key={apiKey}", apiKey)
+                .header("Accept", "application/json")
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 
 }
