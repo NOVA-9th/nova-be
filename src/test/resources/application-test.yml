@@ -27,6 +27,11 @@ oauth:
     client-secret: test-secret
     redirect-uri: http://localhost:8080/auth/kakao/callback
 
+  github:
+    client-id: test-id
+    client-secret: test-secret
+    redirect-uri: http://localhost:8080/auth/github/callback
+
 jwt:
   secret: test-jwt-secret-key-for-testing-minimum-256-bits-required
   expiration: 86400000 # 24 hours in milliseconds
