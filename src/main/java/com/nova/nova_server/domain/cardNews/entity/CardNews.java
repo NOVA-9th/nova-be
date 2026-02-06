@@ -21,6 +21,7 @@ public class CardNews extends BaseEntity {
     private Long id;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private CardType cardType;
 
     @Column(nullable = false, length = 255)
