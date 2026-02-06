@@ -31,6 +31,7 @@ public class BookmarkService {
     private final CardNewsBookmarkRepository bookmarkRepository;
     private final CardNewsRepository cardNewsRepository;
     private final FeedConverter feedConverter;
+    private final CardNewsBookmarkRepository cardNewsBookmarkRepository;
 
     @Transactional
     public void addBookmark(Long memberId, Long cardNewsId) {
@@ -95,5 +96,11 @@ public class BookmarkService {
                 .totalCount(cardNewsList.getTotalElements())
                 .cardnews(feedList)
                 .build();
+    }
+
+    // 모든 북마크 삭제
+    @Transactional
+    public void deleteAllBookmarks(Long memberId) {
+        cardNewsBookmarkRepository.deleteAllByMemberId(memberId);
     }
 }

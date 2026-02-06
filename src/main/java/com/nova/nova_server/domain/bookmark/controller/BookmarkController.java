@@ -77,7 +77,14 @@ public class BookmarkController {
     public ApiResponse<FeedListResponse> getBookmarkedCardNews(
             @AuthenticationPrincipal Long memberId,
             @RequestParam(required = false) String searchKeyword,
-            @PageableDefault(size = 10) Pageable pageable) {
+            @PageableDefault() Pageable pageable) {
         return ApiResponse.success(bookmarkService.searchBookmarkedCardNews(memberId, searchKeyword, pageable));
+    }
+
+    @Operation(summary = "모든 북마크 삭제", description = "사용자가 저장한 모든 카드뉴스를 삭제합니다.")
+    @DeleteMapping("/delete/all")
+    public ApiResponse<Void> deleteAllBookmarks(@AuthenticationPrincipal Long memberId) {
+        bookmarkService.deleteAllBookmarks(memberId);
+        return ApiResponse.success(null);
     }
 }
