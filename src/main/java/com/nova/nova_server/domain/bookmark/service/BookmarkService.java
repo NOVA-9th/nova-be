@@ -3,6 +3,14 @@ package com.nova.nova_server.domain.bookmark.service;
 import com.nova.nova_server.domain.bookmark.dto.BookmarkInterestCountResponse;
 import com.nova.nova_server.domain.bookmark.dto.BookmarkSourceTypeCountResponse;
 import com.nova.nova_server.domain.bookmark.repository.BookmarkAnalyticsRepository;
+import com.nova.nova_server.domain.cardNews.entity.CardNews;
+import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsBookmarkRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
+import com.nova.nova_server.domain.feed.converter.FeedConverter;
+import com.nova.nova_server.domain.feed.dto.FeedResponse;
+import com.nova.nova_server.global.apiPayload.code.error.CommonErrorCode;
+import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,19 +24,56 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class BookmarkService {
 
-    private final BookmarkAnalyticsRepository bookmarkRepository;
-    
-    //북마크 interest 통계
+    private final BookmarkAnalyticsRepository bookmarkAnalyticsRepository;
+    private final CardNewsBookmarkRepository bookmarkRepository;
+    private final CardNewsRepository cardNewsRepository;
+    private final FeedConverter feedConverter;
+
+    @Transactional
+    public void addBookmark(Long memberId, Long cardNewsId) {
+        // 이미 북마크 되어있는지 확인
+        if (bookmarkRepository.existsByMemberIdAndCardNewsId(memberId, cardNewsId)) {
+            return;
+        }
+
+        // 카드뉴스 존재 여부 확인
+        if (!cardNewsRepository.existsById(cardNewsId)) {
+            throw new NovaException(CommonErrorCode.RESOURCE_NOT_FOUND);
+        }
+
+        bookmarkRepository.save(CardNewsBookmark.of(memberId, cardNewsId));
+    }
+
+    @Transactional
+    public void deleteBookmark(Long memberId, Long cardNewsId) {
+        // 카드뉴스 존재 여부 확인
+        if (!cardNewsRepository.existsById(cardNewsId)) {
+            throw new NovaException(CommonErrorCode.RESOURCE_NOT_FOUND);
+        }
+
+        bookmarkRepository.deleteByMemberIdAndCardNewsId(memberId, cardNewsId);
+    }
+
+    public List<FeedResponse> searchBookmarkedCardNews(Long memberId, String title) {
+        List<CardNews> cardNewsList = bookmarkRepository.findBookmarkedCardNewsByTitle(memberId,
+                title == null ? "" : title);
+        return cardNewsList.stream()
+                .map(cn -> feedConverter.toResponse(cn, true))
+                .toList();
+    }
+
+    // 북마크 interest 통계
     public Map<String, List<BookmarkInterestCountResponse>> getBookmarkCountsByInterest(Long memberId) {
-        List<BookmarkInterestCountResponse> counts = bookmarkRepository.findBookmarkCountsByInterest(memberId);
+        List<BookmarkInterestCountResponse> counts = bookmarkAnalyticsRepository.findBookmarkCountsByInterest(memberId);
         Map<String, List<BookmarkInterestCountResponse>> result = new HashMap<>();
         result.put("bookmarkCounts", counts);
         return result;
     }
+
     // 북마크 소스타입 통계
     public Map<String, List<BookmarkSourceTypeCountResponse>> getBookmarkCountsBySourceType(
             Long memberId) {
-        List<BookmarkSourceTypeCountResponse> counts = bookmarkRepository
+        List<BookmarkSourceTypeCountResponse> counts = bookmarkAnalyticsRepository
                 .findBookmarkCountsBySourceType(memberId);
         Map<String, List<BookmarkSourceTypeCountResponse>> result = new HashMap<>();
         result.put("bookmarkCounts", counts);

@@ -3,10 +3,7 @@ package com.nova.nova_server.domain.member.service;
 import com.nova.nova_server.domain.interest.entity.Interest;
 import com.nova.nova_server.domain.interest.repository.InterestRepository;
 import com.nova.nova_server.domain.keyword.error.KeywordErrorCode;
-import com.nova.nova_server.domain.member.dto.MemberPersonalizationDto;
-import com.nova.nova_server.domain.member.dto.MemberRequestDto;
-import com.nova.nova_server.domain.member.dto.MemberResponseDto;
-import com.nova.nova_server.domain.member.dto.MemberUpdateResponseDto;
+import com.nova.nova_server.domain.member.dto.*;
 import com.nova.nova_server.domain.member.entity.Member;
 import com.nova.nova_server.domain.keyword.entity.Keyword;
 import com.nova.nova_server.domain.keyword.repository.KeywordRepository;
@@ -170,5 +167,19 @@ public class MemberService {
         }
 
         memberRepository.delete(member);
+    }
+
+    @Transactional(readOnly = true)
+    public MemberConnectedAccountsResponseDto getConnectedAccounts(Long memberId) {
+        // 1. 회원 조회 (없으면 MEMBER_NOT_FOUND 예외 발생)
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        // 2. 각 소셜 ID가 null이 아니면 연결된 것으로 판단하여 반환
+        return MemberConnectedAccountsResponseDto.builder()
+                .googleConnected(member.getGoogleId() != null)
+                .kakaoConnected(member.getKakaoId() != null)
+                .githubConnected(member.getGithubId() != null)
+                .build();
     }
 }
