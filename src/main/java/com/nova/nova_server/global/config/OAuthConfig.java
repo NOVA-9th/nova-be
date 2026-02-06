@@ -25,4 +25,13 @@ public class OAuthConfig {
 
 	@Value("${oauth.kakao.redirect-uri}")
 	private String kakaoRedirectUri;
+
+	@Value("${oauth.github.client-id}")
+	private String githubClientId;
+
+	@Value("${oauth.github.client-secret}")
+	private String githubClientSecret;
+
+	@Value("${oauth.github.redirect-uri}")
+	private String githubRedirectUri;
 }
