@@ -43,13 +43,13 @@ public class Member extends BaseEntity {
     @Column(nullable = true, unique = false, length = 255)
     private String email;
 
-    @Column(name = "google_id", length = 255, nullable = true)
+    @Column(name = "google_id", length = 255, nullable = true, unique = true)
     private String googleId;
 
-    @Column(name = "kakao_id", length = 255, nullable = true)
+    @Column(name = "kakao_id", length = 255, nullable = true, unique = true)
     private String kakaoId;
 
-    @Column(name = "github_id", length = 255, nullable = true)
+    @Column(name = "github_id", length = 255, nullable = true, unique = true)
     private String githubId;
 
     @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
