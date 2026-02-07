@@ -28,8 +28,8 @@ public record FeedResponse(
         @Schema(description = "요약 내용", example = "Nova는 개발자를 위한 AI 트렌드 인사이트 플랫폼으로, 최신 AI 기술과 트렌드를 한눈에 파악할 수 있는 서비스를 제공합니다.")
         String summary,
 
-        @Schema(description = "근거", example = "주기적으로 최신 글을 확인하고 카드뉴스를 생성합니다.")
-        String evidence,
+        @Schema(description = "근거 목록", example = "[\"주기적으로 최신 글을 확인하고 카드뉴스를 생성합니다.\"]")
+        List<String> evidence,
 
         @Schema(description = "원본 URL", example = "https://github.com/NOVA-9th/nova-be")
         String originalUrl,
