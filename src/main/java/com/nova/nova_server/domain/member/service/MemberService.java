@@ -182,9 +182,9 @@ public class MemberService {
                 .build();
     }
 
+    @Transactional
     public MemberResponseDto createTestMember() {
         Member mockUser = Member.builder()
-                .id(2L)
                 .name("테스트 유저")
                 .email("test@example.com")
                 .level(Member.MemberLevel.NOVICE)
@@ -192,7 +192,7 @@ public class MemberService {
                 .googleId("test-google-id")
                 .build();
 
-        memberRepository.save(mockUser);
-        return getMemberInfo(2L);
+        Member savedUser = memberRepository.save(mockUser);
+        return getMemberInfo(savedUser.getId());
     }
 }
