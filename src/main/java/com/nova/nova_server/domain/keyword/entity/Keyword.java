@@ -37,4 +37,20 @@ public class Keyword extends BaseEntity {
 
     @OneToMany(mappedBy = "keyword", fetch = FetchType.LAZY)
     private List<CardNewsKeyword> cardNewsKeywords = new ArrayList<>();
+
+    public static Keyword of(Interest interest, String name) {
+        Keyword keyword = new Keyword();
+        keyword.interest = interest;
+        keyword.name = name;
+        return keyword;
+    }
+
+    public void update(String name, Interest interest) {
+        if (name != null) {
+            this.name = name;
+        }
+        if (interest != null) {
+            this.interest = interest;
+        }
+    }
 }

@@ -25,12 +25,12 @@ public class SecurityConfig {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	private static final String[] PERMIT_ALL_PATTERNS = {
-			"/auth/**",
-			"/actuator/**",
-			"/swagger-ui/**",
-			"/v3/api-docs/**",
-			"/api/batch/**",
-			"/debug/**"
+		"/auth/**",
+		"/keywords/**",
+		"/actuator/**",
+		"/swagger-ui/**",
+		"/v3/api-docs/**",
+		"/debug/**"
 	};
 
 	@Bean
