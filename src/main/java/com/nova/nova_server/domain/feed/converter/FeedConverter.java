@@ -69,14 +69,14 @@ public class FeedConverter {
     }
 
     private Pageable toPageable(Integer page, Integer size) {
-        if (page == null || page < 0) {
-            page = 0;
+        if (page == null || page < 1) {
+            page = 1;
         }
-        if (size == null || size <= 0) {
+        if (size == null || size < 1) {
             size = feedConfig.getMaxPageSize();
         }
 
-        return PageRequest.of(page, size);
+        return PageRequest.of(page - 1, size);
     }
 
 }
