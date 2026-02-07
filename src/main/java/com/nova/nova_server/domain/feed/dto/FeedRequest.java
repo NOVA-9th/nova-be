@@ -18,10 +18,10 @@ public record FeedRequest(
         @Schema(description = "업로드 기간 (종료), UTC 기준, ISO 8601 형식, 경계값 미포함", example = "2026-01-31T15:00:00Z")
         OffsetDateTime endDate,
 
-        @Schema(description = "카드 유형, NEWS, JOB, COMMUNITY 중 0개 이상 선택", example = "[\"NEWS\", \"COMMUNITY\"]")
+        @Schema(description = "카드 유형, NEWS, JOB, COMMUNITY 중 0개 이상 선택", example = "NEWS")
         List<CardType> type,
 
-        @Schema(description = "키워드 필터", example = "[\"Spring Boot\", \"React\"]")
+        @Schema(description = "키워드 필터", example = "Spring Boot")
         List<String> keywords,
 
         @Schema(description = "페이지 번호", example = "1", defaultValue = "1")
