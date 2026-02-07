@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -41,7 +42,7 @@ public class FeedConverter {
                 .author(cardNews.getAuthor())
                 .publishedAt(cardNews.getPublishedAt().atOffset(ZoneOffset.UTC))
                 .summary(cardNews.getSummary())
-                .evidence(cardNews.getEvidence())
+                .evidence(splitEvidence(cardNews.getEvidence()))
                 .originalUrl(cardNews.getOriginalUrl())
                 .siteName(cardNews.getSourceSiteName())
                 .keywords(cardNews.getKeywords().stream()
@@ -49,6 +50,14 @@ public class FeedConverter {
                         .toList())
                 .saved(saved)
                 .build();
+    }
+
+    private List<String> splitEvidence(String evidence) {
+        if (evidence == null || evidence.isEmpty()) {
+            return List.of();
+        }
+
+        return List.of(evidence.split("\\n"));
     }
 
     private LocalDateTime toUtcLocalDateTime(OffsetDateTime offsetDateTime) {

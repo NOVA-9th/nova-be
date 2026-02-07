@@ -1,5 +1,8 @@
 package com.nova.nova_server.domain.post.controller;
 
+import com.nova.nova_server.domain.batch.entity.BatchRunMetadata;
+import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
@@ -8,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 
-
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -20,6 +23,19 @@ import java.util.stream.Collectors;
 public class NewsDebugController {
 
     private final List<ArticleApiService> articleApiServices;
+    private final CardNewsRepository cardNewsRepository;
+    private final BatchRunMetadataRepository batchRunMetadataRepository;
+
+    @GetMapping("/db-count")
+    public long getDbCount() {
+        return cardNewsRepository.count();
+    }
+
+    @GetMapping("/latest-metadata")
+    public Optional<BatchRunMetadata> getLatestMetadata() {
+        return batchRunMetadataRepository.findTopByJobNameAndStatusNotOrderByExecutedAtDesc("card-news-batch",
+                "RUNNING");
+    }
 
     @GetMapping("/newsapi")
     public List<Article> fetchFromNewsApi() {
@@ -58,16 +74,24 @@ public class NewsDebugController {
 
     // COMMUNITY
     @GetMapping("/devto")
-    public List<Article> fetchFromDevTo() { return getServiceByName("DevTo").fetchArticles(); }
+    public List<Article> fetchFromDevTo() {
+        return getServiceByName("DevTo").fetchArticles();
+    }
 
     @GetMapping("/github")
-    public List<Article> fetchFromGitHub() { return getServiceByName("GitHub").fetchArticles(); }
+    public List<Article> fetchFromGitHub() {
+        return getServiceByName("GitHub").fetchArticles();
+    }
 
     @GetMapping("/stackexchange")
-    public List<Article> fetchFromStackExchange() { return getServiceByName("StackExchange").fetchArticles(); }
+    public List<Article> fetchFromStackExchange() {
+        return getServiceByName("StackExchange").fetchArticles();
+    }
 
     @GetMapping("/techblog")
-    public List<Article> fetchFromTechBlog() { return getServiceByName("TechBlog").fetchArticles(); }
+    public List<Article> fetchFromTechBlog() {
+        return getServiceByName("TechBlog").fetchArticles();
+    }
 
     // 모든 Provider 호출 (통합 조회)
     @GetMapping("/all")
@@ -79,7 +103,7 @@ public class NewsDebugController {
                             try {
                                 return service.fetchArticles();
                             } catch (Exception e) {
-                                //로그 추가
+                                // 로그 추가
                                 log.warn("Failed to fetch articles from {}", service.getProviderName(), e);
                                 return List.of();
                             }
@@ -87,7 +111,7 @@ public class NewsDebugController {
                 ));
     }
 
-    //사용 가능한 API 목록 조회
+    // 사용 가능한 API 목록 조회
     @GetMapping("/providers")
     public List<String> getAvailableProviders() {
         return articleApiServices.stream()

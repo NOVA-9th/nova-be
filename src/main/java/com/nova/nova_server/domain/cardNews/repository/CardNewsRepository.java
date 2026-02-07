@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CardNewsRepository extends JpaRepository<CardNews, Long>, CardNewsRepositoryCustom {
+    boolean existsByOriginalUrl(String originalUrl);
 }

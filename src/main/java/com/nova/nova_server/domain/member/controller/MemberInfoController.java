@@ -21,6 +21,7 @@ public class MemberInfoController {
     @GetMapping("/{member_id}")
     public ApiResponse<MemberResponseDto> getMemberInfo(
             @PathVariable("member_id") Long memberId) {
+
         MemberResponseDto response = memberService.getMemberInfo(memberId);
         return ApiResponse.success(response);
     }
@@ -40,6 +41,7 @@ public class MemberInfoController {
             @PathVariable("member_id") Long memberId,
             @AuthenticationPrincipal Long authenticatedMemberId,
             @RequestBody MemberRequestDto requestDto) {
+
         MemberUpdateResponseDto response = memberService.updateMemberName(memberId, authenticatedMemberId, requestDto);
         return ApiResponse.success(response);
     }

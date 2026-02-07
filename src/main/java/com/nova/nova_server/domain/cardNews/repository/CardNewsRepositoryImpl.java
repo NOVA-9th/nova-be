@@ -136,4 +136,51 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
         );
     }
 
+    @Override
+    public Page<CardNews> searchBookmarked(Long memberId, String searchKeyword,
+                                           org.springframework.data.domain.Pageable pageable) {
+        // 필터링 및 정렬 수행
+        List<Long> idList = queryFactory
+                .select(cardNews.id)
+                .from(cardNews)
+                .where(
+                        isSaved(memberId, true),
+                        containsKeyword(searchKeyword))
+                .orderBy(cardNews.publishedAt.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // 전체 개수 조회
+        JPAQuery<Long> countQuery = queryFactory
+                .select(cardNews.count())
+                .from(cardNews)
+                .where(
+                        isSaved(memberId, true),
+                        containsKeyword(searchKeyword));
+
+        if (idList.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // 카드 뉴스 내용 조회
+        List<CardNews> cardNewsList = queryFactory
+                .select(cardNews).distinct()
+                .from(cardNews)
+                .leftJoin(cardNews.keywords, cardNewsKeyword).fetchJoin()
+                .leftJoin(cardNewsKeyword.keyword, keyword).fetchJoin()
+                .where(cardIdIn(idList))
+                .fetch();
+
+        return PageableExecutionUtils.getPage(cardNewsList, pageable, countQuery::fetchOne);
+    }
+
+    private BooleanExpression containsKeyword(String keyword) {
+        if (keyword == null || keyword.isBlank()) {
+            return null;
+        }
+        return cardNews.title.contains(keyword)
+                .or(cardNews.summary.contains(keyword));
+    }
+
 }
