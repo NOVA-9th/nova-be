@@ -3,6 +3,7 @@ package com.nova.nova_server.domain.cardNews.entity;
 import com.nova.nova_server.domain.common.BaseEntity;
 import com.nova.nova_server.domain.keyword.entity.Keyword;
 import jakarta.persistence.*;
+import lombok.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,8 @@ import lombok.NoArgsConstructor;
     uniqueConstraints = @UniqueConstraint(name = "UK_cnk_card_news_keyword", columnNames = {"card_news_id", "keyword_id"})
 )
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CardNewsKeyword extends BaseEntity {
 

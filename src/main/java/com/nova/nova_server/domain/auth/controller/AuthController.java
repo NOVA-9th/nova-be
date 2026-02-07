@@ -3,8 +3,10 @@ package com.nova.nova_server.domain.auth.controller;
 import com.nova.nova_server.domain.auth.dto.AuthResponse;
 import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.domain.auth.util.JwtUtil;
+import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.entity.Member;
 import com.nova.nova_server.domain.member.repository.MemberRepository;
+import com.nova.nova_server.domain.member.service.MemberService;
 import com.nova.nova_server.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,15 +26,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-	private final MemberRepository memberRepository;
 	private final JwtUtil jwtUtil;
+	private final MemberService memberService;
 
 	@Operation(
 		summary = "현재 로그인 사용자 조회",
 		description = "인증된 사용자 컨텍스트에서 사용자 정보를 조회합니다."
 	)
 	@GetMapping("/me")
-	public ApiResponse<Member> getCurrentUser(
+	public ApiResponse<MemberResponseDto> getCurrentUser(
 		@Parameter(description = "인증된 사용자 ID", required = true)
 		@AuthenticationPrincipal Long memberId
 	) {
@@ -42,12 +44,7 @@ public class AuthController {
 			);
 		}
 
-		Member member = memberRepository.findById(memberId)
-			.orElseThrow(() -> new com.nova.nova_server.global.apiPayload.exception.NovaException(
-				AuthErrorCode.OAUTH_AUTHORIZATION_FAILED
-			));
-
-		return ApiResponse.success(member);
+		return ApiResponse.success(memberService.getMemberInfo(memberId));
 	}
 
 	@Operation(
@@ -71,18 +68,9 @@ public class AuthController {
 	)
 	@PostMapping("/create-test-user")
 	@Transactional
-	public ApiResponse<Member> createMockUser() {
-		Member mockUser = Member.builder()
-		    .id(2L)
-			.name("테스트 유저")
-			.email("test@example.com")
-			.level(Member.MemberLevel.NOVICE)
-			.background("테스트 배경")
-			.googleId("test-google-id")
-			.build();
-
-		Member savedUser = memberRepository.save(mockUser);
-		return ApiResponse.success(savedUser);
+	public ApiResponse<MemberResponseDto> createMockUser() {
+		MemberResponseDto member = memberService.createTestMember();
+		return ApiResponse.success(member);
 	}
 
 	@Operation(
@@ -95,21 +83,17 @@ public class AuthController {
 		@RequestBody Long userId
 	) {	
 		// 유저 존재 여부 확인
-		if (userId != null && !memberRepository.existsById(userId)) {
-			throw new com.nova.nova_server.global.apiPayload.exception.NovaException(
-				AuthErrorCode.OAUTH_AUTHORIZATION_FAILED
-			);
-		}
+		MemberResponseDto member = memberService.getMemberInfo(userId);
 
 		// 7일짜리 JWT 토큰 발급
 		long sevenDaysInMillis = 7L * 24 * 60 * 60 * 1000;
-		String token = jwtUtil.generateToken(userId, sevenDaysInMillis);
+		String token = jwtUtil.generateToken(member.getId(), sevenDaysInMillis);
 		
 		return ApiResponse.success(AuthResponse.builder()
 			.accessToken(token)
 			.memberId(userId)
-			.email("test@example.com")
-			.name("테스트 유저")
+			.email(member.getEmail())
+			.name(member.getName())
 			.build());
 	}
 }

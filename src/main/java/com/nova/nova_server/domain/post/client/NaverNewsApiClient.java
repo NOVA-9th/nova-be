@@ -13,7 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NaverNewsApiClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.navernewsapi.base-url}")
     private String baseUrl;
@@ -38,8 +38,7 @@ public class NaverNewsApiClient {
 
         for (String keyword : keywords) {
             try {
-                JsonNode result = webClientBuilder.build()
-                        .get()
+                JsonNode result = webClient.get()
                         .uri(baseUrl + "/news.json?query={query}&display=10&sort=date", keyword)
                         .header("X-Naver-Client-Id", clientId)
                         .header("X-Naver-Client-Secret", clientSecret)

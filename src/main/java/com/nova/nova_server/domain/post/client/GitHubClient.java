@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GitHubClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.github.base-url}")
     private String baseUrl;
@@ -24,23 +25,30 @@ public class GitHubClient {
     @Value("${external.github.user-agent}")
     private String userAgent;
 
+    @Value("${external.github.token:}") // 토큰이 없으면 빈 문자열
+    private String token;
+
     // github 공통 검색 메소드
     public List<JsonNode> fetchRepositories(String query, int limit) {
         try {
-            WebClient client = webClientBuilder
-                    .baseUrl(baseUrl)
-                    .defaultHeader("User-Agent", userAgent)
-                    .build();
+            String uri = UriComponentsBuilder.fromUriString(baseUrl)
+                    .path("/search/repositories")
+                    .queryParam("q", query)
+                    .queryParam("sort", "stars")
+                    .queryParam("order", "desc")
+                    .queryParam("per_page", limit)
+                    .build()
+                    .toUriString();
 
-            JsonNode response = client
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/search/repositories")
-                            .queryParam("q", query)
-                            .queryParam("sort", "stars")
-                            .queryParam("order", "desc")
-                            .queryParam("per_page", limit)
-                            .build())
+            var request = webClient.get()
+                    .uri(uri)
+                    .header("User-Agent", userAgent);
+
+            if (token != null && !token.isBlank()) {
+                request.header("Authorization", "Bearer " + token);
+            }
+
+            JsonNode response = request
                     .retrieve()
                     .bodyToMono(JsonNode.class)
                     .block();
@@ -88,17 +96,21 @@ public class GitHubClient {
     // 레포지토리 README 가져오기
     public String fetchReadme(String owner, String repo) {
         try {
-            WebClient client = WebClient.builder()
-                    .baseUrl(baseUrl)
-                    .defaultHeader("User-Agent", userAgent)
-                    .build();
+            String uri = UriComponentsBuilder.fromUriString(baseUrl)
+                    .path("/repos/{owner}/{repo}/readme")
+                    .buildAndExpand(owner, repo)
+                    .toUriString();
 
-            return client.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/repos/{owner}/{repo}/readme")
-                            .build(owner, repo))
-                    .header("Accept", "application/vnd.github.raw") // 마크다운으로 가져옴
-                    .retrieve()
+            var request = webClient.get()
+                    .uri(uri)
+                    .header("User-Agent", userAgent)
+                    .header("Accept", "application/vnd.github.raw"); // 마크다운으로 가져옴
+
+            if (token != null && !token.isBlank()) {
+                request.header("Authorization", "Bearer " + token);
+            }
+
+            return request.retrieve()
                     .bodyToMono(String.class)
                     .block();
         } catch (Exception e) {
@@ -107,4 +119,3 @@ public class GitHubClient {
         return "";
     }
 }
-
