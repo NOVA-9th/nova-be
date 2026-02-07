@@ -1,0 +1,19 @@
+package com.nova.nova_server.domain.batch.repository;
+
+import com.nova.nova_server.domain.batch.entity.BatchRunMetadata;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface BatchRunMetadataRepository extends JpaRepository<BatchRunMetadata, Long> {
+
+    /**
+     * 특정 job의 마지막 실행 시점 조회 (증분 처리용, 현재 실행 중인 건 제외)
+     */
+    Optional<BatchRunMetadata> findTopByJobNameAndStatusNotOrderByExecutedAtDesc(String jobName, String status);
+
+    /**
+     * 특정 job이 특정 상태로 실행 중인지 확인
+     */
+    boolean existsByJobNameAndStatus(String jobName, String status);
+}

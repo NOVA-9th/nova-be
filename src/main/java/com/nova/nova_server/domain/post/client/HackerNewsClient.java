@@ -2,6 +2,7 @@ package com.nova.nova_server.domain.post.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,11 +12,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class HackerNewsClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.hackernews.base-url}")
     private String baseUrl;
@@ -36,10 +38,8 @@ public class HackerNewsClient {
     }
 
     private List<JsonNode> fetchStoriesByType(String endpoint, int limit) {
-        List<JsonNode> items = new ArrayList<>();
-
         try {
-            List<Integer> storyIds = webClientBuilder.build()
+            List<Integer> storyIds = webClient
                     .get()
                     .uri(baseUrl + endpoint)
                     .retrieve()
@@ -48,32 +48,28 @@ public class HackerNewsClient {
                     .block();
 
             if (storyIds == null || storyIds.isEmpty()) {
-                return items;
+                log.warn("No HN story IDs returned from: {}", endpoint);
+                return new ArrayList<>();
             }
 
             List<Integer> topN = storyIds.subList(0, Math.min(limit, storyIds.size()));
 
-            for (Integer id : topN) {
-                try {
-                    JsonNode item = webClientBuilder.build()
-                            .get()
+            // 병렬 실시간 호출로 성능 최적화 (N+1 문제 해결)
+            return reactor.core.publisher.Flux.fromIterable(topN)
+                    .flatMap(id -> webClient.get()
                             .uri(baseUrl + "/item/{id}.json", id)
                             .retrieve()
                             .bodyToMono(JsonNode.class)
-                            .block();
-
-                    if (item != null) {
-                        items.add(item);
-                    }
-                } catch (Exception e) {
-                    System.err.println("Failed to fetch item: " + id);
-                }
-            }
+                            .onErrorResume(e -> {
+                                log.warn("Failed to fetch HN item: {}", id);
+                                return reactor.core.publisher.Mono.empty();
+                            }))
+                    .collectList()
+                    .block();
         } catch (Exception e) {
-            System.err.println("Failed to fetch stories from: " + endpoint);
+            log.error("Failed to fetch HN stories from: {}", endpoint, e);
+            return new ArrayList<>();
         }
-
-        return items;
     }
 
     /**
@@ -96,16 +92,16 @@ public class HackerNewsClient {
                 content = doc.select("p").text();
             }
 
-            //<article>태그가 없거나, <p> 태그가 있어도 본문이 아닌 다른 내용이거나, Selenium 사용해야하는 동적으로 렌더링되는 사이트
+            // <article>태그가 없거나, <p> 태그가 있어도 본문이 아닌 다른 내용이거나, Selenium 사용해야하는 동적으로 렌더링되는 사이트
             if (content.isEmpty()) {
-                return "No Content";//크롤링 성공했으나 본문 없음
+                return "No Content";// 크롤링 성공했으나 본문 없음
             }
 
             return content.length() > 500 ? content.substring(0, 500) + "..." : content;
 
         } catch (Exception e) {
-            System.err.println("Failed to extract content from: " + url);
-            return "Crawling Failed";//크롤링 실패
+            log.warn("Failed to extract HN content from: {}", url);
+            return "Crawling Failed";// 크롤링 실패
         }
     }
 }
