@@ -23,7 +23,7 @@ import java.util.List;
 
 @Tag(name = "키워드", description = "키워드 CRUD API")
 @RestController
-@RequestMapping("/keywords")
+@RequestMapping("/api/keywords")
 @RequiredArgsConstructor
 public class KeywordController {
 
