@@ -3,6 +3,7 @@ package com.nova.nova_server.domain.cardNews.repository;
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -23,4 +24,8 @@ public interface CardNewsBookmarkRepository extends JpaRepository<CardNewsBookma
 
     @Query("select cnb.cardNews from CardNewsBookmark cnb where cnb.memberId = :memberId and cnb.cardNews.title like %:title%")
     List<CardNews> findBookmarkedCardNewsByTitle(@Param("memberId") Long memberId, @Param("title") String title);
+
+    @Modifying
+    @Query("DELETE FROM CardNewsBookmark b WHERE b.memberId = :memberId")
+    void deleteAllByMemberId(@Param("memberId") Long memberId);
 }
