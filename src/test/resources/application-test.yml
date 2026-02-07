@@ -39,9 +39,14 @@ jwt:
 ai:
   openai:
     key: test-key
-    model: gpt-5.1
     project-id: test-prj-id
-    temperature: 1  # gpt-5 계열은 temp 변경 불가
+    model: gpt-4o-mini
+    temperature: 0.3
+    max-request-per-batch: 500
+
+jwt:
+  secret: test-jwt-secret-key-for-testing-minimum-256-bits-required
+  expiration: 86400000 # 24 hours in milliseconds
 
 external:
   newsapi:

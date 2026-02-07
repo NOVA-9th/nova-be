@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class NewsApiClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.newsapi.base-url}")
     private String baseUrl;
@@ -18,8 +18,7 @@ public class NewsApiClient {
     private String apiKey;
 
     public String fetchRawJson() {
-        return webClientBuilder.build()
-                .get()
+        return webClient.get()
                 .uri(baseUrl + "/everything?q=(AI OR 인공지능 OR 개발자 OR software)&language=ko&sortBy=publishedAt")
                 .header("X-Api-Key", apiKey)
                 .retrieve()

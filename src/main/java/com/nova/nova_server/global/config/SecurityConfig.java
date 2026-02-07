@@ -25,23 +25,24 @@ public class SecurityConfig {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	private static final String[] PERMIT_ALL_PATTERNS = {
-		"/auth/**",
-		"/actuator/**",
-		"/swagger-ui/**",
-		"/v3/api-docs/**"
+			"/auth/**",
+			"/actuator/**",
+			"/swagger-ui/**",
+			"/v3/api-docs/**",
+			"/api/batch/**",
+			"/debug/**"
 	};
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
-			.csrf(AbstractHttpConfigurer::disable)
-			.cors(cors -> cors.configurationSource(corsConfigurationSource()))
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.authorizeHttpRequests(auth -> auth
-				.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
-				.anyRequest().authenticated()
-			)
-			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+				.csrf(AbstractHttpConfigurer::disable)
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
+						.anyRequest().authenticated())
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}

@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class NaverNewsSearchClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.navernewssearch.base-url}")
     private String baseUrl;
@@ -22,8 +22,7 @@ public class NaverNewsSearchClient {
     private String clientSecret;
 
     public JsonNode fetch() {
-        return webClientBuilder.build()
-                .get()
+        return webClient.get()
                 .uri(baseUrl + "/news.json?query=IT&display=10&sort=date")
                 .header("X-Naver-Client-Id", clientId)
                 .header("X-Naver-Client-Secret", clientSecret)

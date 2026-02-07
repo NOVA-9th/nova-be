@@ -13,7 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 @RequiredArgsConstructor
 public class TechBlogClient {
 
-    private final WebClient.Builder webClientBuilder;
+    private final WebClient webClient;
 
     @Value("${external.rss2json.base-url}")
     private String baseUrl;
@@ -26,10 +26,7 @@ public class TechBlogClient {
                     .build()
                     .toUriString();
 
-            return webClientBuilder
-                    .exchangeStrategies(builder ->
-                            builder.codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(10 * 1024 * 1024))) // 크기 증가(길이 긴 본문 풀로 받아오기위해)
-                    .build()
+            return webClient
                     .get()
                     .uri(uri)
                     .retrieve()
