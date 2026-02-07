@@ -115,6 +115,7 @@ public class MemberService {
 
     private void updateMemberInterests(Member member, List<Long> interestIds) {
         memberPreferInterestRepository.deleteByMember(member);
+        memberPreferInterestRepository.flush();
 
         if (interestIds == null || interestIds.isEmpty()) {
             return;
@@ -137,6 +138,7 @@ public class MemberService {
 
     private void updateMemberKeywords(Member member, List<String> keywordNames) {
         memberPreferKeywordRepository.deleteByMember(member);
+        memberPreferKeywordRepository.flush();
 
         if (keywordNames == null || keywordNames.isEmpty()) {
             return;
