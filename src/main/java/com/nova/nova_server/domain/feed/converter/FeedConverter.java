@@ -15,6 +15,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 
+import static java.lang.Math.min;
+
 @Component
 @RequiredArgsConstructor
 public class FeedConverter {
@@ -74,6 +76,8 @@ public class FeedConverter {
         }
         if (size == null || size < 1) {
             size = feedConfig.getMaxPageSize();
+        } else {
+            size = min(size, feedConfig.getMaxPageSize());
         }
 
         return PageRequest.of(page - 1, size);
