@@ -4,6 +4,7 @@ import com.nova.nova_server.domain.batch.entity.BatchRunMetadata;
 import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.post.model.Article;
+import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class ArticleFetchService {
 
         for (ArticleApiService service : articleApiServices) {
             try {
-                List<Article> articles = service.fetchArticles();
+                List<Article> articles = service.fetchArticles().stream().map(ArticleSource::fetchArticle).toList();
                 log.info("Fetched {} raw articles from {}", articles.size(), service.getProviderName());
                 List<Article> limited = articles.stream()
                         .filter(a -> {
