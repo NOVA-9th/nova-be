@@ -1,6 +1,9 @@
 package com.nova.nova_server.domain.cardNews.repository;
 
+import com.nova.nova_server.domain.cardNews.dto.CardNewsIdScoreResult;
+import com.nova.nova_server.domain.cardNews.dto.CardNewsScoreResult;
 import com.nova.nova_server.domain.cardNews.dto.CardNewsSearchCondition;
+import com.nova.nova_server.domain.cardNews.dto.QCardNewsIdScoreResult;
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
 import com.nova.nova_server.domain.cardNews.entity.CardType;
 import com.nova.nova_server.domain.feed.enums.FeedSort;
@@ -21,6 +24,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.nova.nova_server.domain.cardNews.entity.QCardNews.cardNews;
 import static com.nova.nova_server.domain.cardNews.entity.QCardNewsBookmark.cardNewsBookmark;
@@ -38,11 +43,17 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
     private final FeedConfig feedConfig;
 
     @Override
-    public Page<CardNews> searchByCondition(CardNewsSearchCondition condition) {
+    public Page<CardNewsScoreResult> searchByCondition(CardNewsSearchCondition condition) {
 
-        // 필터링 및 정렬 수행
-        List<Long> idList = queryFactory
-                .select(cardNews.id)
+        // 검색 조건에 맞는 ID와 관련도 점수 조회
+        List<CardNewsIdScoreResult> cardNewsIdScoreList = queryFactory
+                .select(
+                        new QCardNewsIdScoreResult(
+                                cardNews.id,
+                                // 최신순 정렬 시에도 관련도 점수는 표시되어야 함
+                                calcTotalScore(condition.memberId())
+                        )
+                )
                 .from(cardNews)
                 .where(
                         cardTypeIn(condition.type()),
@@ -56,7 +67,7 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                 .limit(condition.pageable().getPageSize())
                 .fetch();
 
-        // 전체 개수 조회
+        // 검색 조건에 맞는 전체 개수 조회
         JPAQuery<Long> countQuery = queryFactory
                 .select(cardNews.count())
                 .from(cardNews)
@@ -68,9 +79,9 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                         isSaved(condition.memberId(), condition.saved())
                 );
 
-        log.debug("Fetched CardNews ids {} by condition {}", idList, condition);
+        log.debug("Fetched CardNews ids {} by condition {}", cardNewsIdScoreList, condition);
 
-        if (idList.isEmpty()) {
+        if (cardNewsIdScoreList.isEmpty()) {
             return Page.empty(condition.pageable());
         }
 
@@ -80,10 +91,21 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                 .from(cardNews)
                 .leftJoin(cardNews.keywords, cardNewsKeyword).fetchJoin()
                 .leftJoin(cardNewsKeyword.keyword, keyword).fetchJoin()
-                .where(cardIdIn(idList))
+                .where(cardIdIn(cardNewsIdScoreList.stream().map(CardNewsIdScoreResult::cardNewsId).toList()))
                 .fetch();
 
-        return PageableExecutionUtils.getPage(cardNewsList, condition.pageable(), countQuery::fetchOne);
+        // 카드 뉴스별 점수 매핑
+        Map<Long, CardNews> cardNewsMap = cardNewsList.stream()
+                .collect(Collectors.toMap(CardNews::getId, cardNews -> cardNews));
+
+        List<CardNewsScoreResult> cardNewsScoreList = cardNewsIdScoreList.stream()
+                .map(result -> CardNewsScoreResult.builder()
+                        .cardNews(cardNewsMap.get(result.cardNewsId()))
+                        .score(result.score())
+                        .build())
+                .toList();
+
+        return PageableExecutionUtils.getPage(cardNewsScoreList, condition.pageable(), countQuery::fetchOne);
     }
 
     private BooleanExpression cardIdIn(List<Long> idList) {

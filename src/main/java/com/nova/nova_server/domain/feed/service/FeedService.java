@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.feed.service;
 
+import com.nova.nova_server.domain.cardNews.dto.CardNewsScoreResult;
 import com.nova.nova_server.domain.cardNews.dto.CardNewsSearchCondition;
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsBookmarkRepository;
@@ -30,16 +31,19 @@ public class FeedService {
             FeedRequest request
     ) {
         CardNewsSearchCondition condition = feedConverter.toCondition(request, memberId);
-        Page<CardNews> cardNewsList = cardNewsRepository.searchByCondition(condition);
-        List<Long> cardNewsIds = cardNewsList.stream().map(CardNews::getId).toList();
+        Page<CardNewsScoreResult> resultList = cardNewsRepository.searchByCondition(condition);
+        List<Long> cardNewsIds = resultList.stream().map(CardNewsScoreResult::cardNews).map(CardNews::getId).toList();
         Set<Long> bookmarkedCardNewsIds = bookmarkRepository.filterBookmarkedCardNewsIds(memberId, cardNewsIds);
 
-        List<FeedResponse> feedList = cardNewsList.getContent().stream().map(cardNews ->
-                feedConverter.toResponse(cardNews, bookmarkedCardNewsIds.contains(cardNews.getId()))
+        List<FeedResponse> feedList = resultList.getContent().stream().map(result ->
+                feedConverter.toResponse(
+                        result.cardNews(),
+                        result.score(),
+                        bookmarkedCardNewsIds.contains(result.cardNews().getId()))
         ).toList();
 
         return FeedListResponse.builder()
-                .totalCount(cardNewsList.getTotalElements())
+                .totalCount(resultList.getTotalElements())
                 .cardnews(feedList)
                 .build();
     }

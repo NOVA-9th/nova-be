@@ -19,6 +19,9 @@ public record FeedResponse(
         @Schema(description = "카드뉴스 유형", example = "COMMUNITY")
         CardType cardType,
 
+        @Schema(description = "카드뉴스 관련도", example = "92")
+        Integer score,
+
         @Schema(description = "작성자", example = "nova team")
         String author,
 

@@ -37,10 +37,15 @@ public class FeedConverter {
     }
 
     public FeedResponse toResponse(CardNews cardNews, boolean saved) {
+        return toResponse(cardNews, null, saved);
+    }
+
+    public FeedResponse toResponse(CardNews cardNews, Integer score, boolean saved) {
         return FeedResponse.builder()
                 .id(cardNews.getId())
                 .title(cardNews.getTitle())
                 .cardType(cardNews.getCardType())
+                .score(score)
                 .author(cardNews.getAuthor())
                 .publishedAt(cardNews.getPublishedAt().atOffset(ZoneOffset.UTC))
                 .summary(cardNews.getSummary())
