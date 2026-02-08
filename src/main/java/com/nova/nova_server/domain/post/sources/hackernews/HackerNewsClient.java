@@ -85,6 +85,7 @@ public class HackerNewsClient {
 
             return content;
         } catch (Exception e) {
+            log.error("HackerNews extract", e);
             throw new RuntimeException("HackerNews extractContent 실패", e);
         }
     }

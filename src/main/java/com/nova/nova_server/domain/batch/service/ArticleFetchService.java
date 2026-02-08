@@ -1,7 +1,5 @@
 package com.nova.nova_server.domain.batch.service;
 
-import com.nova.nova_server.domain.batch.entity.BatchRunMetadata;
-import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.ArticleSource;
@@ -30,7 +28,6 @@ public class ArticleFetchService {
     private static final int MAX_ARTICLES_PER_PROVIDER = 10;
 
     private final ArticleApiServiceFactory articleApiServiceFactory;
-    private final BatchRunMetadataRepository batchRunMetadataRepository;
     private final CardNewsRepository cardNewsRepository;
 
     /**

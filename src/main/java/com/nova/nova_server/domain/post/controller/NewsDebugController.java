@@ -1,7 +1,5 @@
 package com.nova.nova_server.domain.post.controller;
 
-import com.nova.nova_server.domain.batch.entity.BatchRunMetadata;
-import com.nova.nova_server.domain.batch.repository.BatchRunMetadataRepository;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.ArticleSource;
@@ -29,19 +27,11 @@ public class NewsDebugController {
 
     private final ArticleApiServiceFactory articleApiServiceFactory;
     private final CardNewsRepository cardNewsRepository;
-    private final BatchRunMetadataRepository batchRunMetadataRepository;
 
     @Operation(summary = "DB 카드뉴스 총 개수", description = "현재 DB에 저장된 전체 카드뉴스 레코드 수를 반환합니다.")
     @GetMapping("/db-count")
     public long getDbCount() {
         return cardNewsRepository.count();
-    }
-
-    @Operation(summary = "최근 배치 실행 메타데이터", description = "마지막으로 실행된 카드뉴스 배치 작업의 상태와 시간을 조회합니다.")
-    @GetMapping("/latest-metadata")
-    public Optional<BatchRunMetadata> getLatestMetadata() {
-        return batchRunMetadataRepository.findTopByJobNameAndStatusNotOrderByExecutedAtDesc("card-news-batch",
-                "RUNNING");
     }
 
     @Operation(summary = "제공자별 기사 통합 조회", description = "모든 뉴스 및 커뮤니티 소스로부터 기사 데이터를 한꺼번에 긁어옵니다.")

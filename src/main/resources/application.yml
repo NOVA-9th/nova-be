@@ -5,6 +5,14 @@
 spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
+  datasource:
+    hikari:
+      maximum-pool-size: 30  # batch split threads (max 20) + web/job repo headroom
+  batch:
+    job:
+      enabled: false  # run jobs via BatchJobService / API or scheduler only
+    jdbc:
+      initialize-schema: always  # create BATCH_* metadata tables; set to 'never' after first run if desired
   jpa:
     properties:
       hibernate:
