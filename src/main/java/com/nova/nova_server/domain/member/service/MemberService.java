@@ -1,5 +1,8 @@
 package com.nova.nova_server.domain.member.service;
 
+import com.nova.nova_server.domain.cardNews.repository.CardNewsBookmarkRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsRelevanceRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsHiddenRepository;
 import com.nova.nova_server.domain.interest.entity.Interest;
 import com.nova.nova_server.domain.interest.repository.InterestRepository;
 import com.nova.nova_server.domain.keyword.error.KeywordErrorCode;
@@ -33,6 +36,9 @@ public class MemberService {
     private final MemberProfileImageRepository memberProfileImageRepository;
     private final MemberPreferKeywordRepository memberPreferKeywordRepository;
     private final MemberPreferInterestRepository memberPreferInterestRepository;
+    private final CardNewsBookmarkRepository cardNewsBookmarkRepository;
+    private final CardNewsRelevanceRepository cardNewsRelevanceRepository;
+    private final CardNewsHiddenRepository cardNewsHiddenRepository;
     private final KeywordRepository keywordRepository;
     private final InterestRepository interestRepository;
 
@@ -163,9 +169,13 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        if (memberProfileImageRepository.existsById(memberId)) {
-            memberProfileImageRepository.deleteById(memberId);
-        }
+        // Delete all related entities (children first due to FK constraints)
+        memberProfileImageRepository.deleteById(memberId);
+        memberPreferKeywordRepository.deleteByMember(member);
+        memberPreferInterestRepository.deleteByMember(member);
+        cardNewsBookmarkRepository.deleteAllByMemberId(memberId);
+        cardNewsRelevanceRepository.deleteAllByMemberId(memberId);
+        cardNewsHiddenRepository.deleteAllByMemberId(memberId);
 
         memberRepository.delete(member);
     }
