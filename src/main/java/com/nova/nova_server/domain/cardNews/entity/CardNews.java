@@ -20,29 +20,29 @@ public class CardNews extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private CardType cardType;
 
     @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(length = 100)
+    @Column(length = 100, nullable = true)
     private String author;
 
-    @Column(name = "published_at")
+    @Column(name = "published_at", nullable = true)
     private LocalDateTime publishedAt;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String summary;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String evidence;
 
-    @Column(name = "original_url", length = 2048)
+    @Column(name = "original_url", length = 2048, nullable = false)
     private String originalUrl;
 
-    @Column(name = "source_site_name", length = 100)
+    @Column(name = "source_site_name", length = 100, nullable = true)
     private String sourceSiteName;
 
     @OneToMany(mappedBy = "cardNews", fetch = FetchType.LAZY)

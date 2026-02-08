@@ -115,6 +115,7 @@ public class MemberService {
 
     private void updateMemberInterests(Member member, List<Long> interestIds) {
         memberPreferInterestRepository.deleteByMember(member);
+        memberPreferInterestRepository.flush();
 
         if (interestIds == null || interestIds.isEmpty()) {
             return;
@@ -137,6 +138,7 @@ public class MemberService {
 
     private void updateMemberKeywords(Member member, List<String> keywordNames) {
         memberPreferKeywordRepository.deleteByMember(member);
+        memberPreferKeywordRepository.flush();
 
         if (keywordNames == null || keywordNames.isEmpty()) {
             return;
@@ -182,9 +184,9 @@ public class MemberService {
                 .build();
     }
 
+    @Transactional
     public MemberResponseDto createTestMember() {
         Member mockUser = Member.builder()
-                .id(2L)
                 .name("테스트 유저")
                 .email("test@example.com")
                 .level(Member.MemberLevel.NOVICE)
@@ -192,7 +194,7 @@ public class MemberService {
                 .googleId("test-google-id")
                 .build();
 
-        memberRepository.save(mockUser);
-        return getMemberInfo(2L);
+        Member savedUser = memberRepository.save(mockUser);
+        return getMemberInfo(savedUser.getId());
     }
 }
