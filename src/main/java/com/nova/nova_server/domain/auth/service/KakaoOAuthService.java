@@ -36,17 +36,22 @@ public class KakaoOAuthService {
 	private final MemberRepository memberRepository;
 	private final RestTemplate restTemplate = new RestTemplate();
 
-	public String getAuthorizationUrl() {
+	public String getAuthorizationUrl(String state) {
 		String clientId = oAuthConfig.getKakaoClientId();
 		String redirectUri = oAuthConfig.getKakaoRedirectUri();
 		String responseType = "code";
 
 		String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 
-		return String.format(
+		String baseUrl = String.format(
 			"https://kauth.kakao.com/oauth/authorize?response_type=%s&client_id=%s&redirect_uri=%s",
 			responseType, clientId, encodedRedirectUri
 		);
+		if (state != null && !state.isBlank()) {
+			String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+			return baseUrl + "&state=" + encodedState;
+		}
+		return baseUrl;
 	}
 
 	@Transactional

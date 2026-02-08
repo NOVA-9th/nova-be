@@ -36,7 +36,7 @@ public class GoogleOAuthService {
 	private final MemberRepository memberRepository;
 	private final RestTemplate restTemplate = new RestTemplate();
 
-	public String getAuthorizationUrl() {
+	public String getAuthorizationUrl(String state) {
 		String clientId = oAuthConfig.getGoogleClientId();
 		String redirectUri = oAuthConfig.getGoogleRedirectUri();
 		String scope = "openid email profile";
@@ -45,10 +45,15 @@ public class GoogleOAuthService {
 		String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 		String encodedScope = URLEncoder.encode(scope, StandardCharsets.UTF_8);
 
-		return String.format(
+		String baseUrl = String.format(
 			"https://accounts.google.com/o/oauth2/v2/auth?client_id=%s&redirect_uri=%s&response_type=%s&scope=%s",
 			clientId, encodedRedirectUri, responseType, encodedScope
 		);
+		if (state != null && !state.isBlank()) {
+			String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+			return baseUrl + "&state=" + encodedState;
+		}
+		return baseUrl;
 	}
 
 	@Transactional

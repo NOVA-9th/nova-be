@@ -38,7 +38,7 @@ public class GitHubOAuthService {
 	private final MemberRepository memberRepository;
 	private final RestTemplate restTemplate = new RestTemplate();
 
-	public String getAuthorizationUrl() {
+	public String getAuthorizationUrl(String state) {
 		String clientId = oAuthConfig.getGithubClientId();
 		String redirectUri = oAuthConfig.getGithubRedirectUri();
 		String scope = "read:user user:email";
@@ -46,10 +46,15 @@ public class GitHubOAuthService {
 		String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 		String encodedScope = URLEncoder.encode(scope, StandardCharsets.UTF_8);
 
-		return String.format(
+		String baseUrl = String.format(
 			"https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=%s&scope=%s",
 			clientId, encodedRedirectUri, encodedScope
 		);
+		if (state != null && !state.isBlank()) {
+			String encodedState = URLEncoder.encode(state, StandardCharsets.UTF_8);
+			return baseUrl + "&state=" + encodedState;
+		}
+		return baseUrl;
 	}
 
 	@Transactional

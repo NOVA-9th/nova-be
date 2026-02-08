@@ -16,8 +16,10 @@ public class KakaoOAuthController {
 	private final KakaoOAuthService kakaoOAuthService;
 
 	@GetMapping
-	public ResponseEntity<Void> redirectToKakao() {
-		String authorizationUrl = kakaoOAuthService.getAuthorizationUrl();
+	public ResponseEntity<Void> redirectToKakao(
+			@RequestParam(value = "state", required = false) String state
+	) {
+		String authorizationUrl = kakaoOAuthService.getAuthorizationUrl(state);
 		return ResponseEntity.status(302)
 			.header("Location", authorizationUrl)
 			.build();
