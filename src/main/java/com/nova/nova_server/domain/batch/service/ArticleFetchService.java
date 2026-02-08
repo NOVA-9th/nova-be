@@ -6,6 +6,7 @@ import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
+import com.nova.nova_server.domain.post.service.ArticleApiServiceFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class ArticleFetchService {
     private static final String CARD_NEWS_BATCH_JOB_NAME = "card-news-batch";
     private static final int MAX_ARTICLES_PER_PROVIDER = 10;
 
-    private final List<ArticleApiService> articleApiServices;
+    private final ArticleApiServiceFactory articleApiServiceFactory;
     private final BatchRunMetadataRepository batchRunMetadataRepository;
     private final CardNewsRepository cardNewsRepository;
 
@@ -42,7 +43,8 @@ public class ArticleFetchService {
         List<Article> allArticles = new ArrayList<>();
         log.info("Starting article fetch. lastRunAt (fixed to 5 days ago): {}", lastRunAt);
 
-        for (ArticleApiService service : articleApiServices) {
+        List<ArticleApiService> services = articleApiServiceFactory.createAllAvailableServices();
+        for (ArticleApiService service : services) {
             try {
                 List<Article> articles = service.fetchArticles().stream().map(ArticleSource::fetchArticle).toList();
                 log.info("Fetched {} raw articles from {}", articles.size(), service.getProviderName());
@@ -72,7 +74,7 @@ public class ArticleFetchService {
             }
         }
 
-        log.info("Total articles collected: {} from {} providers", allArticles.size(), articleApiServices.size());
+        log.info("Total articles collected: {} from {} providers", allArticles.size(), services.size());
         return allArticles;
     }
 

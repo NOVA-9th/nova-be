@@ -108,3 +108,4 @@ public Job aiJob() {
 - 컨텐츠 없으면 NO CONTENT 같은거 추가하기
 - 빈 데이터, 빈 소스는 skip 하기, 근데 중복 수집되면 안됨
 - 하나의 client 에서 여러 입력 넣을수있게
+- ArticleSource 에서 몇개만 fetch 할지 전략, 중복 처리도 ArticleSource 를 통해서

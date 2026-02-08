@@ -6,6 +6,7 @@ import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
+import com.nova.nova_server.domain.post.service.ArticleApiServiceFactory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Debug: News/Batch", description = "뉴스 데이터 수집 및 배치 모니터링 디버그 API")
 public class NewsDebugController {
 
-    private final List<ArticleApiService> articleApiServices;
+    private final ArticleApiServiceFactory articleApiServiceFactory;
     private final CardNewsRepository cardNewsRepository;
     private final BatchRunMetadataRepository batchRunMetadataRepository;
 
@@ -46,7 +47,7 @@ public class NewsDebugController {
     @Operation(summary = "제공자별 기사 통합 조회", description = "모든 뉴스 및 커뮤니티 소스로부터 기사 데이터를 한꺼번에 긁어옵니다.")
     @GetMapping("/all-articles")
     public Map<String, List<Article>> fetchAllArticlesFromProviders() {
-        return articleApiServices.stream()
+        return articleApiServiceFactory.createAllAvailableServices().stream()
                 .collect(Collectors.toMap(
                         ArticleApiService::getProviderName,
                         service -> {
@@ -74,7 +75,7 @@ public class NewsDebugController {
     @Operation(summary = "제공자별 기사 통합 조회", description = "모든 뉴스 및 커뮤니티 소스로부터 기사 데이터를 한꺼번에 긁어옵니다.")
     @GetMapping("/all-article-sources")
     public Map<String, List<ArticleSource>> fetchAllArticlesSourceFromProviders() {
-        return articleApiServices.stream()
+        return articleApiServiceFactory.createAllAvailableServices().stream()
                 .collect(Collectors.toMap(
                         ArticleApiService::getProviderName,
                         service -> {
@@ -91,7 +92,7 @@ public class NewsDebugController {
     @Operation(summary = "사용 가능 제공자 목록", description = "현재 시스템에 등록된 기사 수집 소스(Provider) 목록을 반환합니다.")
     @GetMapping("/providers")
     public List<String> getAvailableProviders() {
-        return articleApiServices.stream()
+        return articleApiServiceFactory.createAllAvailableServices().stream()
                 .map(ArticleApiService::getProviderName)
                 .collect(Collectors.toList());
     }
@@ -145,17 +146,10 @@ public class NewsDebugController {
     public List<Article> fetchFromTechBlog() { return fetchAllArticles("TechBlog"); }
 
     private List<Article> fetchAllArticles(String providerName) {
-        ArticleApiService service = getServiceByName(providerName);
+        ArticleApiService service = articleApiServiceFactory.getServiceByName(providerName);
         return service.fetchArticles()
                 .stream()
                 .map(ArticleSource::fetchArticle)
                 .toList();
-    }
-
-    private ArticleApiService getServiceByName(String providerName) {
-        return articleApiServices.stream()
-                .filter(service -> service.getProviderName().equals(providerName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown provider: " + providerName));
     }
 }
