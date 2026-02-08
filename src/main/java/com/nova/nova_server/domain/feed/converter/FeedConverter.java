@@ -45,7 +45,7 @@ public class FeedConverter {
                 .id(cardNews.getId())
                 .title(cardNews.getTitle())
                 .cardType(cardNews.getCardType())
-                .score(score)
+                .score(toPercentScore(score))
                 .author(cardNews.getAuthor())
                 .publishedAt(cardNews.getPublishedAt().atOffset(ZoneOffset.UTC))
                 .summary(cardNews.getSummary())
@@ -57,6 +57,13 @@ public class FeedConverter {
                         .toList())
                 .saved(saved)
                 .build();
+    }
+
+    private Integer toPercentScore(Integer score) {
+        if (score == null) {
+            return null;
+        }
+        return score * 100 / feedConfig.getMaxScore();
     }
 
     private List<String> splitEvidence(String evidence) {

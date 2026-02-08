@@ -11,6 +11,9 @@ public class FeedConfig {
     @Value("${feed.max-page-size:10}")
     private int maxPageSize;
 
+    @Value("${feed.max-score:125}")
+    private int maxScore;
+
     @Value("${feed.base-score:50}")
     private int baseScore;
 
