@@ -6,6 +6,7 @@ import com.nova.nova_server.domain.bookmark.repository.BookmarkAnalyticsReposito
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsBookmarkRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsHiddenRepository;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.feed.converter.FeedConverter;
 import com.nova.nova_server.domain.feed.dto.FeedListResponse;
@@ -30,6 +31,7 @@ public class BookmarkService {
     private final BookmarkAnalyticsRepository bookmarkAnalyticsRepository;
     private final CardNewsBookmarkRepository bookmarkRepository;
     private final CardNewsRepository cardNewsRepository;
+    private final CardNewsHiddenRepository hiddenRepository;
     private final FeedConverter feedConverter;
     private final CardNewsBookmarkRepository cardNewsBookmarkRepository;
 
@@ -62,7 +64,10 @@ public class BookmarkService {
         List<CardNews> cardNewsList = bookmarkRepository.findBookmarkedCardNewsByTitle(memberId,
                 title == null ? "" : title);
         return cardNewsList.stream()
-                .map(cn -> feedConverter.toResponse(cn, true))
+                .map(cn -> {
+                    boolean hidden = hiddenRepository.existsByMemberIdAndCardNewsId(memberId, cn.getId());
+                    return feedConverter.toResponse(cn, true, hidden);
+                })
                 .toList();
     }
 
@@ -90,7 +95,10 @@ public class BookmarkService {
                 .searchBookmarked(memberId, searchKeyword, pageable);
 
         List<FeedResponse> feedList = cardNewsList.getContent().stream()
-                .map(cardNews -> feedConverter.toResponse(cardNews, true)).toList();
+                .map(cardNews -> {
+                    boolean hidden = hiddenRepository.existsByMemberIdAndCardNewsId(memberId, cardNews.getId());
+                    return feedConverter.toResponse(cardNews, true, hidden);
+                }).toList();
 
         return FeedListResponse.builder()
                 .totalCount(cardNewsList.getTotalElements())
