@@ -11,4 +11,13 @@ public class FeedConfig {
     @Value("${feed.max-page-size:10}")
     private int maxPageSize;
 
+    @Value("${feed.base-score:50}")
+    private int baseScore;
+
+    @Value("${feed.keyword-match-score:10}")
+    private int keywordMatchScore;
+
+    @Value("${feed.bookmark-keyword-match-score:5}")
+    private int bookmarkKeywordMatchScore;
+
 }
