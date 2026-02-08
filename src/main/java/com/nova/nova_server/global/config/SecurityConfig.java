@@ -4,6 +4,7 @@ import com.nova.nova_server.domain.auth.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -24,6 +25,10 @@ public class SecurityConfig {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+	private static final String[] PERMIT_GET_PATTERNS = {
+			"/api/members/*/profile-image"
+	};
+
 	private static final String[] PERMIT_ALL_PATTERNS = {
 			"/auth/**",
 			"/api/keywords",
@@ -40,6 +45,7 @@ public class SecurityConfig {
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.GET, PERMIT_GET_PATTERNS).permitAll()
 						.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
 						.anyRequest().authenticated())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
