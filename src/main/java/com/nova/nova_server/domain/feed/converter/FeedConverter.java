@@ -36,11 +36,11 @@ public class FeedConverter {
                 .build();
     }
 
-    public FeedResponse toResponse(CardNews cardNews, boolean saved) {
-        return toResponse(cardNews, null, saved);
+    public FeedResponse toResponse(CardNews cardNews, boolean saved, boolean hidden) {
+        return toResponse(cardNews, null, saved, hidden);
     }
 
-    public FeedResponse toResponse(CardNews cardNews, Integer score, boolean saved) {
+    public FeedResponse toResponse(CardNews cardNews, Integer score, boolean saved, boolean hidden) {
         return FeedResponse.builder()
                 .id(cardNews.getId())
                 .title(cardNews.getTitle())
@@ -56,6 +56,7 @@ public class FeedConverter {
                         .map(item -> item.getKeyword().getName())
                         .toList())
                 .saved(saved)
+                .hidden(hidden)
                 .build();
     }
 

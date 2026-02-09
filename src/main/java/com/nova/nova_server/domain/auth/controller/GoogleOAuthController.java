@@ -16,8 +16,10 @@ public class GoogleOAuthController {
 	private final GoogleOAuthService googleOAuthService;
 
 	@GetMapping
-	public ResponseEntity<Void> redirectToGoogle() {
-		String authorizationUrl = googleOAuthService.getAuthorizationUrl();
+	public ResponseEntity<Void> redirectToGoogle(
+			@RequestParam(value = "state", required = false) String state
+	) {
+		String authorizationUrl = googleOAuthService.getAuthorizationUrl(state);
 		return ResponseEntity.status(302)
 			.header("Location", authorizationUrl)
 			.build();

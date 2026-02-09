@@ -44,6 +44,9 @@ public record FeedResponse(
         List<String> keywords,
 
         @Schema(description = "저장 여부", example = "false")
-        boolean saved
+        boolean saved,
+
+        @Schema(description = "숨김 여부", example = "false")
+        boolean hidden
 ) {
 }

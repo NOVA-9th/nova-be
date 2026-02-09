@@ -4,6 +4,7 @@ import com.nova.nova_server.domain.cardNews.dto.CardNewsScoreResult;
 import com.nova.nova_server.domain.cardNews.dto.CardNewsSearchCondition;
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsBookmarkRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsHiddenRepository;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
 import com.nova.nova_server.domain.feed.converter.FeedConverter;
 import com.nova.nova_server.domain.feed.dto.FeedListResponse;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 
+
 @Service
 @RequiredArgsConstructor
 public class FeedService {
@@ -23,6 +25,8 @@ public class FeedService {
     private final CardNewsRepository cardNewsRepository;
 
     private final CardNewsBookmarkRepository bookmarkRepository;
+
+    private final CardNewsHiddenRepository hiddenRepository;
 
     private final FeedConverter feedConverter;
 
@@ -39,7 +43,9 @@ public class FeedService {
                 feedConverter.toResponse(
                         result.cardNews(),
                         result.score(),
-                        bookmarkedCardNewsIds.contains(result.cardNews().getId()))
+                        bookmarkedCardNewsIds.contains(result.cardNews().getId()),
+                        hiddenRepository.existsByMemberIdAndCardNewsId(memberId, result.cardNews().getId())
+                )
         ).toList();
 
         return FeedListResponse.builder()

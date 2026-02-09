@@ -1,21 +1,23 @@
 package com.nova.nova_server.domain.member.service;
 
+import com.nova.nova_server.domain.cardNews.repository.CardNewsBookmarkRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsRelevanceRepository;
+import com.nova.nova_server.domain.cardNews.repository.CardNewsHiddenRepository;
 import com.nova.nova_server.domain.interest.entity.Interest;
 import com.nova.nova_server.domain.interest.repository.InterestRepository;
+import com.nova.nova_server.domain.keyword.entity.Keyword;
 import com.nova.nova_server.domain.keyword.error.KeywordErrorCode;
+import com.nova.nova_server.domain.keyword.repository.KeywordRepository;
 import com.nova.nova_server.domain.member.dto.*;
 import com.nova.nova_server.domain.member.entity.Member;
-import com.nova.nova_server.domain.keyword.entity.Keyword;
-import com.nova.nova_server.domain.keyword.repository.KeywordRepository;
 import com.nova.nova_server.domain.member.entity.MemberPreferInterest;
 import com.nova.nova_server.domain.member.entity.MemberPreferKeyword;
 import com.nova.nova_server.domain.member.error.MemberErrorCode;
 import com.nova.nova_server.domain.member.repository.MemberPreferInterestRepository;
 import com.nova.nova_server.domain.member.repository.MemberPreferKeywordRepository;
-import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.domain.member.repository.MemberProfileImageRepository;
+import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,9 @@ public class MemberService {
     private final MemberProfileImageRepository memberProfileImageRepository;
     private final MemberPreferKeywordRepository memberPreferKeywordRepository;
     private final MemberPreferInterestRepository memberPreferInterestRepository;
+    private final CardNewsBookmarkRepository cardNewsBookmarkRepository;
+    private final CardNewsRelevanceRepository cardNewsRelevanceRepository;
+    private final CardNewsHiddenRepository cardNewsHiddenRepository;
     private final KeywordRepository keywordRepository;
     private final InterestRepository interestRepository;
 
@@ -113,6 +118,10 @@ public class MemberService {
         updateMemberKeywords(member, keywordNames);
     }
 
+    public List<String> getMemberKeywords(Long memberId) {
+        return memberPreferKeywordRepository.findKeywordNamesByMemberId(memberId);
+    }
+
     private void updateMemberInterests(Member member, List<Long> interestIds) {
         memberPreferInterestRepository.deleteByMember(member);
         memberPreferInterestRepository.flush();
@@ -163,9 +172,13 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        if (memberProfileImageRepository.existsById(memberId)) {
-            memberProfileImageRepository.deleteById(memberId);
-        }
+        // Delete all related entities (children first due to FK constraints)
+        memberProfileImageRepository.deleteById(memberId);
+        memberPreferKeywordRepository.deleteByMember(member);
+        memberPreferInterestRepository.deleteByMember(member);
+        cardNewsBookmarkRepository.deleteAllByMemberId(memberId);
+        cardNewsRelevanceRepository.deleteAllByMemberId(memberId);
+        cardNewsHiddenRepository.deleteAllByMemberId(memberId);
 
         memberRepository.delete(member);
     }

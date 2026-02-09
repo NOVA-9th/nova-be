@@ -16,8 +16,10 @@ public class GitHubOAuthController {
 	private final GitHubOAuthService gitHubOAuthService;
 
 	@GetMapping
-	public ResponseEntity<Void> redirectToGitHub() {
-		String authorizationUrl = gitHubOAuthService.getAuthorizationUrl();
+	public ResponseEntity<Void> redirectToGitHub(
+			@RequestParam(value = "state", required = false) String state
+	) {
+		String authorizationUrl = gitHubOAuthService.getAuthorizationUrl(state);
 		return ResponseEntity.status(302)
 			.header("Location", authorizationUrl)
 			.build();
