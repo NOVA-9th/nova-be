@@ -69,4 +69,4 @@ Thumbs.db
 # Monitoring data
 grafana/data/
 prometheus/data/
-loki/
+loki/data/

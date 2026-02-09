@@ -65,8 +65,10 @@ services:
     image: grafana/loki:latest
     container_name: loki
     volumes:
-      - ./loki/loki.yml:/etc/loki/loki.yml # 이름 일치!
+      - ./loki/loki.yml:/etc/loki/loki.yml
     command: -config.file=/etc/loki/loki.yml
+    expose:
+      - "3100"
     restart: always
     logging: *default-logging
 
@@ -74,9 +76,9 @@ services:
     image: grafana/alloy:latest
     container_name: alloy
     volumes:
-      - ./alloy/alloy.yml:/etc/alloy/config.alloy # 이름 일치!
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - ./alloy/alloy.yml:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
     command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     restart: always
     logging: *default-logging

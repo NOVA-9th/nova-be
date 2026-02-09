@@ -1,30 +1,38 @@
-local.file_match "local_files" {
-path_targets = [{"__path__" = "/var/log/*.log"}]
-sync_period = "5s"
-}
-
-  loki.source.file "log_scrape" {
-  targets    = local.file_match.local_files.targets
-  forward_to = [loki.process.filter_logs.receiver]
-  tail_from_end = true
+  local.file_match "local_files" {
+    path_targets = [{"__path__" = "/var/log/*.log"}]
+    sync_period = "5s"
   }
-  
-  loki.process "filter_logs" {
-  stage.drop {
-  source = ""
-  expression  = ".*Connection closed by authenticating user root"
-  drop_counter_reason = "noisy"
+    
+    loki.source.file "log_scrape" {
+    targets       = local.file_match.local_files.targets
+    forward_to    = [loki.process.filter_logs.receiver]
+    tail_from_end = true
   }
-  forward_to = [loki.write.grafana_loki.receiver]
+    
+    loki.process "filter_logs" {
+    stage.drop {
+    source              = ""
+    expression          = ".*Connection closed by authenticating user root"
+    drop_counter_reason = "noisy"
+    }
+    forward_to = [loki.write.grafana_loki.receiver]
   }
-  
-  loki.write "grafana_loki" {
-  endpoint {
-  url = "http://localhost:3100/loki/api/v1/push"
-  
-  // basic_auth {
-  //  username = "admin"
-  //  password = "admin"
-  // }
+    
+    loki.write "grafana_loki" {
+    endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+    }
   }
+     
+    prometheus.scrape "default" {
+      targets = [
+      {"__address__" = "prometheus:9090"},
+      ]
+      forward_to = [prometheus.remote_write.prometheus.receiver]
+  }
+      
+      prometheus.remote_write "prometheus" {
+      endpoint {
+      url = "http://prometheus:9090/api/v1/write"
+      }
   }

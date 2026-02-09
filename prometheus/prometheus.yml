@@ -2,7 +2,11 @@ global:
   scrape_interval: 15s
 
 scrape_configs:
-  - job_name: 'nova-app'
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'spring-app'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['app:8080']
+      - targets: ['nova-app:8080']
