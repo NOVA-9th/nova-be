@@ -112,12 +112,10 @@ public class TrendService {
                 .build();
     }
 
-    public com.nova.nova_server.domain.trend.dto.SkillTrendResponse getSkillTrend(LocalDate baseDate) {
-        // 오늘 포함 최근 7일
-        LocalDate startDate = baseDate.minusDays(6);
+    public com.nova.nova_server.domain.trend.dto.SkillTrendResponse getSkillTrend() {
 
         // 전체 기간 동안의 각 Interest 별 총 언급량 집계 및 정렬 (내림차순)
-        List<Object[]> interestRankings = keywordStatisticsRepository.findInterestRankings(startDate, baseDate);
+        List<Object[]> interestRankings = keywordStatisticsRepository.findInterestRankingsAllTime();
 
         List<com.nova.nova_server.domain.trend.dto.SkillTrendResponse.RankingItem> rankingItems = new ArrayList<>();
         int rank = 1;
@@ -127,19 +125,29 @@ public class TrendService {
             Long totalCount = (Long) row[1];
 
             // 해당 Interest 내에서 언급량 상위 4개 키워드 다시 조회
-            List<String> topKeywords = keywordStatisticsRepository.findTopKeywordsByInterestId(
-                    interestId, startDate, baseDate, PageRequest.of(0, 4));
+            // 해당 Interest 내에서 언급량 상위 4개 키워드 다시 조회 (전체 기간)
+            List<Object[]> topKeywordsData = keywordStatisticsRepository.findTopKeywordsByInterestIdAllTime(
+                    interestId, PageRequest.of(0, 4));
+
+
+            List<com.nova.nova_server.domain.trend.dto.SkillTrendResponse.KeywordItem> keywordItems = topKeywordsData
+                    .stream()
+                    .map(k -> com.nova.nova_server.domain.trend.dto.SkillTrendResponse.KeywordItem
+                            .builder()
+                            .name((String) k[0])
+                            .mentionCount((Long) k[1])
+                            .build())
+                    .collect(Collectors.toList());
 
             rankingItems.add(com.nova.nova_server.domain.trend.dto.SkillTrendResponse.RankingItem.builder()
                     .rank(rank++)
                     .interest(interestId)
                     .totalMentionCount(totalCount)
-                    .keywords(topKeywords)
+                    .keywords(keywordItems)
                     .build());
         }
 
         return com.nova.nova_server.domain.trend.dto.SkillTrendResponse.builder()
-                .baseDate(baseDate)
                 .rankings(rankingItems)
                 .build();
     }
