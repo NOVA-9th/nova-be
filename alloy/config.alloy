@@ -3,6 +3,8 @@ discovery.docker "default" {
 }
 
 loki.relabel "docker" {
+  forward_to = [loki.write.local.receiver]
+
   rule {
     target_label = "container"
     source_labels = ["__meta_docker_container_name"]
@@ -13,8 +15,7 @@ loki.relabel "docker" {
 loki.source.docker "default" {
   host       = "unix:///var/run/docker.sock"
   targets    = discovery.docker.default.targets
-  forward_to = [loki.write.local.receiver]
-  relabel_rules = loki.relabel.docker.rules
+  forward_to = [loki.relabel.docker.receiver] // "수집해서 라벨 정리팀에 보내!"
 }
 
 loki.write "local" {
