@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -61,6 +62,13 @@ public class BatchDebugController {
         return ApiResponse.success(dto);
     }
 
+    @Operation(summary = "모든 배치 실행 결과", description = "articleIngestionJob 의 모든 실행 이력(JobExecution)을 최신순으로 반환합니다.")
+    @GetMapping("/status/all")
+    public ApiResponse<List<BatchExecutionStatusDto>> getAllBatchResults() {
+        List<BatchExecutionStatusDto> results = findAllJobExecutions();
+        return ApiResponse.success(results);
+    }
+
     @Operation(summary = "저장된 Article 개수", description = "article 테이블에 저장된 기사(ArticleEntity) 개수를 반환합니다.")
     @GetMapping("/article-count")
     public ApiResponse<Long> getArticleCount() {
@@ -96,6 +104,16 @@ public class BatchDebugController {
                     .build();
         }
         return toStatusDto(execution);
+    }
+
+    private List<BatchExecutionStatusDto> findAllJobExecutions() {
+        int maxInstances = 100;
+        List<JobInstance> instances = jobExplorer.getJobInstances(JOB_NAME, 0, maxInstances);
+        return instances.stream()
+                .flatMap(instance -> jobExplorer.getJobExecutions(instance).stream())
+                .sorted(Comparator.comparing(JobExecution::getCreateTime, Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(BatchDebugController::toStatusDto)
+                .collect(Collectors.toList());
     }
 
     private static BatchExecutionStatusDto toStatusDto(JobExecution execution) {
