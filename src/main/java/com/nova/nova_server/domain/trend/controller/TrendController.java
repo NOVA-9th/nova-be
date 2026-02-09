@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/trends")
-public class TrendController {
+public class TrendController implements com.nova.nova_server.domain.trend.docs.TrendControllerDocs {
 
     private final TrendService trendService;
 
@@ -24,6 +24,6 @@ public class TrendController {
 
     @GetMapping("/interests/skilltop")
     public ApiResponse<com.nova.nova_server.domain.trend.dto.SkillTrendResponse> getSkillTrend() {
-        return ApiResponse.success(trendService.getSkillTrend(LocalDate.now()));
+        return ApiResponse.success(trendService.getSkillTrend());
     }
 }
