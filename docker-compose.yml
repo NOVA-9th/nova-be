@@ -63,7 +63,6 @@ services:
   loki:
     image: grafana/loki:latest
     container_name: loki
-    # ports는 이미지 참고하여 제거 (내부 통신만 수행)
     command: -config.file=/etc/loki/local-config.yaml
     restart: always
     logging: *default-logging
