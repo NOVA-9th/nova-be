@@ -67,12 +67,13 @@ services:
     restart: always
     logging: *default-logging
 
-  promtail:
-    image: grafana/promtail:latest
-    container_name: promtail
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
     volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - ./promtail/config.yml:/etc/promtail/config.yml
-    command: -config.file=/etc/promtail/config.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     restart: always
     logging: *default-logging
