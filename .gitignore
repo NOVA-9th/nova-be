@@ -66,3 +66,7 @@ out/
 ####################################
 .DS_Store
 Thumbs.db
+# Monitoring data
+grafana/data/
+prometheus/data/
+loki/
