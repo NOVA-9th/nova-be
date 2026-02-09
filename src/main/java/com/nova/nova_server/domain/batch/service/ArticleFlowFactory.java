@@ -1,6 +1,6 @@
 package com.nova.nova_server.domain.batch.service;
 
-import com.nova.nova_server.domain.post.model.Article;
+import com.nova.nova_server.domain.batch.entity.ArticleEntity;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +11,7 @@ import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemStreamReader;
+import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.support.builder.SynchronizedItemStreamReaderBuilder;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
@@ -28,8 +29,9 @@ public class ArticleFlowFactory {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
-    private final ArticleSourceToArticleProcessor processor;
-    private final ArticleItemWriter writer;
+    private final ArticleProcessor articleProcessor;
+    private final JpaItemWriter<ArticleEntity> articleWriter;
+    private final ArticleEntityService articleEntityService;
 
     private final TaskExecutor stepTaskExecutor;
 
@@ -46,15 +48,15 @@ public class ArticleFlowFactory {
     }
 
     private Step createStep(ArticleApiService service) {
-        ItemStreamReader<ArticleSource> reader = new ArticleSourceItemReader(service);
+        ItemStreamReader<ArticleSource> reader = new ArticleSourceItemReader(service, articleEntityService);
 
         return new StepBuilder(STEP_NAME_PREFIX + service.getProviderName(), jobRepository)
-                .<ArticleSource, Article>chunk(CHUNK_SIZE, transactionManager)
+                .<ArticleSource, ArticleEntity>chunk(CHUNK_SIZE, transactionManager)
                 .reader(new SynchronizedItemStreamReaderBuilder<ArticleSource>()
                         .delegate(reader)
                         .build())
-                .processor(processor)
-                .writer(writer)
+                .processor(articleProcessor)
+                .writer(articleWriter)
                 .taskExecutor(stepTaskExecutor)
                 .build();
     }

@@ -2,6 +2,7 @@ package com.nova.nova_server.domain.batch.entity;
 
 import com.nova.nova_server.domain.cardNews.entity.CardType;
 import com.nova.nova_server.domain.common.BaseEntity;
+import com.nova.nova_server.domain.post.model.Article;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,4 +41,16 @@ public class ArticleEntity extends BaseEntity {
 
     @Column(nullable = false, length = 2048)
     private String url;
+
+    public static ArticleEntity from(Article article) {
+        return ArticleEntity.builder()
+                .title(article.title())
+                .content(article.content())
+                .author(article.author())
+                .source(article.source())
+                .publishedAt(article.publishedAt())
+                .cardType(article.cardType())
+                .url(article.url())
+                .build();
+    }
 }

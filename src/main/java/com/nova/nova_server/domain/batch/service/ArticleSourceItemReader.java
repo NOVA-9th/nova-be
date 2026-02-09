@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.batch.service;
 
+import com.nova.nova_server.domain.batch.repository.ArticleEntityRepository;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
@@ -9,12 +10,16 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.batch.item.ItemStreamReader;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 public class ArticleSourceItemReader implements ItemStreamReader<ArticleSource> {
 
     private final ArticleApiService articleApiService;
+    private final ArticleEntityService articleEntityService;
 
     private List<ArticleSource> sources;
     private int index = 0;
@@ -29,7 +34,17 @@ public class ArticleSourceItemReader implements ItemStreamReader<ArticleSource> 
     @Override
     public ArticleSource read() {
         if (sources == null) {
-            sources = articleApiService.fetchArticles();
+            Map<String, ArticleSource> articleUrlMap = articleApiService.fetchArticles()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            ArticleSource::getUrl,
+                            articleSource -> articleSource));
+
+            sources = articleEntityService.distinctUrls(articleUrlMap.keySet())
+                    .stream()
+                    .map(articleUrlMap::get)
+                    .toList();
+
             log.info("Loaded {} articles from {}", sources.size(), articleApiService.getProviderName());
         }
 
