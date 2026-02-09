@@ -1,4 +1,7 @@
-// 1. 도커 로그 수집 (Loki로 전송)
+discovery.docker "default" {
+  host = "unix:///var/run/docker.sock"
+}
+
 loki.relabel "docker" {
   rule {
     target_label = "container"
@@ -9,7 +12,7 @@ loki.relabel "docker" {
 
 loki.source.docker "default" {
   host       = "unix:///var/run/docker.sock"
-  targets    = docker.targets.default.targets
+  targets    = discovery.docker.default.targets
   forward_to = [loki.write.local.receiver]
   relabel_rules = loki.relabel.docker.rules
 }
@@ -20,7 +23,6 @@ loki.write "local" {
   }
 }
 
-// 2. 서버 메트릭 수집 (Prometheus로 전송)
 prometheus.exporter.unix "default" { }
 
 prometheus.scrape "default" {
