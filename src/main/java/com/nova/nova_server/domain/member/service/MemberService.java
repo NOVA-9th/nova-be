@@ -5,20 +5,19 @@ import com.nova.nova_server.domain.cardNews.repository.CardNewsRelevanceReposito
 import com.nova.nova_server.domain.cardNews.repository.CardNewsHiddenRepository;
 import com.nova.nova_server.domain.interest.entity.Interest;
 import com.nova.nova_server.domain.interest.repository.InterestRepository;
+import com.nova.nova_server.domain.keyword.entity.Keyword;
 import com.nova.nova_server.domain.keyword.error.KeywordErrorCode;
+import com.nova.nova_server.domain.keyword.repository.KeywordRepository;
 import com.nova.nova_server.domain.member.dto.*;
 import com.nova.nova_server.domain.member.entity.Member;
-import com.nova.nova_server.domain.keyword.entity.Keyword;
-import com.nova.nova_server.domain.keyword.repository.KeywordRepository;
 import com.nova.nova_server.domain.member.entity.MemberPreferInterest;
 import com.nova.nova_server.domain.member.entity.MemberPreferKeyword;
 import com.nova.nova_server.domain.member.error.MemberErrorCode;
 import com.nova.nova_server.domain.member.repository.MemberPreferInterestRepository;
 import com.nova.nova_server.domain.member.repository.MemberPreferKeywordRepository;
-import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.domain.member.repository.MemberProfileImageRepository;
+import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -117,6 +116,10 @@ public class MemberService {
         // 키워드
         List<String> keywordNames = memberPersonalizationDto.keywords();
         updateMemberKeywords(member, keywordNames);
+    }
+
+    public List<String> getMemberKeywords(Long memberId) {
+        return memberPreferKeywordRepository.findKeywordNamesByMemberId(memberId);
     }
 
     private void updateMemberInterests(Member member, List<Long> interestIds) {

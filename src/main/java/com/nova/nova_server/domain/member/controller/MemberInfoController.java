@@ -1,14 +1,18 @@
 package com.nova.nova_server.domain.member.controller;
 
 import com.nova.nova_server.domain.member.dto.*;
+import com.nova.nova_server.domain.member.error.MemberErrorCode;
 import com.nova.nova_server.domain.member.service.MemberService;
 import com.nova.nova_server.global.apiPayload.ApiResponse;
+import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/members")
@@ -70,6 +74,25 @@ public class MemberInfoController {
 
         memberService.updateMemberPersonalization(memberId, request);
         return ApiResponse.success(null);
+    }
+
+    @Operation(summary = "관심 키워드 조회", description = "사용자의 관심 키워드 목록을 조회합니다.")
+    @GetMapping("/{member_id}/keywords")
+    public ApiResponse<MemberPreferKeywordResponseDto> getMemberKeywords(
+            @Parameter(description = "사용자 ID")
+            @PathVariable("member_id") Long memberId,
+            @AuthenticationPrincipal Long authenticatedMemberId
+    ) {
+        if (!authenticatedMemberId.equals(memberId)) {
+            throw new NovaException(MemberErrorCode.MEMBER_READ_FORBIDDEN);
+        }
+
+        List<String> keywords = memberService.getMemberKeywords(memberId);
+        return ApiResponse.success(MemberPreferKeywordResponseDto.builder()
+                .totalCount(keywords.size())
+                .keywords(keywords)
+                .build()
+        );
     }
 
     @Operation(summary = "연결된 계정 조회", description = "소셜 로그인 등 사용자와 연결된 계정 정보를 조회합니다.")
