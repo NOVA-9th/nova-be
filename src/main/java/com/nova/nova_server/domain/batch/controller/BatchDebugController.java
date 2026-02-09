@@ -6,6 +6,7 @@ import com.nova.nova_server.domain.batch.service.BatchJobService;
 import com.nova.nova_server.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/debug/batch")
 @Tag(name = "Debug: Batch", description = "배치 실행 및 상태 확인 디버그/테스트 API")
+@RequiredArgsConstructor
 public class BatchDebugController {
 
     private static final String JOB_NAME = "articleIngestionJob";
@@ -36,23 +38,13 @@ public class BatchDebugController {
     private final BatchJobService batchJobService;
     private final JobExplorer jobExplorer;
     private final ArticleEntityRepository articleEntityRepository;
-    private final TaskExecutor batchTaskExecutor;
-
-    public BatchDebugController(BatchJobService batchJobService,
-                               JobExplorer jobExplorer,
-                               ArticleEntityRepository articleEntityRepository,
-                               @Qualifier("batchTaskExecutor") TaskExecutor batchTaskExecutor) {
-        this.batchJobService = batchJobService;
-        this.jobExplorer = jobExplorer;
-        this.articleEntityRepository = articleEntityRepository;
-        this.batchTaskExecutor = batchTaskExecutor;
-    }
+    private final TaskExecutor flowTaskExecutor;
 
     @Operation(summary = "배치 실행", description = "Article ingestion 배치를 비동기로 실행합니다. 즉시 202 응답 후 백그라운드에서 실행됩니다. 상태는 GET /debug/batch/status 로 확인하세요.")
     @PostMapping("/execute")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ApiResponse<String> executeBatch() {
-        batchTaskExecutor.execute(() -> {
+        flowTaskExecutor.execute(() -> {
             try {
                 batchJobService.runArticleIngestionBatch();
             } catch (Exception e) {

@@ -1,4 +1,4 @@
-package com.nova.nova_server.domain.batch.processor;
+package com.nova.nova_server.domain.batch.service;
 
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.ArticleSource;

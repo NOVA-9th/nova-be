@@ -1,8 +1,7 @@
-package com.nova.nova_server.domain.batch.writer;
+package com.nova.nova_server.domain.batch.service;
 
 import com.nova.nova_server.domain.batch.entity.ArticleEntity;
 import com.nova.nova_server.domain.batch.repository.ArticleEntityRepository;
-import com.nova.nova_server.domain.cardNews.entity.CardType;
 import com.nova.nova_server.domain.post.model.Article;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
