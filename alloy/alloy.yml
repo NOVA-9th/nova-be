@@ -1,12 +1,41 @@
-  local.file_match "local_files" {
-    path_targets = [{"__path__" = "/var/log/*.log"}]
-    sync_period = "5s"
+  logging {
+    level  = "info"
+    format = "logfmt"
   }
     
-    loki.source.file "log_scrape" {
-    targets       = local.file_match.local_files.targets
+    // Docker 컨테이너 로그 수집으로 전환
+    discovery.docker "containers" {
+    host             = "unix:///var/run/docker.sock"
+    refresh_interval = "5s"
+  }
+    
+    discovery.relabel "containers" {
+    targets = []
+    rule {
+    target_label = "job"
+    replacement  = "integrations/docker"
+    }
+    rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+    }
+    rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+    }
+    rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+    }
+  }
+    
+    loki.source.docker "containers" {
+    host          = "unix:///var/run/docker.sock"
+    targets       = discovery.docker.containers.targets
     forward_to    = [loki.process.filter_logs.receiver]
-    tail_from_end = true
+    relabel_rules = discovery.relabel.containers.rules
+    refresh_interval = "5s"
   }
     
     loki.process "filter_logs" {
@@ -23,16 +52,18 @@
     url = "http://loki:3100/loki/api/v1/push"
     }
   }
-     
-    prometheus.scrape "default" {
-      targets = [
-      {"__address__" = "prometheus:9090"},
-      ]
-      forward_to = [prometheus.remote_write.prometheus.receiver]
+    
+    // 시스템 메트릭 수집 (self-scrape 제거)
+    prometheus.exporter.unix "local_system" {}
+    
+    prometheus.scrape "system_metrics" {
+    targets         = prometheus.exporter.unix.local_system.targets
+    forward_to      = [prometheus.remote_write.metrics_remote.receiver]
+    scrape_interval = "10s"
   }
-      
-      prometheus.remote_write "prometheus" {
-      endpoint {
-      url = "http://prometheus:9090/api/v1/write"
-      }
+    
+    prometheus.remote_write "metrics_remote" {
+    endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+    }
   }
