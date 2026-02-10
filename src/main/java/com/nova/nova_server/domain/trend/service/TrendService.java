@@ -5,6 +5,7 @@ import com.nova.nova_server.domain.keyword.repository.KeywordStatisticsRepositor
 import com.nova.nova_server.domain.trend.dto.TrendResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,18 +54,21 @@ public class TrendService {
         int rank = 1;
         // 첫 번째 쿼리의 정렬 순서를 유지하기 위해 topKeywordIds 순회
         for (Long keywordId : topKeywordIds) {
-            List<KeywordStatistics> keywordStats = statsByKeyword.getOrDefault(keywordId, Collections.emptyList());
+            List<KeywordStatistics> keywordStats = statsByKeyword.getOrDefault(keywordId,
+                    Collections.emptyList());
             if (keywordStats.isEmpty())
                 continue;
 
             // 합계 계산
             long currentWeekSum = keywordStats.stream()
-                    .filter(ks -> !ks.getStatDate().isBefore(startDate) && !ks.getStatDate().isAfter(baseDate))
+                    .filter(ks -> !ks.getStatDate().isBefore(startDate)
+                            && !ks.getStatDate().isAfter(baseDate))
                     .mapToLong(KeywordStatistics::getMentionCount)
                     .sum();
 
             long prevWeekSum = keywordStats.stream()
-                    .filter(ks -> !ks.getStatDate().isBefore(prevWeekStart) && ks.getStatDate().isBefore(startDate))
+                    .filter(ks -> !ks.getStatDate().isBefore(prevWeekStart)
+                            && ks.getStatDate().isBefore(startDate))
                     .mapToLong(KeywordStatistics::getMentionCount)
                     .sum();
 
@@ -81,7 +85,8 @@ public class TrendService {
             List<TrendResponse.DailyCount> dailyCounts = new ArrayList<>();
             Map<LocalDate, Integer> dateToCountMap = keywordStats.stream()
                     .filter(ks -> !ks.getStatDate().isBefore(startDate))
-                    .collect(Collectors.toMap(KeywordStatistics::getStatDate, KeywordStatistics::getMentionCount,
+                    .collect(Collectors.toMap(KeywordStatistics::getStatDate,
+                            KeywordStatistics::getMentionCount,
                             (a, b) -> a));
 
             for (int i = 0; i < 7; i++) {
@@ -112,12 +117,10 @@ public class TrendService {
                 .build();
     }
 
-    public com.nova.nova_server.domain.trend.dto.SkillTrendResponse getSkillTrend(LocalDate baseDate) {
-        // 오늘 포함 최근 7일
-        LocalDate startDate = baseDate.minusDays(6);
+    public com.nova.nova_server.domain.trend.dto.SkillTrendResponse getSkillTrend() {
 
         // 전체 기간 동안의 각 Interest 별 총 언급량 집계 및 정렬 (내림차순)
-        List<Object[]> interestRankings = keywordStatisticsRepository.findInterestRankings(startDate, baseDate);
+        List<Object[]> interestRankings = keywordStatisticsRepository.findInterestRankingsAllTime();
 
         List<com.nova.nova_server.domain.trend.dto.SkillTrendResponse.RankingItem> rankingItems = new ArrayList<>();
         int rank = 1;
@@ -127,19 +130,28 @@ public class TrendService {
             Long totalCount = (Long) row[1];
 
             // 해당 Interest 내에서 언급량 상위 4개 키워드 다시 조회
-            List<String> topKeywords = keywordStatisticsRepository.findTopKeywordsByInterestId(
-                    interestId, startDate, baseDate, PageRequest.of(0, 4));
+            // 해당 Interest 내에서 언급량 상위 4개 키워드 다시 조회 (전체 기간)
+            List<Object[]> topKeywordsData = keywordStatisticsRepository.findTopKeywordsByInterestIdAllTime(
+                    interestId, Pageable.unpaged());
+
+            List<com.nova.nova_server.domain.trend.dto.SkillTrendResponse.KeywordItem> keywordItems = topKeywordsData
+                    .stream()
+                    .map(k -> com.nova.nova_server.domain.trend.dto.SkillTrendResponse.KeywordItem
+                            .builder()
+                            .name((String) k[0])
+                            .mentionCount((Long) k[1])
+                            .build())
+                    .collect(Collectors.toList());
 
             rankingItems.add(com.nova.nova_server.domain.trend.dto.SkillTrendResponse.RankingItem.builder()
                     .rank(rank++)
                     .interest(interestId)
                     .totalMentionCount(totalCount)
-                    .keywords(topKeywords)
+                    .keywords(keywordItems)
                     .build());
         }
 
         return com.nova.nova_server.domain.trend.dto.SkillTrendResponse.builder()
-                .baseDate(baseDate)
                 .rankings(rankingItems)
                 .build();
     }

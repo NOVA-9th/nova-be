@@ -17,6 +17,7 @@ public record CardNewsSearchCondition(
         List<CardType> type,
         List<String> keywords,
         Boolean saved,
-        Pageable pageable
-) {
+        String searchKeyword,
+        Boolean hidden,
+        Pageable pageable) {
 }

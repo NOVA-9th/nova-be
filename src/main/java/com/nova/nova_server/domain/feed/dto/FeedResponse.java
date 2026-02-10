@@ -19,6 +19,9 @@ public record FeedResponse(
         @Schema(description = "카드뉴스 유형", example = "COMMUNITY")
         CardType cardType,
 
+        @Schema(description = "카드뉴스 관련도", example = "92")
+        Integer score,
+
         @Schema(description = "작성자", example = "nova team")
         String author,
 
@@ -41,6 +44,9 @@ public record FeedResponse(
         List<String> keywords,
 
         @Schema(description = "저장 여부", example = "false")
-        boolean saved
+        boolean saved,
+
+        @Schema(description = "숨김 여부", example = "false")
+        boolean hidden
 ) {
 }
