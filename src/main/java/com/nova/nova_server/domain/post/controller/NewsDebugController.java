@@ -135,6 +135,12 @@ public class NewsDebugController {
     @GetMapping("/techblog")
     public List<Article> fetchFromTechBlog() { return fetchAllArticles("TechBlog"); }
 
+    // --- 채용 ---
+
+    @Operation(summary = "[채용] Jumpit 호출", description = "점핏에서 최신 백엔드 채용 공고를 가져옵니다.")
+    @GetMapping("/jumpit")
+    public List<Article> fetchFromJumpit() { return fetchAllArticles("Jumpit"); }
+
     private List<Article> fetchAllArticles(String providerName) {
         ArticleApiService service = articleApiServiceFactory.getServiceByName(providerName);
         return service.fetchArticles()
