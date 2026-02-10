@@ -20,7 +20,7 @@ public class ArticleIngestionScheduler {
     public void runDailyBatch() {
         log.info("Daily CardNews batch triggered by scheduler");
         try {
-            batchJobService.runArticleIngestionBatch();
+            batchJobService.runArticleIngestionAndSummaryBatch();
         } catch (Exception e) {
             log.error("Scheduled batch execution failed", e);
         }
