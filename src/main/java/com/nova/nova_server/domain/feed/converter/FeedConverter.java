@@ -32,6 +32,8 @@ public class FeedConverter {
                 .type(request.type())
                 .keywords(request.keywords())
                 .saved(request.saved())
+                .searchKeyword(request.searchKeyword())
+                .hidden(request.hidden())
                 .pageable(toPageable(request.page(), request.size()))
                 .build();
     }

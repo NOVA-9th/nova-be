@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static com.nova.nova_server.domain.cardNews.entity.QCardNews.cardNews;
 import static com.nova.nova_server.domain.cardNews.entity.QCardNewsBookmark.cardNewsBookmark;
+import static com.nova.nova_server.domain.cardNews.entity.QCardNewsHidden.cardNewsHidden;
 import static com.nova.nova_server.domain.cardNews.entity.QCardNewsKeyword.cardNewsKeyword;
 import static com.nova.nova_server.domain.keyword.entity.QKeyword.keyword;
 import static com.nova.nova_server.domain.member.entity.QMemberPreferKeyword.memberPreferKeyword;
@@ -51,17 +52,16 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                         new QCardNewsIdScoreResult(
                                 cardNews.id,
                                 // 최신순 정렬 시에도 관련도 점수는 표시되어야 함
-                                calcTotalScore(condition.memberId())
-                        )
-                )
+                                calcTotalScore(condition.memberId())))
                 .from(cardNews)
                 .where(
                         cardTypeIn(condition.type()),
                         keywordIn(condition.keywords()),
                         publishedAfter(condition.startDate()),
                         publishedBefore(condition.endDate()),
-                        isSaved(condition.memberId(), condition.saved())
-                )
+                        isSaved(condition.memberId(), condition.saved()),
+                        containsKeyword(condition.searchKeyword()),
+                        isHidden(condition.memberId(), condition.hidden()))
                 .orderBy(getOrderSpecifiers(condition.memberId(), condition.sort()))
                 .offset(condition.pageable().getOffset())
                 .limit(condition.pageable().getPageSize())
@@ -76,8 +76,9 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                         keywordIn(condition.keywords()),
                         publishedAfter(condition.startDate()),
                         publishedBefore(condition.endDate()),
-                        isSaved(condition.memberId(), condition.saved())
-                );
+                        isSaved(condition.memberId(), condition.saved()),
+                        containsKeyword(condition.searchKeyword()),
+                        isHidden(condition.memberId(), condition.hidden()));
 
         log.debug("Fetched CardNews ids {} by condition {}", cardNewsIdScoreList, condition);
 
@@ -91,7 +92,8 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                 .from(cardNews)
                 .leftJoin(cardNews.keywords, cardNewsKeyword).fetchJoin()
                 .leftJoin(cardNewsKeyword.keyword, keyword).fetchJoin()
-                .where(cardIdIn(cardNewsIdScoreList.stream().map(CardNewsIdScoreResult::cardNewsId).toList()))
+                .where(cardIdIn(cardNewsIdScoreList.stream().map(CardNewsIdScoreResult::cardNewsId)
+                        .toList()))
                 .fetch();
 
         // 카드 뉴스별 점수 매핑
@@ -134,8 +136,7 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                         .select(cardNewsKeyword.cardNews.id).distinct()
                         .from(cardNewsKeyword)
                         .join(cardNewsKeyword.keyword, keyword)
-                        .where(keyword.name.in(keywords))
-        );
+                        .where(keyword.name.in(keywords)));
     }
 
     private BooleanExpression publishedAfter(LocalDateTime date) {
@@ -163,8 +164,7 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                 JPAExpressions
                         .select(cardNewsBookmark.cardNews.id)
                         .from(cardNewsBookmark)
-                        .where(cardNewsBookmark.member.id.eq(memberId))
-        );
+                        .where(cardNewsBookmark.member.id.eq(memberId)));
     }
 
     @Override
@@ -212,6 +212,30 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
         }
         return cardNews.title.contains(keyword)
                 .or(cardNews.summary.contains(keyword));
+    }
+
+    private BooleanExpression isHidden(Long memberId, Boolean hidden) {
+        if (hidden == null || !hidden) {
+            // 숨기지 않은 글만 조회 (기본값)
+            if (memberId == null) {
+                return null;
+            }
+            return cardNews.id.notIn(
+                    JPAExpressions
+                            .select(cardNewsHidden.cardNews.id)
+                            .from(cardNewsHidden)
+                            .where(cardNewsHidden.member.id.eq(memberId)));
+        } else {
+            // 숨긴 글만 조회
+            if (memberId == null) {
+                return Expressions.asBoolean(false).isTrue(); // 로그인하지 않은 사용자는 숨긴 글이 없음
+            }
+            return cardNews.id.in(
+                    JPAExpressions
+                            .select(cardNewsHidden.cardNews.id)
+                            .from(cardNewsHidden)
+                            .where(cardNewsHidden.member.id.eq(memberId)));
+        }
     }
 
     /**
@@ -262,11 +286,9 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                                         JPAExpressions
                                                 .select(memberPreferKeyword.keyword.id)
                                                 .from(memberPreferKeyword)
-                                                .where(memberPreferKeyword.member.id.eq(memberId))
-                                )
-                        ),
-                feedConfig.getKeywordMatchScore()
-        );
+                                                .where(memberPreferKeyword.member.id
+                                                        .eq(memberId)))),
+                feedConfig.getKeywordMatchScore());
     }
 
     /**
@@ -287,12 +309,11 @@ public class CardNewsRepositoryImpl implements CardNewsRepositoryCustom {
                                                 .select(cardNewsKeyword.keyword.id)
                                                 .from(cardNewsKeyword)
                                                 .leftJoin(cardNewsBookmark)
-                                                .on(cardNewsBookmark.cardNews.id.eq(cardNewsKeyword.cardNews.id))
-                                                .where(cardNewsBookmark.member.id.eq(memberId))
-                                )
-                        ),
-                feedConfig.getBookmarkKeywordMatchScore()
-        );
+                                                .on(cardNewsBookmark.cardNews.id
+                                                        .eq(cardNewsKeyword.cardNews.id))
+                                                .where(cardNewsBookmark.member.id
+                                                        .eq(memberId)))),
+                feedConfig.getBookmarkKeywordMatchScore());
     }
 
 }
