@@ -1,4 +1,4 @@
-package com.nova.nova_server.domain.batch.entity;
+package com.nova.nova_server.domain.batch.common.entity;
 
 import com.nova.nova_server.domain.cardNews.entity.CardType;
 import com.nova.nova_server.domain.common.BaseEntity;
@@ -42,12 +42,19 @@ public class ArticleEntity extends BaseEntity {
     @Column(nullable = false, length = 2048)
     private String url;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "state", nullable = false)
+    @Builder.Default
+    @Setter
+    private ArticleState state = ArticleState.STAGED;
+
     public static ArticleEntity from(Article article) {
         return ArticleEntity.builder()
                 .title(article.title())
                 .content(article.content())
                 .author(article.author())
                 .source(article.source())
+                .state(ArticleState.STAGED)
                 .publishedAt(article.publishedAt())
                 .cardType(article.cardType())
                 .url(article.url())

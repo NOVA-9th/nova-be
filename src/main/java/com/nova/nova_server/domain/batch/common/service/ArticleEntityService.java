@@ -1,6 +1,6 @@
-package com.nova.nova_server.domain.batch.service;
+package com.nova.nova_server.domain.batch.common.service;
 
-import com.nova.nova_server.domain.batch.repository.ArticleEntityRepository;
+import com.nova.nova_server.domain.batch.common.repository.ArticleEntityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

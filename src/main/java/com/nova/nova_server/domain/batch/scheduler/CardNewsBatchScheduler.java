@@ -1,6 +1,6 @@
 package com.nova.nova_server.domain.batch.scheduler;
 
-import com.nova.nova_server.domain.batch.service.CardNewsBatchService;
+import com.nova.nova_server.domain.batch.common.service.BatchJobService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CardNewsBatchScheduler {
 
-    private final CardNewsBatchService cardNewsBatchService;
+    private final BatchJobService batchJobService;
 
     /**
      * 매일 정해진 시간(새벽 5시)에 배치를 실행합니다.
@@ -23,7 +23,7 @@ public class CardNewsBatchScheduler {
     public void runDailyBatch() {
         log.info("Daily CardNews batch triggered by scheduler");
         try {
-            cardNewsBatchService.executeBatch();
+            batchJobService.runArticleIngestionAndSummaryBatch();
         } catch (Exception e) {
             log.error("Scheduled batch execution failed", e);
         }

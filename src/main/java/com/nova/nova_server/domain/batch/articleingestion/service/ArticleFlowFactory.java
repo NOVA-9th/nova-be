@@ -1,11 +1,13 @@
-package com.nova.nova_server.domain.batch.service;
+package com.nova.nova_server.domain.batch.articleingestion.service;
 
-import com.nova.nova_server.domain.batch.entity.ArticleEntity;
+import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
+import com.nova.nova_server.domain.batch.common.service.ArticleEntityService;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.FlowBuilder;
+import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.repository.JobRepository;
@@ -29,10 +31,11 @@ public class ArticleFlowFactory {
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
-    private final ArticleProcessor articleProcessor;
+    private final ArticleFetchProcessor articleProcessor;
     private final JpaItemWriter<ArticleEntity> articleWriter;
     private final ArticleEntityService articleEntityService;
 
+    private final TaskExecutor flowTaskExecutor;
     private final TaskExecutor stepTaskExecutor;
 
     public List<Flow> createFlows(List<ArticleApiService> services) {
@@ -45,6 +48,15 @@ public class ArticleFlowFactory {
                             .start(step).build();
                 })
                 .toList();
+    }
+
+    public Flow createCombinedFlow(List<ArticleApiService> services) {
+        List<Flow> flows = createFlows(services);
+
+        return new FlowBuilder<SimpleFlow>("splitFlow")
+                .split(flowTaskExecutor)
+                .add(flows.toArray(new Flow[0]))
+                .build();
     }
 
     private Step createStep(ArticleApiService service) {

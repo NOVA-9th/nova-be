@@ -1,6 +1,6 @@
-package com.nova.nova_server.domain.batch.repository;
+package com.nova.nova_server.domain.batch.common.repository;
 
-import com.nova.nova_server.domain.batch.entity.ArticleEntity;
+import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

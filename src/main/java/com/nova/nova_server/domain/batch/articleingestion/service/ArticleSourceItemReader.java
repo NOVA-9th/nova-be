@@ -1,6 +1,6 @@
-package com.nova.nova_server.domain.batch.service;
+package com.nova.nova_server.domain.batch.articleingestion.service;
 
-import com.nova.nova_server.domain.batch.repository.ArticleEntityRepository;
+import com.nova.nova_server.domain.batch.common.service.ArticleEntityService;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,6 @@ import org.springframework.batch.item.ItemStreamReader;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j

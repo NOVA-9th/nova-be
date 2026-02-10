@@ -1,4 +1,4 @@
-package com.nova.nova_server.domain.batch.error;
+package com.nova.nova_server.domain.batch.common.error;
 
 import com.nova.nova_server.global.apiPayload.code.error.ErrorCode;
 import lombok.AllArgsConstructor;

@@ -1,6 +1,6 @@
-package com.nova.nova_server.domain.batch.config;
+package com.nova.nova_server.domain.batch.articleingestion.config;
 
-import com.nova.nova_server.domain.batch.entity.ArticleEntity;
+import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;

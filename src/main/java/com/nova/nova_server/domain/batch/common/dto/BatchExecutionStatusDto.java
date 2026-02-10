@@ -1,4 +1,4 @@
-package com.nova.nova_server.domain.batch.dto;
+package com.nova.nova_server.domain.batch.common.dto;
 
 import lombok.Builder;
 import lombok.Getter;

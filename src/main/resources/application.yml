@@ -7,7 +7,7 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
   datasource:
     hikari:
-      maximum-pool-size: 30  # batch split threads (max 20) + web/job repo headroom
+      maximum-pool-size: 50  # batch split threads (max 20) + web/job repo headroom
   batch:
     job:
       enabled: false  # run jobs via BatchJobService / API or scheduler only
