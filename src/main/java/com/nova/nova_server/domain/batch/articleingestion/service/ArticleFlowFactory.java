@@ -1,13 +1,12 @@
 package com.nova.nova_server.domain.batch.articleingestion.service;
 
 import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
-import com.nova.nova_server.domain.batch.common.service.ArticleEntityService;
+import com.nova.nova_server.domain.batch.common.repository.ArticleEntityRepository;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.job.builder.FlowBuilder;
-import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.job.flow.Flow;
 import org.springframework.batch.core.job.flow.support.SimpleFlow;
 import org.springframework.batch.core.repository.JobRepository;
@@ -33,7 +32,7 @@ public class ArticleFlowFactory {
     private final PlatformTransactionManager transactionManager;
     private final ArticleFetchProcessor articleProcessor;
     private final JpaItemWriter<ArticleEntity> articleWriter;
-    private final ArticleEntityService articleEntityService;
+    private final ArticleEntityRepository articleEntityRepository;
 
     private final TaskExecutor flowTaskExecutor;
     private final TaskExecutor stepTaskExecutor;
@@ -60,7 +59,7 @@ public class ArticleFlowFactory {
     }
 
     private Step createStep(ArticleApiService service) {
-        ItemStreamReader<ArticleSource> reader = new ArticleSourceItemReader(service, articleEntityService);
+        ItemStreamReader<ArticleSource> reader = new ArticleSourceItemReader(service, articleEntityRepository);
 
         return new StepBuilder(STEP_NAME_PREFIX + service.getProviderName(), jobRepository)
                 .<ArticleSource, ArticleEntity>chunk(CHUNK_SIZE, transactionManager)

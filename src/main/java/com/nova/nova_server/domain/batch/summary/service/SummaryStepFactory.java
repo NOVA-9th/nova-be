@@ -24,9 +24,6 @@ public class SummaryStepFactory {
                 .<ArticleEntity, ArticleEntity>chunk(CHUNK_SIZE, transactionManager)
                 .reader(articleEntityReader)
                 .writer(articleSummaryWriter)
-                .transactionAttribute(new DefaultTransactionAttribute() {{
-                    setTimeout(3600 * 2); // 2시간 설정 (중요!)
-                }})
                 .build();
     }
 }

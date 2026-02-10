@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.batch.articleingestion.service;
 
+import com.nova.nova_server.domain.batch.common.converter.ArticleConverter;
 import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.ArticleSource;
@@ -18,7 +19,7 @@ public class ArticleFetchProcessor implements ItemProcessor<ArticleSource, Artic
             if (article == null) {
                 return null;
             }
-            return ArticleEntity.from(article);
+            return ArticleConverter.toEntity(article);
         } catch (Exception e) {
             log.error("Processor failed for url={}", source.getUrl(), e);
             return null; // skip this item

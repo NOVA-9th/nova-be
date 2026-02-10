@@ -1,6 +1,7 @@
-package com.nova.nova_server.domain.batch.common.service;
+package com.nova.nova_server.domain.batch.cardnews.service;
 
-import com.nova.nova_server.domain.batch.summary.converter.ArticleConverter;
+import com.nova.nova_server.domain.batch.common.converter.ArticleConverter;
+import com.nova.nova_server.domain.batch.summary.converter.PromptConverter;
 import com.nova.nova_server.domain.batch.summary.dto.LlmSummaryResult;
 import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
@@ -24,7 +25,7 @@ public class CardNewsSaveService {
     private final CardNewsKeywordRepository cardNewsKeywordRepository;
 
     public void saveSingleCardNews(ArticleEntity entity, LlmSummaryResult llmSummaryResult) {
-        Article article = ArticleConverter.toArticle(entity);
+        Article article = ArticleConverter.toDomain(entity);
 
         CardNews cardNews = CardNews.builder()
                 .cardType(article.cardType())

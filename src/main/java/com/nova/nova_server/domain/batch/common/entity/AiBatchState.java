@@ -1,8 +1,7 @@
 package com.nova.nova_server.domain.batch.common.entity;
 
-public enum ArticleState {
-    STAGED,
-    REQUESTED,
+public enum AiBatchState {
+    PROGRESS,
     COMPLETED,
     FAILED
 }

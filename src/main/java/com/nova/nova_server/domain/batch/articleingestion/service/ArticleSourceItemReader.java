@@ -1,6 +1,6 @@
 package com.nova.nova_server.domain.batch.articleingestion.service;
 
-import com.nova.nova_server.domain.batch.common.service.ArticleEntityService;
+import com.nova.nova_server.domain.batch.common.repository.ArticleEntityRepository;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import lombok.RequiredArgsConstructor;
@@ -11,14 +11,16 @@ import org.springframework.batch.item.ItemStreamReader;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+// ArticleApiService 로부터 글 목록들을 가져오는 ItemReader
 @Slf4j
 @RequiredArgsConstructor
 public class ArticleSourceItemReader implements ItemStreamReader<ArticleSource> {
 
     private final ArticleApiService articleApiService;
-    private final ArticleEntityService articleEntityService;
+    private final ArticleEntityRepository articleEntityRepository;
 
     private List<ArticleSource> sources;
     private int index = 0;
@@ -40,7 +42,7 @@ public class ArticleSourceItemReader implements ItemStreamReader<ArticleSource> 
                             articleSource -> articleSource,
                             (existing, replacement) -> existing));
 
-            sources = articleEntityService.distinctUrls(articleUrlMap.keySet())
+            sources = findNonExistingUrls(articleUrlMap.keySet())
                     .stream()
                     .map(articleUrlMap::get)
                     .toList();
@@ -55,7 +57,16 @@ public class ArticleSourceItemReader implements ItemStreamReader<ArticleSource> 
         return sources.get(index++);
     }
 
-    // ItemStream 인터페이스의 나머지 메서드들 (구현 안 해도 되지만 명시적으로)
+    private Set<String> findNonExistingUrls(Set<String> urls) {
+        if (urls == null || urls.isEmpty()) {
+            return Set.of();
+        }
+        Set<String> existingUrls = articleEntityRepository.findUrlsByUrlIn(urls);
+        return urls.stream()
+                .filter(url -> !existingUrls.contains(url))
+                .collect(Collectors.toSet());
+    }
+
     @Override
     public void update(@NonNull ExecutionContext executionContext) {}
     @Override

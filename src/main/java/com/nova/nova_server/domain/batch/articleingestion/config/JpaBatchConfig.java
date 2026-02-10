@@ -7,6 +7,7 @@ import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+// ArticleEntity 를 DB 에 저장하는 ItemWriter
 @Configuration
 public class JpaBatchConfig {
     @Bean

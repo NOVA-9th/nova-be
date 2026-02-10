@@ -1,6 +1,7 @@
 package com.nova.nova_server.domain.batch.summary.converter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nova.nova_server.domain.batch.common.converter.ArticleConverter;
 import com.nova.nova_server.domain.batch.summary.dto.LlmSummaryResult;
 import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
 import com.nova.nova_server.domain.post.model.Article;
@@ -11,13 +12,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Article → LLM 요약용 프롬프트 문자열 변환
  * 요약, 근거, 키워드 5개 추출을 위한 프롬프트 생성
  */
-@Component
-public class ArticleConverter {
+public class PromptConverter {
 
     private static final String SUMMARY_PROMPT = """
             다음 기사 내용을 바탕으로 JSON 형태로 요약(summary), 근거(evidence), 키워드 5개(keywords)를 추출해주세요.
@@ -53,46 +54,27 @@ public class ArticleConverter {
             """;
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    public static Article toArticle(ArticleEntity entity) {
-        return Article.builder()
-                .title(entity.getTitle())
-                .content(entity.getContent())
-                .url(entity.getUrl())
-                .author(entity.getAuthor())
-                .source(entity.getSource())
-                .publishedAt(entity.getPublishedAt())
-                .cardType(entity.getCardType())
-                .build();
-    }
-
-    public Map<String, String> chunkToPromptMap(Chunk<? extends ArticleEntity> entities) {
-        List<Article> articles = entities.getItems()
-                .stream()
-                .map(ArticleConverter::toArticle)
-                .toList();
-        return toPromptMap(articles);
-    }
 
     /**
      * Article 목록을 LLM 배치 입력용 Map으로 변환
      *
-     * @param articles 아티클 목록
+     * @param entities 아티클 목록
      * @return custom_id(key) -> 프롬프트+아티클 조합 문자열(value)의 Map
      */
-    public Map<String, String> toPromptMap(List<Article> articles) {
-        Map<String, String> resultMap = new HashMap<>();
-        for (int i = 0; i < articles.size(); i++) {
-            Article article = articles.get(i);
-            String customId = "article-" + i;
-            String promptContent = SUMMARY_PROMPT + formatArticle(article);
-            resultMap.put(customId, promptContent);
-        }
-        return resultMap;
+    public static Map<String, String> toPromptMap(List<? extends ArticleEntity> entities) {
+        return entities.stream()
+                .collect(Collectors.toMap(
+                        entity -> entity.getId().toString(),
+                        PromptConverter::buildPrompt
+                ));
     }
 
-    private String formatArticle(Article article) {
+    private static String buildPrompt(ArticleEntity entity) {
+        Article article = ArticleConverter.toDomain(entity);
+        return SUMMARY_PROMPT + formatArticle(article);
+    }
+
+    private static String formatArticle(Article article) {
         StringBuilder sb = new StringBuilder();
         sb.append("제목: ").append(nullToEmpty(article.title())).append("\n");
         sb.append("출처: ").append(nullToEmpty(article.source())).append("\n");
@@ -104,49 +86,7 @@ public class ArticleConverter {
         return sb.toString();
     }
 
-    private String nullToEmpty(String value) {
+    private static String nullToEmpty(String value) {
         return value != null ? value : "";
-    }
-
-    public Map<ArticleEntity, LlmSummaryResult> fromBatchResult(Chunk<? extends ArticleEntity> articles, Map<String, String> batchResult) {
-        Map<ArticleEntity, LlmSummaryResult> mapResult = new HashMap<>();
-
-        for (int i = 0; i < articles.size(); i++) {
-            String customId = "article-" + i;
-            ArticleEntity entity = articles.getItems().get(i);
-            String summaryJson = batchResult.get(customId);
-
-            if (summaryJson == null) {
-                mapResult.put(entity, null);
-            }
-            else {
-                LlmSummaryResult summary = parseLlmResult(summaryJson);
-                mapResult.put(entity, summary);
-            }
-        }
-
-        return mapResult;
-    }
-
-    private LlmSummaryResult parseLlmResult(String llmJson) {
-        try {
-            // LLM 응답에서 JSON 부분만 추출 (마크다운 코드 블럭 등 제거)
-            String json = extractJson(llmJson);
-            return objectMapper.readValue(json, LlmSummaryResult.class);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse LLM result: " + llmJson, e);
-        }
-    }
-
-    private String extractJson(String content) {
-        // ```json ... ``` 형태로 감싸져 있을 수 있음
-        if (content.contains("```")) {
-            int start = content.indexOf("{");
-            int end = content.lastIndexOf("}");
-            if (start >= 0 && end > start) {
-                return content.substring(start, end + 1);
-            }
-        }
-        return content.trim();
     }
 }
