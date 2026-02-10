@@ -12,7 +12,7 @@ import org.springframework.transaction.interceptor.DefaultTransactionAttribute;
 @Component
 @RequiredArgsConstructor
 public class SummaryStepFactory {
-    private static final int CHUNK_SIZE = 1000;
+    private static final int CHUNK_SIZE = 100;
 
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;

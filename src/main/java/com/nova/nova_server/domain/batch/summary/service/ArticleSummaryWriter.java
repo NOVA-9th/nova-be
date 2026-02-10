@@ -85,9 +85,7 @@ public class ArticleSummaryWriter implements ItemWriter<ArticleEntity> {
 
     private boolean waitForCompletion(String batchId) {
         for (int i = 0; i < MAX_POLLING_COUNT; i++) {
-            if (i % 2 == 0) {
-                log.info("Waiting for AI Batch... ({}/{}): batchId={}", i + 1, MAX_POLLING_COUNT, batchId);
-            }
+            log.info("Waiting for AI Batch... ({}/{}): batchId={}", i + 1, MAX_POLLING_COUNT, batchId);
 
             // AI 서비스에 완료 여부 체크
             if (aiBatchService.isCompleted(batchId)) {

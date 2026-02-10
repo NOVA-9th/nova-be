@@ -43,7 +43,6 @@ public class HackerNewsParser {
         if (dto == null) {
             return null;
         }
-        content = cleanHtml(dto.text());
         String url = resolveUrl(dto);
         LocalDateTime publishedAt = dto.time() != null
                 ? LocalDateTime.ofInstant(Instant.ofEpochSecond(dto.time()), ZoneOffset.UTC)

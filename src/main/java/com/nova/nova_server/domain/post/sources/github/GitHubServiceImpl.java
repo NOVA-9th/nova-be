@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
 @RequiredArgsConstructor
 public class GitHubServiceImpl implements ArticleApiService {
 
@@ -20,10 +19,10 @@ public class GitHubServiceImpl implements ArticleApiService {
     @Override
     public List<ArticleSource> fetchArticles() {
         List<GitHubArticle> allItems = new ArrayList<>();
-        allItems.addAll(client.fetchGlobalTrending(3).items());
-        allItems.addAll(client.fetchMobileTrending(3).items());
-        allItems.addAll(client.fetchWebTrending(3).items());
-        allItems.addAll(client.fetchBackendTrending(3).items());
+        allItems.addAll(client.fetchGlobalTrending(100).items());
+        allItems.addAll(client.fetchMobileTrending(5).items());
+        allItems.addAll(client.fetchWebTrending(5).items());
+        allItems.addAll(client.fetchBackendTrending(5).items());
 
         return allItems.stream()
                 .map(item -> (ArticleSource)new GitHubArticleSource(item, client))

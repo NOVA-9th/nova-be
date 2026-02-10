@@ -44,17 +44,17 @@ public class StackExchangeServiceImpl implements ArticleApiService {
         Map<String, JsonNode> uniqueItems = new LinkedHashMap<>();
 
         // 전체 top 2개
-        addUnique(uniqueItems, client.fetchQuestions(null, "month", 2));
+        addUnique(uniqueItems, client.fetchQuestions(null, "month", 100));
 
         // 월간 top 1개
-        addUnique(uniqueItems, client.fetchQuestions(null, "month", 1));
+        addUnique(uniqueItems, client.fetchQuestions(null, "month", 100));
 
         // 각 주요 카테고리 1개(추후 논의 후 확장)
-        fetchAndAdd(uniqueItems, "Mobile App", 1);
-        fetchAndAdd(uniqueItems, "Web", 1);
-        fetchAndAdd(uniqueItems, "Backend", 1);
-        fetchAndAdd(uniqueItems, "AI/ML", 1);
-        fetchAndAdd(uniqueItems, "Infra", 1);
+        fetchAndAdd(uniqueItems, "Mobile App", 100);
+        fetchAndAdd(uniqueItems, "Web", 100);
+        fetchAndAdd(uniqueItems, "Backend", 100);
+        fetchAndAdd(uniqueItems, "AI/ML", 100);
+        fetchAndAdd(uniqueItems, "Infra", 100);
 
         return StackExchangeParser.parse(new ArrayList<>(uniqueItems.values()));
     }

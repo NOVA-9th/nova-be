@@ -24,10 +24,12 @@ public class TechBlogServiceFactory {
     private final TechBlogClient client;
 
     public List<ArticleApiService> createAllAvailableServices() {
-        return BLOG_RSS_URLS.values().stream().map(this::createTechBlogService).toList();
-    }
-
-    public ArticleApiService createTechBlogService(String url) {
-        return new TechBlogServiceImpl(client, url);
+        return BLOG_RSS_URLS.entrySet()
+                .stream()
+                .map(entry -> (ArticleApiService)new TechBlogServiceImpl(
+                        client,
+                        entry.getValue(),
+                        entry.getKey()))
+                .toList();
     }
 }

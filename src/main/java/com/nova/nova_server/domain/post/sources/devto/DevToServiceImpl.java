@@ -14,7 +14,7 @@ public class DevToServiceImpl implements ArticleApiService {
 
     @Override
     public List<ArticleSource> fetchArticles() {
-        return client.fetchArticles(5).stream()
+        return client.fetchArticles().stream()
                 .map(article -> (ArticleSource)new DevToArticleSource(client, article))
                 .toList();
     }

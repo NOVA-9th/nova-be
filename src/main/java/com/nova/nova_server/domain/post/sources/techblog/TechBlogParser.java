@@ -1,6 +1,7 @@
 package com.nova.nova_server.domain.post.sources.techblog;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.nova.nova_server.domain.post.HtmlCleaner;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.cardNews.entity.CardType;
 import com.nova.nova_server.domain.post.model.ArticleSource;
@@ -45,8 +46,7 @@ public class TechBlogParser {
                 rawContent = item.get("description").asText();
             }
 
-            // HTML 태그 제거(하단 헬퍼함수 참조)
-            String cleanContent = removeHtmlAndCode(rawContent);
+            String cleanContent = HtmlCleaner.getTextFromHtml(rawContent);
 
             // 날짜 파싱
             LocalDateTime publishedAt = null;
@@ -74,21 +74,5 @@ public class TechBlogParser {
         return articles;
     }
 
-    // HTML 깔끔이 헬퍼
-    private static String removeHtmlAndCode(String html) {
-        if (html == null || html.isEmpty()) {
-            return "";
-        }
-        Document doc = Jsoup.parse(html);
 
-        // 제거하고 싶은 태그 선택하여 삭제, 일단 <pre>, <code>, <script>, <style> 태그만
-        doc.select("pre").remove(); // 긴 코드 블럭
-        doc.select("code").remove(); // 인라인 코드
-        doc.select("script").remove(); // 자바스크립트
-        doc.select("style").remove(); // 스타일 시트
-        doc.select("img").remove(); // 이미지
-
-        // 남은 태그 안에서 순수 텍스트만 추출
-        return doc.text();
-    }
 }

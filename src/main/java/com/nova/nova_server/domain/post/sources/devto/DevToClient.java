@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.post.sources.devto;
 
+import com.nova.nova_server.domain.post.HtmlCleaner;
 import com.nova.nova_server.domain.post.sources.devto.dto.DevToArticle;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,9 +24,12 @@ public class DevToClient {
     @Value("${external.devto.user-agent}")
     private String userAgent;
 
-    public List<DevToArticle> fetchArticles(int limit) {
+    @Value("${external.devto.perPage:1000}")
+    private int perPage;
+
+    public List<DevToArticle> fetchArticles() {
         List<DevToArticle> articles = webClient.get()
-                .uri(baseUrl + "/articles?top=1&per_page=" + limit)
+                .uri(baseUrl + "/articles?top=1&per_page=" + perPage)
                 .header("User-Agent", userAgent)
                 .retrieve()
                 .bodyToFlux(DevToArticle.class)
@@ -41,11 +45,12 @@ public class DevToClient {
     }
 
     public String fetchArticleDetail(String url) {
-        return webClient.get()
+        String html = webClient.get()
                 .uri(url)
                 .header("User-Agent", userAgent)
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
+        return HtmlCleaner.getTextFromHtml(html);
     }
 }

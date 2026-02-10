@@ -1,11 +1,13 @@
 package com.nova.nova_server.domain.post.sources.hackernews;
 
+import com.nova.nova_server.domain.post.HtmlCleaner;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -21,6 +23,9 @@ public class HackerNewsClient {
 
     @Value("${external.hackernews.base-url}")
     private String baseUrl;
+
+    @Value("${external.hackernews.user-agent}")
+    private String userAgent;
 
     public List<ArticleSource> fetchMixedStories() {
         List<ArticleSource> allItems = new ArrayList<>();
@@ -69,24 +74,45 @@ public class HackerNewsClient {
         // 해커뉴스 내부 링크는 크롤링 불필요 (text 필드에 이미 내용 있음)
         String url = item.url();
         if (url == null || url.isEmpty() || url.contains("news.ycombinator.com")) {
-            return item.text();
+            String text = item.text();
+            if (!text.isBlank()) {
+                return cleanHtml(text);
+            }
+            log.warn("text is empty {}", url);
         }
 
         try {
             Document doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0")
+                    .userAgent(userAgent)
                     .timeout(5000)
                     .get();
 
             String content = doc.select("article").text();
-            if (content.isEmpty()) {
-                content = doc.select("p").text();
+            if (content.isBlank()) {
+                content = HtmlCleaner.getTextFromHtml(doc.outerHtml());
+            }
+
+            if (content.isBlank()) {
+                log.warn("content is empty {}", url);
             }
 
             return content;
-        } catch (Exception e) {
-            log.error("HackerNews extract", e);
-            throw new RuntimeException("HackerNews extractContent 실패", e);
         }
+        catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String cleanHtml(String input) {
+        if (input == null) return null;
+
+        // 1. HTML 엔티티 디코딩 (&#x2F; → /, &#x27; → ')
+        String decoded = StringEscapeUtils.unescapeHtml4(input);
+
+        // 2. HTML 태그 제거 (<p>, <pre>, <code> 등)
+        String cleaned = decoded.replaceAll("<[^>]+>", "");
+
+        // 3. 연속된 공백을 하나로
+        return cleaned.replaceAll("\\s+", " ").trim();
     }
 }

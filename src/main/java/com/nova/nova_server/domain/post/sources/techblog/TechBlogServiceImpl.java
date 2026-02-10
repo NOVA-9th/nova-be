@@ -16,6 +16,7 @@ import java.util.Map;
 public class TechBlogServiceImpl implements ArticleApiService {
     private final TechBlogClient client;
     private final String url;
+    private final String name;
 
     @Override
     public List<ArticleSource> fetchArticles() {
@@ -25,6 +26,6 @@ public class TechBlogServiceImpl implements ArticleApiService {
 
     @Override
     public String getProviderName() {
-        return "TechBlog";
+        return "TechBlog-" + name;
     }
 }

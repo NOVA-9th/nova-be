@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArticleEntity extends BaseEntity {
 
+    private static final int TEXT_MAX_LENGTH = 10_000;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,9 +51,13 @@ public class ArticleEntity extends BaseEntity {
     private ArticleState state = ArticleState.STAGED;
 
     public static ArticleEntity from(Article article) {
+        String content = article.content();
+        if (content != null && content.length() > TEXT_MAX_LENGTH) {
+            content = content.substring(0, TEXT_MAX_LENGTH);
+        }
         return ArticleEntity.builder()
                 .title(article.title())
-                .content(article.content())
+                .content(content)
                 .author(article.author())
                 .source(article.source())
                 .state(ArticleState.STAGED)

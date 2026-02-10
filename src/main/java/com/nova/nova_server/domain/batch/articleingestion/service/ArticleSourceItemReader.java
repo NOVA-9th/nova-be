@@ -37,7 +37,8 @@ public class ArticleSourceItemReader implements ItemStreamReader<ArticleSource> 
                     .stream()
                     .collect(Collectors.toMap(
                             ArticleSource::getUrl,
-                            articleSource -> articleSource));
+                            articleSource -> articleSource,
+                            (existing, replacement) -> existing));
 
             sources = articleEntityService.distinctUrls(articleUrlMap.keySet())
                     .stream()
