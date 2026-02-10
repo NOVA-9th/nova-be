@@ -80,6 +80,9 @@ external:
   rss2json:
     base-url: "https://api.rss2json.com/v1/api.json"
     user-agent: "test-useragent"
+  jumpit:
+    base-url: "https://jumpit-api.saramin.co.kr/api"
+    user-agent: "test-useragent"
 
 management:
   endpoints:
