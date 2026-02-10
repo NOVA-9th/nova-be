@@ -75,7 +75,7 @@ public class HackerNewsClient {
         String url = item.url();
         if (url == null || url.isEmpty() || url.contains("news.ycombinator.com")) {
             String text = item.text();
-            if (!text.isBlank()) {
+            if (text != null && !text.isBlank()) {
                 return cleanHtml(text);
             }
             log.warn("text is empty {}", url);
