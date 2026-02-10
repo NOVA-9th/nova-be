@@ -125,7 +125,13 @@ jobs:
             sudo mkdir -p /home/ubuntu/nova/alloy
             sudo mkdir -p /home/ubuntu/nova/prometheus
             sudo mkdir -p /home/ubuntu/nova/loki
+            sudo mkdir -p /home/ubuntu/nova/loki/data
+            sudo mkdir -p /home/ubuntu/nova/prometheus/data
+            sudo mkdir -p /home/ubuntu/nova/grafana/data
             sudo chown -R ubuntu:ubuntu /home/ubuntu/nova
+            sudo chown -R 1000:1000 /home/ubuntu/nova/loki/data
+            sudo chown -R 1000:1000 /home/ubuntu/nova/prometheus/data
+            sudo chown -R 1000:1000 /home/ubuntu/nova/grafana/data
 
             # 3) DockerHub 로그인
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin

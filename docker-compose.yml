@@ -49,11 +49,14 @@ services:
       - '--web.enable-remote-write-receiver'
     expose:
       - "9090"
-    restart: always
+    restart: unless-stopped
     logging: *default-logging
 
   grafana:
     user: "1000"
+    depends_on:
+      - loki
+      - prometheus
     image: grafana/grafana:latest
     container_name: grafana
     ports:
@@ -73,20 +76,23 @@ services:
     command: -config.file=/etc/loki/loki.yml
     expose:
       - "3100"
-    restart: always
+    restart: unless-stopped
     logging: *default-logging
 
   alloy:
+    depends_on:
+      - loki
+      - prometheus
     image: grafana/alloy:latest
     container_name: alloy
     volumes:
       - ./alloy/alloy.yml:/etc/alloy/config.alloy:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/log:/var/log:ro
-    command: run
+    command: >
+      run
       --server.http.listen-addr=0.0.0.0:12345
       --storage.path=/var/lib/alloy/data
       --disable-reporting                       
       /etc/alloy/config.alloy
-    restart: always
+    restart: unless-stopped
     logging: *default-logging
