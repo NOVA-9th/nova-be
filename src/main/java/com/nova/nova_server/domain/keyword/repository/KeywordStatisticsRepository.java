@@ -33,20 +33,15 @@ public interface KeywordStatisticsRepository extends JpaRepository<KeywordStatis
     @Query("SELECT k.interest.id, SUM(ks.mentionCount) as totalCount " +
             "FROM KeywordStatistics ks " +
             "JOIN ks.keyword k " +
-            "WHERE ks.statDate BETWEEN :startDate AND :endDate " +
             "GROUP BY k.interest.id " +
             "ORDER BY totalCount DESC")
-    List<Object[]> findInterestRankings(@Param("startDate") LocalDate startDate,
-                                        @Param("endDate") LocalDate endDate);
+    List<Object[]> findInterestRankingsAllTime();
 
-    @Query("SELECT ks.keyword.name " +
+    @Query("SELECT ks.keyword.name, SUM(ks.mentionCount) " +
             "FROM KeywordStatistics ks " +
             "WHERE ks.keyword.interest.id = :interestId " +
-            "AND ks.statDate BETWEEN :startDate AND :endDate " +
             "GROUP BY ks.keyword.id, ks.keyword.name " +
             "ORDER BY SUM(ks.mentionCount) DESC")
-    List<String> findTopKeywordsByInterestId(@Param("interestId") Long interestId,
-                                             @Param("startDate") LocalDate startDate,
-                                             @Param("endDate") LocalDate endDate,
-                                             Pageable pageable);
+    List<Object[]> findTopKeywordsByInterestIdAllTime(@Param("interestId") Long interestId,
+                                                      Pageable pageable);
 }

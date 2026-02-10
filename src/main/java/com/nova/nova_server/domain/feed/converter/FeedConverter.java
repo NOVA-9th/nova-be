@@ -32,15 +32,22 @@ public class FeedConverter {
                 .type(request.type())
                 .keywords(request.keywords())
                 .saved(request.saved())
+                .searchKeyword(request.searchKeyword())
+                .hidden(request.hidden())
                 .pageable(toPageable(request.page(), request.size()))
                 .build();
     }
 
     public FeedResponse toResponse(CardNews cardNews, boolean saved, boolean hidden) {
+        return toResponse(cardNews, null, saved, hidden);
+    }
+
+    public FeedResponse toResponse(CardNews cardNews, Integer score, boolean saved, boolean hidden) {
         return FeedResponse.builder()
                 .id(cardNews.getId())
                 .title(cardNews.getTitle())
                 .cardType(cardNews.getCardType())
+                .score(toPercentScore(score))
                 .author(cardNews.getAuthor())
                 .publishedAt(cardNews.getPublishedAt().atOffset(ZoneOffset.UTC))
                 .summary(cardNews.getSummary())
@@ -53,6 +60,13 @@ public class FeedConverter {
                 .saved(saved)
                 .hidden(hidden)
                 .build();
+    }
+
+    private Integer toPercentScore(Integer score) {
+        if (score == null) {
+            return null;
+        }
+        return score * 100 / feedConfig.getMaxScore();
     }
 
     private List<String> splitEvidence(String evidence) {

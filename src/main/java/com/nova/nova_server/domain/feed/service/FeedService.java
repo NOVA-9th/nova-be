@@ -1,5 +1,6 @@
 package com.nova.nova_server.domain.feed.service;
 
+import com.nova.nova_server.domain.cardNews.dto.CardNewsScoreResult;
 import com.nova.nova_server.domain.cardNews.dto.CardNewsSearchCondition;
 import com.nova.nova_server.domain.cardNews.entity.CardNews;
 import com.nova.nova_server.domain.cardNews.repository.CardNewsBookmarkRepository;
@@ -16,36 +17,41 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Set;
 
+
 @Service
 @RequiredArgsConstructor
 public class FeedService {
 
-        private final CardNewsRepository cardNewsRepository;
+    private final CardNewsRepository cardNewsRepository;
 
-        private final CardNewsBookmarkRepository bookmarkRepository;
+    private final CardNewsBookmarkRepository bookmarkRepository;
 
-        private final CardNewsHiddenRepository hiddenRepository;
+    private final CardNewsHiddenRepository hiddenRepository;
 
-        private final FeedConverter feedConverter;
+    private final FeedConverter feedConverter;
 
-        public FeedListResponse getCardNews(
-                        long memberId,
-                        FeedRequest request) {
-                CardNewsSearchCondition condition = feedConverter.toCondition(request, memberId);
-                Page<CardNews> cardNewsList = cardNewsRepository.searchByCondition(condition);
-                List<Long> cardNewsIds = cardNewsList.stream().map(CardNews::getId).toList();
-                Set<Long> bookmarkedCardNewsIds = bookmarkRepository.filterBookmarkedCardNewsIds(memberId, cardNewsIds);
+    public FeedListResponse getCardNews(
+            long memberId,
+            FeedRequest request
+    ) {
+        CardNewsSearchCondition condition = feedConverter.toCondition(request, memberId);
+        Page<CardNewsScoreResult> resultList = cardNewsRepository.searchByCondition(condition);
+        List<Long> cardNewsIds = resultList.stream().map(CardNewsScoreResult::cardNews).map(CardNews::getId).toList();
+        Set<Long> bookmarkedCardNewsIds = bookmarkRepository.filterBookmarkedCardNewsIds(memberId, cardNewsIds);
 
-                List<FeedResponse> feedList = cardNewsList.getContent().stream().map(cardNews -> {
-                        boolean saved = bookmarkedCardNewsIds.contains(cardNews.getId());
-                        boolean hidden = hiddenRepository.existsByMemberIdAndCardNewsId(memberId, cardNews.getId());
-                        return feedConverter.toResponse(cardNews, saved, hidden);
-                }).toList();
+        List<FeedResponse> feedList = resultList.getContent().stream().map(result ->
+                feedConverter.toResponse(
+                        result.cardNews(),
+                        result.score(),
+                        bookmarkedCardNewsIds.contains(result.cardNews().getId()),
+                        hiddenRepository.existsByMemberIdAndCardNewsId(memberId, result.cardNews().getId())
+                )
+        ).toList();
 
-                return FeedListResponse.builder()
-                                .totalCount(cardNewsList.getTotalElements())
-                                .cardnews(feedList)
-                                .build();
-        }
+        return FeedListResponse.builder()
+                .totalCount(resultList.getTotalElements())
+                .cardnews(feedList)
+                .build();
+    }
 
 }
