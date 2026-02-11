@@ -1,5 +1,7 @@
 package com.nova.nova_server.domain.auth.filter;
 
+import com.nova.nova_server.domain.member.entity.Member;
+import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.domain.auth.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.lang.NonNull;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,23 +27,27 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtUtil jwtUtil;
+	private final MemberRepository memberRepository;
 
 	private static final String AUTHORIZATION_HEADER = "Authorization";
 	private static final String BEARER_PREFIX = "Bearer ";
 
 	@Override
 	protected void doFilterInternal(
-		HttpServletRequest request,
-		HttpServletResponse response,
-		FilterChain filterChain
+		@NonNull HttpServletRequest request,
+		@NonNull HttpServletResponse response,
+		@NonNull FilterChain filterChain
 	) throws ServletException, IOException {
 		String token = resolveToken(request);
 
 		if (StringUtils.hasText(token) && jwtUtil.validateToken(token)) {
 			try {
 				Long memberId = jwtUtil.getMemberIdFromToken(token);
+				if (memberId == null) {
+					filterChain.doFilter(request, response);
+					return;
+				}
 
-				// memberId만 Principal로 설정 (DB 조회 없음)
 				Authentication authentication = createAuthentication(memberId);
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			} catch (Exception e) {
@@ -59,11 +66,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		return null;
 	}
 
-	private Authentication createAuthentication(Long memberId) {
+	private Authentication createAuthentication(@NonNull Long memberId) {
+		Member.MemberRole role = memberRepository.findById(memberId)
+			.map(member -> member.getRole() != null ? member.getRole() : Member.MemberRole.USER)
+			.orElse(Member.MemberRole.USER);
+
 		return new UsernamePasswordAuthenticationToken(
 			memberId,
 			null,
-			Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+			Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()))
 		);
 	}
 }
