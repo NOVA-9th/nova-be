@@ -39,7 +39,7 @@ public class MemberInfoController {
             @PathVariable("member_id") Long memberId,
             @AuthenticationPrincipal Long authenticatedMemberId) {
 
-        memberService.deleteMember(memberId);
+        memberService.deleteMember(memberId, authenticatedMemberId);
         return ApiResponse.success(null);
     }
 
@@ -70,9 +70,10 @@ public class MemberInfoController {
     public ApiResponse<Void> updatePersonalization(
             @Parameter(description = "사용자 ID")
             @PathVariable Long memberId,
+            @AuthenticationPrincipal Long authenticatedMemberId,
             @RequestBody MemberPersonalizationDto request) {
 
-        memberService.updateMemberPersonalization(memberId, request);
+        memberService.updateMemberPersonalization(memberId, authenticatedMemberId, request);
         return ApiResponse.success(null);
     }
 

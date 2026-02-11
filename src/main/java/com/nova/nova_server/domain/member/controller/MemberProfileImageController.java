@@ -5,11 +5,11 @@ import com.nova.nova_server.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,13 +32,14 @@ public class MemberProfileImageController {
     public ApiResponse<Void> uploadProfileImage(
             @Parameter(description = "이미지를 업로드할 사용자의 ID", example = "1")
             @PathVariable Long memberId,
+            @AuthenticationPrincipal Long authenticatedMemberId,
             @Parameter(
                     description = "업로드할 이미지 파일 (MultipartFile)",
                     content = @Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE)
             )
             @RequestParam("file") MultipartFile file) throws IOException {
 
-        memberProfileImageService.uploadProfileImageRaw(memberId, file);
+        memberProfileImageService.uploadProfileImageRaw(memberId, authenticatedMemberId, file);
         return ApiResponse.success(null);
     }
 
@@ -65,9 +66,10 @@ public class MemberProfileImageController {
     @DeleteMapping("/{memberId}/profile-image")
     public ApiResponse<Void> deleteProfileImage(
             @Parameter(description = "이미지를 삭제할 사용자의 ID", example = "1")
-            @PathVariable Long memberId) {
+            @PathVariable Long memberId,
+            @AuthenticationPrincipal Long authenticatedMemberId) {
 
-        memberProfileImageService.deleteProfileImage(memberId);
+        memberProfileImageService.deleteProfileImage(memberId, authenticatedMemberId);
         return ApiResponse.success(null);
     }
 

@@ -15,4 +15,5 @@ public class MemberResponseDto {
     private String name;
     private String email;
     private String profileImage;
+    private Member.MemberRole role;
 }
