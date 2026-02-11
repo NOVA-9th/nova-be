@@ -87,7 +87,7 @@ public class AuthController {
 
 	@Operation(
 		summary = "테스트 토큰 발급",
-		description = "요청한 사용자 ID로 7일 유효 테스트용 JWT를 발급합니다."
+		description = "요청한 사용자 ID로 30일 유효 테스트용 JWT를 발급합니다."
 	)
 	@PostMapping("/generate-test-token")
 	public ApiResponse<AuthResponse> generateTestToken(
@@ -97,9 +97,9 @@ public class AuthController {
 		// 유저 존재 여부 확인
 		MemberResponseDto member = memberService.getMemberInfo(userId);
 
-		// 7일짜리 JWT 토큰 발급
-		long sevenDaysInMillis = 7L * 24 * 60 * 60 * 1000;
-		String token = jwtUtil.generateToken(member.getId(), member.getRole(), sevenDaysInMillis);
+		// 30일짜리 JWT 토큰 발급
+		long thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000;
+		String token = jwtUtil.generateToken(member.getId(), member.getRole(), thirtyDaysInMillis);
 		
 		return ApiResponse.success(AuthResponse.builder()
 			.accessToken(token)
@@ -111,14 +111,14 @@ public class AuthController {
 
 	@Operation(
 		summary = "관리자 토큰 발급",
-		description = "등록된 관리자 계정으로 7일 유효 JWT를 발급합니다."
+		description = "등록된 관리자 계정으로 30일 유효 JWT를 발급합니다."
 	)
 	@PostMapping("/generate-admin-token")
 	public ApiResponse<AuthResponse> generateAdminToken() {
 		MemberResponseDto admin = memberService.getAdminMemberInfo();
 
-		long sevenDaysInMillis = 7L * 24 * 60 * 60 * 1000;
-		String token = jwtUtil.generateToken(admin.getId(), admin.getRole(), sevenDaysInMillis);
+		long thirtyDaysInMillis = 30L * 24 * 60 * 60 * 1000;
+		String token = jwtUtil.generateToken(admin.getId(), admin.getRole(), thirtyDaysInMillis);
 
 		return ApiResponse.success(AuthResponse.builder()
 			.accessToken(token)
