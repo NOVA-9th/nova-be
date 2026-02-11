@@ -63,7 +63,7 @@ public class KakaoOAuthService {
 			Member member = findOrCreateMember(userInfo);
 
 			// JWT 토큰 발급
-			String jwtToken = jwtUtil.generateToken(member.getId());
+			String jwtToken = jwtUtil.generateToken(member.getId(), member.getRole());
 
 			return AuthResponse.builder()
 					.accessToken(jwtToken)
@@ -188,6 +188,7 @@ public class KakaoOAuthService {
 			.orElseGet(() -> memberRepository.save(Member.builder()
 					.email(userInfo.getEmail())
 					.name(nickname)
+					.role(Member.MemberRole.USER)
 					.kakaoId(kakaoId)
 					.build()));
 	}

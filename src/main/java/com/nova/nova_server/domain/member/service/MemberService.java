@@ -228,6 +228,7 @@ public class MemberService {
                 .email("test@example.com")
                 .level(Member.MemberLevel.NOVICE)
                 .background("테스트 배경")
+                .role(Member.MemberRole.USER)
                 .googleId("test-google-id")
                 .build();
 

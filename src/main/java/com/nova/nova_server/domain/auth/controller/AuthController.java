@@ -99,7 +99,7 @@ public class AuthController {
 
 		// 7일짜리 JWT 토큰 발급
 		long sevenDaysInMillis = 7L * 24 * 60 * 60 * 1000;
-		String token = jwtUtil.generateToken(member.getId(), sevenDaysInMillis);
+		String token = jwtUtil.generateToken(member.getId(), member.getRole(), sevenDaysInMillis);
 		
 		return ApiResponse.success(AuthResponse.builder()
 			.accessToken(token)
@@ -118,7 +118,7 @@ public class AuthController {
 		MemberResponseDto admin = memberService.getAdminMemberInfo();
 
 		long sevenDaysInMillis = 7L * 24 * 60 * 60 * 1000;
-		String token = jwtUtil.generateToken(admin.getId(), sevenDaysInMillis);
+		String token = jwtUtil.generateToken(admin.getId(), admin.getRole(), sevenDaysInMillis);
 
 		return ApiResponse.success(AuthResponse.builder()
 			.accessToken(token)
