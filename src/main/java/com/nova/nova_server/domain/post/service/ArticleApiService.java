@@ -1,6 +1,8 @@
 package com.nova.nova_server.domain.post.service;
 
 import com.nova.nova_server.domain.post.model.Article;
+import com.nova.nova_server.domain.post.model.ArticleSource;
+
 import java.util.List;
 
 /**
@@ -8,7 +10,7 @@ import java.util.List;
  */
 public interface ArticleApiService {
     //기사 목록 조회
-    List<Article> fetchArticles();
+    List<ArticleSource> fetchArticles();
 
     /**
      * API 제공자 이름 반환
