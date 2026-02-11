@@ -32,7 +32,7 @@ public class SwaggerConfig {
                 .title("NOVA Server API")
                 .description("""
                         NOVA 프로젝트 백엔드 API 문서입니다.
-                        테스트 JWT 는 /auth/generate-admin-token 로 발급받을 수 있습니다. 어드민 계정으로 모든 엔드포인트에 접근 가능합니다.
+                        - 테스트 JWT 는 /auth/generate-admin-token 로 발급받을 수 있습니다. 어드민 계정으로 모든 엔드포인트에 접근 가능합니다.
                         """)
                 .version("v1.0.0")
             );

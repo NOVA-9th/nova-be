@@ -48,7 +48,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 					return;
 				}
 
-				Authentication authentication = createAuthentication(memberId);
+				Member.MemberRole role = jwtUtil.getRoleFromToken(token);
+				Authentication authentication = createAuthentication(memberId, role);
 				SecurityContextHolder.getContext().setAuthentication(authentication);
 			} catch (Exception e) {
 				log.error("JWT 인증 처리 중 오류 발생", e);
@@ -66,10 +67,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		return null;
 	}
 
-	private Authentication createAuthentication(@NonNull Long memberId) {
-		Member.MemberRole role = memberRepository.findById(memberId)
-			.map(member -> member.getRole() != null ? member.getRole() : Member.MemberRole.USER)
-			.orElse(Member.MemberRole.USER);
+	private Authentication createAuthentication(@NonNull Long memberId, Member.MemberRole tokenRole) {
+		Member.MemberRole role = tokenRole != null
+			? tokenRole
+			: memberRepository.findById(memberId)
+				.map(member -> member.getRole() != null ? member.getRole() : Member.MemberRole.USER)
+				.orElse(Member.MemberRole.USER);
 
 		return new UsernamePasswordAuthenticationToken(
 			memberId,
