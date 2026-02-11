@@ -15,7 +15,7 @@ import java.util.Map;
 @Profile("local")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/ai/test")
+@RequestMapping("/debug/ai/test")
 public class AiTestController {
 
     private final AiBatchService aiBatchService;

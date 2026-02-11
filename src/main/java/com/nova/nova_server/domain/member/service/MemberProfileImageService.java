@@ -1,6 +1,5 @@
 package com.nova.nova_server.domain.member.service;
 
-import com.nova.nova_server.domain.member.dto.MemberResponseDto;
 import com.nova.nova_server.domain.member.entity.Member;
 import com.nova.nova_server.domain.member.entity.MemberProfileImage;
 import com.nova.nova_server.domain.member.error.MemberErrorCode;
@@ -10,7 +9,6 @@ import com.nova.nova_server.domain.member.util.ImageProcessor;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,9 +25,14 @@ public class MemberProfileImageService {
     private final MemberProfileImageRepository memberProfileImageRepository;
 
     @Transactional
-    public void uploadProfileImageRaw(Long memberId, MultipartFile file) throws IOException {
+    public void uploadProfileImageRaw(Long memberId, Long authenticatedMemberId, MultipartFile file) throws IOException {
+        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        validateProfileImagePermission(authenticatedMember, member);
 
         log.info("Original size: {} bytes", file.getSize());
 
@@ -51,11 +54,28 @@ public class MemberProfileImageService {
     }
 
     @Transactional
-    public void deleteProfileImage(Long memberId) {
+    public void deleteProfileImage(Long memberId, Long authenticatedMemberId) {
+        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Member targetMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        validateProfileImagePermission(authenticatedMember, targetMember);
+
         if (!memberProfileImageRepository.existsById(memberId)) {
             throw new NovaException(MemberErrorCode.MEMBER_NOT_FOUND);
         }
         
         memberProfileImageRepository.deleteById(memberId);
+    }
+
+    private void validateProfileImagePermission(Member authenticatedMember, Member targetMember) {
+        boolean isAdmin = authenticatedMember.getRole() == Member.MemberRole.ADMIN;
+        boolean isSelf = authenticatedMember.getId().equals(targetMember.getId());
+
+        if (!isAdmin && !isSelf) {
+            throw new NovaException(MemberErrorCode.MEMBER_FORBIDDEN);
+        }
     }
 }

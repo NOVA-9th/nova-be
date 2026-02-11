@@ -4,13 +4,9 @@ import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsBookmark;
 import com.nova.nova_server.domain.cardNews.entity.CardNewsRelevance;
 import com.nova.nova_server.domain.common.BaseEntity;
-import com.nova.nova_server.domain.member.dto.MemberConnectedAccountsResponseDto;
-import com.nova.nova_server.global.apiPayload.ApiResponse;
 import com.nova.nova_server.global.apiPayload.exception.NovaException;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +35,12 @@ public class Member extends BaseEntity {
     @Setter
     @Column(nullable = false, length = 100)
     private String name;
+
+    @Setter
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MemberRole role = MemberRole.USER;
 
     @Column(nullable = true, unique = false, length = 255)
     private String email;
@@ -73,6 +75,11 @@ public class Member extends BaseEntity {
         BEGINNER, // 초급자
         INTERMEDIATE, // 중급자
         ADVANCED // 숙련자
+    }
+
+    public enum MemberRole {
+        USER,
+        ADMIN
     }
 
     public void connectGoogle(String googleId) {

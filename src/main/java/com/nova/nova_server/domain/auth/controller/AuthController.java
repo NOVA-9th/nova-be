@@ -3,9 +3,8 @@ package com.nova.nova_server.domain.auth.controller;
 import com.nova.nova_server.domain.auth.dto.AuthResponse;
 import com.nova.nova_server.domain.auth.error.AuthErrorCode;
 import com.nova.nova_server.domain.auth.util.JwtUtil;
+import com.nova.nova_server.domain.member.dto.MemberRequestDto;
 import com.nova.nova_server.domain.member.dto.MemberResponseDto;
-import com.nova.nova_server.domain.member.entity.Member;
-import com.nova.nova_server.domain.member.repository.MemberRepository;
 import com.nova.nova_server.domain.member.service.MemberService;
 import com.nova.nova_server.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,6 +73,19 @@ public class AuthController {
 	}
 
 	@Operation(
+		summary = "관리자 계정 생성",
+		description = "관리자 계정이 없을 때만 생성합니다. 소셜 계정은 연결되지 않습니다."
+	)
+	@PostMapping("/create-admin")
+	@Transactional
+	public ApiResponse<MemberResponseDto> createAdmin(
+		@RequestBody MemberRequestDto requestDto
+	) {
+		MemberResponseDto member = memberService.createAdminMember(requestDto);
+		return ApiResponse.success(member);
+	}
+
+	@Operation(
 		summary = "테스트 토큰 발급",
 		description = "요청한 사용자 ID로 7일 유효 테스트용 JWT를 발급합니다."
 	)
@@ -94,6 +106,25 @@ public class AuthController {
 			.memberId(userId)
 			.email(member.getEmail())
 			.name(member.getName())
+			.build());
+	}
+
+	@Operation(
+		summary = "관리자 토큰 발급",
+		description = "등록된 관리자 계정으로 7일 유효 JWT를 발급합니다."
+	)
+	@PostMapping("/generate-admin-token")
+	public ApiResponse<AuthResponse> generateAdminToken() {
+		MemberResponseDto admin = memberService.getAdminMemberInfo();
+
+		long sevenDaysInMillis = 7L * 24 * 60 * 60 * 1000;
+		String token = jwtUtil.generateToken(admin.getId(), sevenDaysInMillis);
+
+		return ApiResponse.success(AuthResponse.builder()
+			.accessToken(token)
+			.memberId(admin.getId())
+			.email(admin.getEmail())
+			.name(admin.getName())
 			.build());
 	}
 }

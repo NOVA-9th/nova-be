@@ -26,16 +26,23 @@ public class SecurityConfig {
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
 	private static final String[] PERMIT_GET_PATTERNS = {
-			"/api/members/*/profile-image"
+			"/api/members/*/profile-image",
+			"/api/keywords"
 	};
 
 	private static final String[] PERMIT_ALL_PATTERNS = {
 			"/auth/**",
-			"/api/keywords",
 			"/actuator/**",
 			"/swagger-ui/**",
-			"/v3/api-docs/**",
+			"/v3/api-docs/**"
+	};
+
+	private static final String[] ADMIN_ALL_PATTERNS = {
 			"/debug/**"
+	};
+
+	private static final String[] ADMIN_KEYWORD_PATTERNS = {
+			"/api/keywords/**"
 	};
 
 	@Bean
@@ -46,6 +53,11 @@ public class SecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.GET, PERMIT_GET_PATTERNS).permitAll()
+						.requestMatchers(HttpMethod.POST, ADMIN_KEYWORD_PATTERNS).hasRole("ADMIN")
+						.requestMatchers(HttpMethod.PUT, ADMIN_KEYWORD_PATTERNS).hasRole("ADMIN")
+						.requestMatchers(HttpMethod.PATCH, ADMIN_KEYWORD_PATTERNS).hasRole("ADMIN")
+						.requestMatchers(HttpMethod.DELETE, ADMIN_KEYWORD_PATTERNS).hasRole("ADMIN")
+						.requestMatchers(ADMIN_ALL_PATTERNS).hasRole("ADMIN")
 						.requestMatchers(PERMIT_ALL_PATTERNS).permitAll()
 						.anyRequest().authenticated())
 				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -55,6 +55,7 @@ public class MemberService {
                 .name(member.getName())
                 .email(member.getEmail())
                 .profileImage(profileImageUrl)
+                .role(member.getRole())
                 .build();
     }
 
@@ -99,7 +100,15 @@ public class MemberService {
     }
 
     @Transactional
-    public void updateMemberPersonalization(Long memberId, MemberPersonalizationDto memberPersonalizationDto) {
+    public void updateMemberPersonalization(Long memberId, Long authenticatedMemberId, MemberPersonalizationDto memberPersonalizationDto) {
+        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        boolean isAdmin = authenticatedMember.getRole() == Member.MemberRole.ADMIN;
+        if (!isAdmin && !memberId.equals(authenticatedMemberId)) {
+            throw new NovaException(MemberErrorCode.MEMBER_FORBIDDEN);
+        }
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
 
@@ -168,19 +177,34 @@ public class MemberService {
         memberPreferKeywordRepository.saveAll(preferKeywords);
     }
 
-    public void deleteMember(Long memberId) {
-        Member member = memberRepository.findById(memberId)
+    public void deleteMember(Long memberId, Long authenticatedMemberId) {
+        Member authenticatedMember = memberRepository.findById(authenticatedMemberId)
                 .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Member targetMember = memberRepository.findById(memberId)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        boolean isAdmin = authenticatedMember.getRole() == Member.MemberRole.ADMIN;
+
+        // 일반 유저는 본인 계정만 탈퇴 가능
+        if (!isAdmin && !memberId.equals(authenticatedMemberId)) {
+            throw new NovaException(MemberErrorCode.MEMBER_DELETE_FORBIDDEN);
+        }
+
+        // 관리자는 관리자 계정을 탈퇴시킬 수 없음(본인 포함)
+        if (isAdmin && targetMember.getRole() == Member.MemberRole.ADMIN) {
+            throw new NovaException(MemberErrorCode.ADMIN_DELETE_ADMIN_FORBIDDEN);
+        }
 
         // Delete all related entities (children first due to FK constraints)
         memberProfileImageRepository.deleteById(memberId);
-        memberPreferKeywordRepository.deleteByMember(member);
-        memberPreferInterestRepository.deleteByMember(member);
+        memberPreferKeywordRepository.deleteByMember(targetMember);
+        memberPreferInterestRepository.deleteByMember(targetMember);
         cardNewsBookmarkRepository.deleteAllByMemberId(memberId);
         cardNewsRelevanceRepository.deleteAllByMemberId(memberId);
         cardNewsHiddenRepository.deleteAllByMemberId(memberId);
 
-        memberRepository.delete(member);
+        memberRepository.delete(targetMember);
     }
 
     @Transactional(readOnly = true)
@@ -209,5 +233,31 @@ public class MemberService {
 
         Member savedUser = memberRepository.save(mockUser);
         return getMemberInfo(savedUser.getId());
+    }
+
+    @Transactional
+    public MemberResponseDto createAdminMember(MemberRequestDto requestDto) {
+        if (memberRepository.existsByRole(Member.MemberRole.ADMIN)) {
+            throw new NovaException(MemberErrorCode.ADMIN_ALREADY_EXISTS);
+        }
+
+        if (requestDto.getName() == null || requestDto.getName().trim().isEmpty()) {
+            throw new NovaException(MemberErrorCode.MEMBER_NAME_REQUIRED);
+        }
+
+        Member admin = Member.builder()
+                .name(requestDto.getName())
+                .role(Member.MemberRole.ADMIN)
+                .build();
+
+        Member savedAdmin = memberRepository.save(admin);
+        return getMemberInfo(savedAdmin.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public MemberResponseDto getAdminMemberInfo() {
+        Member admin = memberRepository.findByRole(Member.MemberRole.ADMIN)
+                .orElseThrow(() -> new NovaException(MemberErrorCode.ADMIN_NOT_FOUND));
+        return getMemberInfo(admin.getId());
     }
 }
