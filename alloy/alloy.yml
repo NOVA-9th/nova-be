@@ -1,0 +1,69 @@
+  logging {
+    level  = "info"
+    format = "logfmt"
+  }
+    
+    // Docker 컨테이너 로그 수집으로 전환
+    discovery.docker "containers" {
+    host             = "unix:///var/run/docker.sock"
+    refresh_interval = "5s"
+  }
+    
+    discovery.relabel "containers" {
+    targets = []
+    rule {
+    target_label = "job"
+    replacement  = "integrations/docker"
+    }
+    rule {
+    target_label = "instance"
+    replacement  = constants.hostname
+    }
+    rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+    }
+    rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+    }
+  }
+    
+    loki.source.docker "containers" {
+    host          = "unix:///var/run/docker.sock"
+    targets       = discovery.docker.containers.targets
+    forward_to    = [loki.process.filter_logs.receiver]
+    relabel_rules = discovery.relabel.containers.rules
+    refresh_interval = "5s"
+  }
+    
+    loki.process "filter_logs" {
+    stage.drop {
+    source              = ""
+    expression          = ".*Connection closed by authenticating user root"
+    drop_counter_reason = "noisy"
+    }
+    forward_to = [loki.write.grafana_loki.receiver]
+  }
+    
+    loki.write "grafana_loki" {
+    endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+    }
+  }
+    
+    // 시스템 메트릭 수집 (self-scrape 제거)
+    prometheus.exporter.unix "local_system" {}
+    
+    prometheus.scrape "system_metrics" {
+    targets         = prometheus.exporter.unix.local_system.targets
+    forward_to      = [prometheus.remote_write.metrics_remote.receiver]
+    scrape_interval = "10s"
+  }
+    
+    prometheus.remote_write "metrics_remote" {
+    endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+    }
+  }
