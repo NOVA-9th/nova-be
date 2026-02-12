@@ -116,35 +116,41 @@ Gitub Flow
 ## 4. 프로젝트 구조
 
 nova-server
-├── docs/                 # 프로젝트 관련 문서 (API 설계, 인프라 등)
-├── scripts/               # 배포 및 실행 관리 스크립트
+├── docs/                         # 프로젝트 문서 (API 설계, 인프라 아키텍처, 운영 전략)
+├── scripts/                      # 배포 및 실행 자동화 스크립트
 ├── src/
 │   ├── main/
 │   │   ├── java/com/nova/nova_server/
-│   │   │   ├── domain/                              # 비즈니스 로직 (도메인별 분리)
-│   │   │   │   ├── ai/                              # AI 요약 및 분석 기능
-│   │   │   │   ├── auth/                            # 인증/인가 (JWT, Security, OAuth2)
-│   │   │   │   ├── batch/                           # 배치 작업 및 스케줄러 (Spring Batch)
-│   │   │   │   │   ├── articleingestion/            # 기사 수집 배치 프로세스
-│   │   │   │   │   ├── cardnews/                    # 카드뉴스 생성 배치 프로세스
-│   │   │   │   │   ├── summary/                     # 기사 요약 배치 프로세스
-│   │   │   │   │   └── common/                      # 배치 공통 컴포넌트 및 메타데이터 관리
-│   │   │   │   ├── bookmark/                        # 북마크/스크랩 기능
-│   │   │   │   ├── cardNews/                        # 카드뉴스 관련 API 및 도메인
-│   │   │   │   ├── feed/                            # 통합 피드 목록 조회 및 관리
-│   │   │   │   ├── keyword/                         # 키워드 추출 및 트렌드 데이터
-│   │   │   │   ├── member/                          # 사용자 정보 및 프로필 관리
-│   │   │   │   ├── post/                            # 게시글 및 외부 기사 데이터 관리
-│   │   │   │   │   ├── sources/                     # 외부 API 소스별 구현체 (기술블로그, GNews, Jumpit 등)
-│   │   │   │   │   ├── model/                       # 포스트 관련 공통 모델 정의
-│   │   │   │   │   └── service/                     # 포스트 처리 비즈니스 로직
-│   │   │   │   └── trend/                           # 실시간 인기 키워드 및 트렌드 API
-│   │   │   └── global/                              # 전역 설정 및 공통 처리
-│   │   │       ├── apiPayload/                      # 통합 응답 규격 및 예외 처리기
-│   │   │       └── config/                          # 프레임워크 설정 (Security, Swagger, WebClient 등)
-│   │   └── resources/                               # 애플리케이션 설정 및 로그 설정 (Logback)
-│   └── test/                                        # 단위 및 통합 테스트 코드
-└── build.gradle                                     # 프로젝트 의존성 및 빌드 설정
+│   │   │
+│   │   │   ├── domain/           # 핵심 비즈니스 도메인 레이어
+│   │   │   │
+│   │   │   │   ├── ai/           # AI 요약 및 분석 로직
+│   │   │   │   ├── auth/         # 인증/인가 (JWT, Spring Security, OAuth2)
+│   │   │   │   ├── batch/        # Spring Batch 기반 데이터 처리
+│   │   │   │   │   ├── articleingestion/   # 기사 수집 배치
+│   │   │   │   │   ├── summary/            # 기사 요약 배치
+│   │   │   │   │   ├── cardnews/           # 카드뉴스 생성 배치
+│   │   │   │   │   └── common/             # 배치 공통 설정 및 메타데이터
+│   │   │   │   ├── bookmark/     # 북마크(스크랩) 기능
+│   │   │   │   ├── cardNews/     # 카드뉴스 API 및 도메인
+│   │   │   │   ├── feed/         # 통합 피드 조회 및 정렬
+│   │   │   │   ├── keyword/      # 키워드 추출 및 트렌드 분석
+│   │   │   │   ├── member/       # 사용자 프로필 및 계정 관리
+│   │   │   │   ├── post/         # 기사 및 외부 콘텐츠 관리
+│   │   │   │   │   ├── sources/  # 외부 API 구현체 (Tech Blog, GNews, Jumpit 등)
+│   │   │   │   │   ├── model/    # Post 공통 모델 정의
+│   │   │   │   │   └── service/  # 콘텐츠 처리 비즈니스 로직
+│   │   │   │   └── trend/        # 실시간 인기 트렌드 API
+│   │   │   │
+│   │   │   └── global/           # 전역 공통 모듈
+│   │   │       ├── apiPayload/   # 공통 응답 포맷 및 예외 처리
+│   │   │       └── config/       # 프레임워크 설정 (Security, Swagger, WebClient 등)
+│   │   │
+│   │   └── resources/           
+│   │
+│   └── test/                     #  단위 및 통합 테스트
+│
+└── build.gradle                  #  프로젝트 의존성 및 빌드 설정
 
 
 ---
