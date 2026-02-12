@@ -1,4 +1,7 @@
-🌟 NOVA
+# 🌟 NOVA
+
+<img width="7680" height="4320" alt="nova 온보딩1" src="https://github.com/user-attachments/assets/3c43ed1a-aaf7-43dd-b539-4d720947f672" />
+
 
 ---
 
