@@ -28,4 +28,8 @@ public interface CardNewsBookmarkRepository extends JpaRepository<CardNewsBookma
     @Modifying
     @Query("DELETE FROM CardNewsBookmark b WHERE b.memberId = :memberId")
     void deleteAllByMemberId(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Query("DELETE FROM CardNewsBookmark b WHERE b.cardNewsId IN :cardNewsIds")
+    void deleteAllByCardNewsIds(@Param("cardNewsIds") List<Long> cardNewsIds);
 }
