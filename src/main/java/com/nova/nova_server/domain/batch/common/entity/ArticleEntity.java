@@ -41,6 +41,9 @@ public class ArticleEntity extends BaseEntity {
     @Column(nullable = false, length = 2048)
     private String url;
 
+    @Column(nullable = true, length = 2048)
+    private String sourceUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false)
     @Builder.Default

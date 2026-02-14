@@ -19,10 +19,10 @@ public class ArticleFetchProcessor implements ItemProcessor<ArticleSource, Artic
             if (article == null) {
                 return null;
             }
-            return ArticleConverter.toEntity(article);
+            return ArticleConverter.toEntity(article, source.getUrl());
         } catch (Exception e) {
             log.error("Processor failed for url={}", source.getUrl(), e);
-            return null; // skip this item
+            return ArticleConverter.toFailedEntity(source.getUrl());
         }
     }
 }

@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Repository
 public interface ArticleEntityRepository extends JpaRepository<ArticleEntity, Long> {
@@ -18,6 +17,9 @@ public interface ArticleEntityRepository extends JpaRepository<ArticleEntity, Lo
 
     @Query("SELECT a.url FROM ArticleEntity a WHERE a.url IN :urls")
     Set<String> findUrlsByUrlIn(@Param("urls") Set<String> urls);
+
+    @Query("SELECT a.sourceUrl FROM ArticleEntity a WHERE a.sourceUrl IN :sourceUrls")
+    Set<String> findSourceUrlsBySourceUrlIn(@Param("sourceUrls") Set<String> sourceUrls);
 
     List<ArticleEntity> findAllByIdIn(Set<Long> ids);
 

@@ -62,8 +62,9 @@ public class ArticleSourceItemReader implements ItemStreamReader<ArticleSource> 
             return Set.of();
         }
         Set<String> existingUrls = articleEntityRepository.findUrlsByUrlIn(urls);
+        Set<String> existingSourceUrls = articleEntityRepository.findSourceUrlsBySourceUrlIn(urls);
         return urls.stream()
-                .filter(url -> !existingUrls.contains(url))
+                .filter(url -> !existingUrls.contains(url) && !existingSourceUrls.contains(url))
                 .collect(Collectors.toSet());
     }
 
