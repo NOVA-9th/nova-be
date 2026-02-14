@@ -1,21 +1,24 @@
 package com.nova.nova_server.domain.post.controller;
 
 import com.nova.nova_server.domain.cardNews.repository.CardNewsRepository;
+import com.nova.nova_server.domain.cardNews.service.CardNewsManageService;
 import com.nova.nova_server.domain.post.model.Article;
 import com.nova.nova_server.domain.post.model.ArticleSource;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import com.nova.nova_server.domain.post.service.ArticleApiServiceFactory;
+import com.nova.nova_server.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -27,11 +30,22 @@ public class NewsDebugController {
 
     private final ArticleApiServiceFactory articleApiServiceFactory;
     private final CardNewsRepository cardNewsRepository;
+    private final CardNewsManageService cardNewsManageService;
 
     @Operation(summary = "DB 카드뉴스 총 개수", description = "현재 DB에 저장된 전체 카드뉴스 레코드 수를 반환합니다.")
     @GetMapping("/db-count")
     public long getDbCount() {
         return cardNewsRepository.count();
+    }
+
+    @Operation(
+            summary = "카드뉴스 일괄 삭제",
+            description = "카드뉴스 ID 목록을 입력받아 연관 데이터(키워드/북마크/관련도/숨김)와 함께 일괄 삭제합니다."
+    )
+    @PostMapping("/card-news/batch-delete")
+    public ApiResponse<Void> deleteCardNewsBatch(@RequestBody List<Long> cardNewsIds) {
+        cardNewsManageService.deleteCardNewsBatch(cardNewsIds);
+        return ApiResponse.success(null);
     }
 
     @Operation(summary = "제공자별 기사 통합 조회", description = "모든 뉴스 및 커뮤니티 소스로부터 기사 데이터를 한꺼번에 긁어옵니다.")

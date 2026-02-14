@@ -11,4 +11,8 @@ public interface CardNewsRelevanceRepository extends JpaRepository<CardNewsRelev
 	@Modifying
 	@Query("DELETE FROM CardNewsRelevance r WHERE r.memberId = :memberId")
 	void deleteAllByMemberId(@Param("memberId") Long memberId);
+
+	@Modifying
+	@Query("DELETE FROM CardNewsRelevance r WHERE r.cardNewsId IN :cardNewsIds")
+	void deleteAllByCardNewsIds(@Param("cardNewsIds") java.util.List<Long> cardNewsIds);
 }

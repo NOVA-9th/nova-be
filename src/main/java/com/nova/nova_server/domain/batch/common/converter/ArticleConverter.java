@@ -19,7 +19,7 @@ public class ArticleConverter {
                 .build();
     }
 
-    public static ArticleEntity toEntity(Article article) {
+    public static ArticleEntity toEntity(Article article, String sourceUrl) {
         String content = article.content();
         if (content != null && content.length() > TEXT_MAX_LENGTH) {
             content = content.substring(0, TEXT_MAX_LENGTH);
@@ -33,6 +33,21 @@ public class ArticleConverter {
                 .publishedAt(article.publishedAt())
                 .cardType(article.cardType())
                 .url(article.url())
+                .sourceUrl(sourceUrl)
+                .build();
+    }
+
+    public static ArticleEntity toFailedEntity(String sourceUrl) {
+        return ArticleEntity.builder()
+                .title("")
+                .content(null)
+                .author(null)
+                .source(null)
+                .state(ArticleState.FAILED)
+                .publishedAt(null)
+                .cardType(null)
+                .url("")
+                .sourceUrl(sourceUrl)
                 .build();
     }
 }

@@ -60,9 +60,6 @@ public class HackerNewsParser {
     }
 
     private static String resolveUrl(HackerNewsItem dto) {
-        if (dto.url() != null && !dto.url().isEmpty()) {
-            return dto.url();
-        }
         int id = dto.id() != null ? dto.id() : 0;
         return "https://news.ycombinator.com/item?id=" + id;
     }
