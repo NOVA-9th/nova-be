@@ -21,6 +21,10 @@ public class BatchPollingScheduler {
     @Scheduled(fixedDelay = 1000 * 10)
     public void pollBatch() {
         List<AiBatchEntity> batchEntities = aiBatchRepository.findAllByState(AiBatchState.PROGRESS);
+        if (batchEntities.isEmpty()) {
+            return;
+        }
+
         log.info("진행중인 배치 작업 {} 개 발견", batchEntities.size());
 
         for (AiBatchEntity entity : batchEntities) {
