@@ -3,6 +3,7 @@ package com.nova.nova_server.global.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.victools.jsonschema.generator.*;
 import com.github.victools.jsonschema.module.jackson.JacksonModule;
+import com.github.victools.jsonschema.module.jackson.JacksonOption;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,7 +18,7 @@ public class JsonSchemaConfig {
                         OptionPreset.PLAIN_JSON
                 )
                 .with(Option.FORBIDDEN_ADDITIONAL_PROPERTIES_BY_DEFAULT)
-                .with(new JacksonModule())
+                .with(new JacksonModule(JacksonOption.RESPECT_JSONPROPERTY_REQUIRED))
                 .build();
 
         return new SchemaGenerator(config);
