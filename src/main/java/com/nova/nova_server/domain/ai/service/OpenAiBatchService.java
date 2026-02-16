@@ -89,12 +89,6 @@ public class OpenAiBatchService implements AiBatchService {
         }
 
         String batchOutput = fetchBatchOutput(batch);
-        long total = batch.requestCounts()
-                .orElseThrow(() -> {
-                    log.error("배치 요청 수를 확인할 수 없습니다. batchId={}", batchId);
-                    return new AiException.InvalidBatchOutputException("배치 요청 수를 확인할 수 없습니다.");
-                })
-                .total();
 
         return parseBatchOutput(batchOutput);
     }
