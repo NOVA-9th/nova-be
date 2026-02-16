@@ -3,6 +3,7 @@ package com.nova.nova_server.domain.ai.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.github.victools.jsonschema.generator.SchemaGenerator;
 import com.nova.nova_server.domain.ai.exception.AiException;
 import com.nova.nova_server.global.config.OpenAIConfig;
 import com.openai.client.OpenAIClient;
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.openai.models.batches.Batch.Status.*;
 
@@ -38,6 +40,7 @@ public class OpenAiBatchService implements AiBatchService {
     private final OpenAIClient client;
     private final OpenAIConfig config;
     private final ObjectMapper objectMapper;
+    private final SchemaGenerator schemaGenerator;
 
     @Override
     public String createBatch(Map<String, String> prompts) {
@@ -47,6 +50,22 @@ public class OpenAiBatchService implements AiBatchService {
                 prompts,
                 config.getModel(),
                 config.getTemperature()
+        );
+        String inputFileId = uploadBatchInput(batchInput);
+
+        return requestBatch(inputFileId);
+    }
+
+    @Override
+    public String createBatch(Map<String, String> prompts, Class<?> resultDtoClass) {
+        validatePrompts(prompts);
+        validateResultDtoClass(resultDtoClass);
+
+        String batchInput = createBatchInput(
+                prompts,
+                config.getModel(),
+                config.getTemperature(),
+                resultDtoClass
         );
         String inputFileId = uploadBatchInput(batchInput);
 
@@ -89,7 +108,21 @@ public class OpenAiBatchService implements AiBatchService {
      * @return 배치 입력 문자열 (jsonl 형식)
      */
     private String createBatchInput(Map<String, String> prompts, String model, double temperature) {
+        return createBatchInput(prompts, model, temperature, null);
+    }
+
+    /**
+     * OpenAI 배치 작업에 필요한 jsonl 형식의 입력 문자열을 생성한다.
+     *
+     * @param prompts     prompt map
+     * @param model       OpenAI LLM 모델 이름
+     * @param temperature temperature 값
+     * @param resultDtoClass 결과 DTO 클래스 (Structured Outputs 설정에 사용)
+     * @return 배치 입력 문자열 (jsonl 형식)
+     */
+    private String createBatchInput(Map<String, String> prompts, String model, double temperature, Class<?> resultDtoClass) {
         StringBuilder jsonlBuilder = new StringBuilder();
+        ObjectNode responseFormatNode = Optional.ofNullable(resultDtoClass).map(this::createResponseFormatNode).orElse(null);
 
         for (String key : prompts.keySet()) {
             ObjectNode requestNode = objectMapper.createObjectNode();
@@ -100,6 +133,9 @@ public class OpenAiBatchService implements AiBatchService {
             ObjectNode bodyNode = objectMapper.createObjectNode();
             bodyNode.put("model", model);
             bodyNode.put("temperature", temperature);
+            if (responseFormatNode != null) {
+                bodyNode.set("response_format", responseFormatNode);
+            }
 
             ObjectNode messageNode = objectMapper.createObjectNode();
             messageNode.put("role", "user");
@@ -112,6 +148,25 @@ public class OpenAiBatchService implements AiBatchService {
         }
 
         return jsonlBuilder.toString();
+    }
+
+    /**
+     * Structured Outputs 설정을 위한 response_format 노드를 생성한다.
+     *
+     * @param resultDtoClass 결과 DTO 클래스
+     * @return response_format 노드
+     */
+    private ObjectNode createResponseFormatNode(Class<?> resultDtoClass) {
+        ObjectNode responseFormatNode = objectMapper.createObjectNode();
+        responseFormatNode.put("type", "json_schema");
+
+        ObjectNode jsonSchemaNode = objectMapper.createObjectNode();
+        jsonSchemaNode.put("name", resultDtoClass.getSimpleName());
+        jsonSchemaNode.put("strict", true);
+        jsonSchemaNode.set("schema", schemaGenerator.generateSchema(resultDtoClass));
+
+        responseFormatNode.set("json_schema", jsonSchemaNode);
+        return responseFormatNode;
     }
 
     /**
@@ -240,6 +295,11 @@ public class OpenAiBatchService implements AiBatchService {
             throw new AiException.InvalidBatchInputException("배치 입력이 누락되었습니다.");
         if (prompts.size() > config.getMaxRequestPerBatch())
             throw new AiException.InvalidBatchInputException("배치 당 최대 요청수를 초과했습니다.");
+    }
+
+    private void validateResultDtoClass(Class<?> resultDtoClass) {
+        if (resultDtoClass == null)
+            throw new AiException.InvalidBatchInputException("결과 DTO 클래스가 누락되었습니다.");
     }
 
     private void validateBatchId(String batchId) {
