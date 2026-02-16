@@ -231,13 +231,12 @@ public class OpenAiBatchService implements AiBatchService {
      * @return 배치 작업 결과 문자열 (jsonl 형식)
      */
     private String fetchBatchOutput(Batch batch) {
-        StringBuffer outputBuffer = new StringBuffer();
-
-        batch.outputFileId().ifPresent(fileId -> {
-            outputBuffer.append(fetchBatchOutputFile(fileId));
-        });
-
-        return outputBuffer.toString();
+        return batch.outputFileId()
+                .map(this::fetchBatchOutputFile)
+                .orElseThrow(() -> {
+                    log.error("배치 결과 파일이 존재하지 않습니다. batchId={}", batch.id());
+                    return new AiException.InvalidBatchOutputException("배치 결과 파일이 존재하지 않습니다.");
+                });
     }
 
     /**
