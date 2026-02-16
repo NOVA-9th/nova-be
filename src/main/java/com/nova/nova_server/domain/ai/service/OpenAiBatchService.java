@@ -93,6 +93,15 @@ public class OpenAiBatchService implements AiBatchService {
         return parseBatchOutput(batchOutput);
     }
 
+    @Override
+    public <T> Map<String, T> getResults(String batchId, Class<T> resultDtoClass) {
+        validateResultDtoClass(resultDtoClass);
+
+        Map<String, String> rawResults = getResults(batchId);
+
+        return parseBatchResults(rawResults, resultDtoClass);
+    }
+
     /**
      * OpenAI 배치 작업에 필요한 jsonl 형식의 입력 문자열을 생성한다.
      *
@@ -281,6 +290,32 @@ public class OpenAiBatchService implements AiBatchService {
         }
 
         return resultMap;
+    }
+
+    /**
+     * 배치 작업 결과 Map의 value를 지정한 DTO로 파싱한다.
+     *
+     * @param rawResults 배치 작업 결과 Map
+     * @return 요청에서 지정된 ID를 key로, 결과 DTO를 value로 갖는 Map
+     */
+    private <T> Map<String, T> parseBatchResults(Map<String, String> rawResults, Class<T> resultDtoClass) {
+        Map<String, T> parsedResults = new HashMap<>();
+
+        for (String customId : rawResults.keySet()) {
+            String rawContent = rawResults.get(customId);
+            if (!StringUtils.hasText(rawContent)) {
+                continue;
+            }
+
+            try {
+                T parsed = objectMapper.readValue(rawContent, resultDtoClass);
+                parsedResults.put(customId, parsed);
+            } catch (Exception e) {
+                log.warn("배치 결과 DTO 파싱에 실패했습니다. customId={}, content={}", customId, rawContent);
+                throw new AiException.InvalidBatchOutputException("배치 결과 DTO 파싱에 실패했습니다.");
+            }
+        }
+        return parsedResults;
     }
 
     private void validatePrompts(Map<String, String> prompts) {

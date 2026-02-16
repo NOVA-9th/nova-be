@@ -42,4 +42,13 @@ public interface AiBatchService {
      */
     Map<String, String> getResults(String batchId);
 
+    /**
+     * 배치 작업의 응답을 가져와 지정한 DTO로 파싱한다.
+     *
+     * @param batchId 배치 작업 ID
+     * @param resultDtoClass 결과 DTO 클래스
+     * @return 요청에서 지정된 ID를 key로, 결과 DTO를 value로 갖는 Map
+     */
+    <T> Map<String, T> getResults(String batchId, Class<T> resultDtoClass);
+
 }
