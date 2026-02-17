@@ -1,6 +1,7 @@
 package com.nova.nova_server.domain.batch.summary.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
@@ -9,7 +10,8 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record LlmSummaryResult(
-                String summary,
-                List<String> evidence,
-                List<String> keywords) {
+        @JsonProperty(required = true) String summary,
+        @JsonProperty(required = true) List<String> evidence,
+        @JsonProperty(required = true) List<String> keywords
+) {
 }

@@ -48,6 +48,10 @@ dependencies {
 	// OpenAI Java SDK
 	implementation("com.openai:openai-java:4.16.1")
 
+	// JSON Schema Generator
+	implementation 'com.github.victools:jsonschema-generator:4.38.0'
+	implementation 'com.github.victools:jsonschema-module-jackson:4.38.0'
+
 	// 모니터링용
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
@@ -90,4 +94,3 @@ tasks.withType(JavaCompile).configureEach {
 clean.doLast {
 	file(querydslDir).deleteDir()
 }
-

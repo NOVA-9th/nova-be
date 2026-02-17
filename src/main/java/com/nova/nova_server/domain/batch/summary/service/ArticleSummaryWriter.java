@@ -34,7 +34,7 @@ public class ArticleSummaryWriter implements ItemWriter<ArticleEntity> {
         log.info("ArticleSummaryWriter: Processing chunk of {} items", chunk.size());
 
         Map<String, String> prompts = PromptConverter.toPromptMap(chunk.getItems());
-        String batchId = aiBatchService.createBatch(prompts);
+        String batchId = aiBatchService.createBatch(prompts, LlmSummaryResult.class);
         aiBatchRepository.save(AiBatchEntity.fromBatchId(batchId));
         log.info("Batch submitted. BatchId: {}, Count: {}", batchId, chunk.size());
 
