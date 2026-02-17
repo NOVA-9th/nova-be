@@ -2,7 +2,6 @@ package com.nova.nova_server.domain.batch.cardnews.service;
 
 import com.nova.nova_server.domain.ai.exception.AiException;
 import com.nova.nova_server.domain.ai.service.AiBatchService;
-import com.nova.nova_server.domain.batch.cardnews.converter.AiResponseConverter;
 import com.nova.nova_server.domain.batch.common.entity.AiBatchEntity;
 import com.nova.nova_server.domain.batch.common.entity.AiBatchState;
 import com.nova.nova_server.domain.batch.common.entity.ArticleEntity;
@@ -46,8 +45,11 @@ public class BatchProcessingService {
     }
 
     private void onBatchSuccess(String batchId) {
-        Map<String, String> batchResult = aiBatchService.getResults(batchId);
-        Map<Long, LlmSummaryResult> summaryResult = AiResponseConverter.fromBatchResult(batchResult);
+        Map<Long, LlmSummaryResult> summaryResult = aiBatchService.getResults(batchId, LlmSummaryResult.class)
+                .entrySet().stream().collect(Collectors.toMap(
+                        entry -> Long.parseLong(entry.getKey()),
+                        Map.Entry::getValue
+                ));
         Map<Long, ArticleEntity> entities = articleEntityRepository.findAllByIdIn(summaryResult.keySet())
                 .stream()
                 .collect(Collectors.toMap(

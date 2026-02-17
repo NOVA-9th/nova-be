@@ -32,6 +32,10 @@ oauth:
     client-secret: test-secret
     redirect-uri: http://localhost:8080/auth/github/callback
 
+batch:
+  article-ingestion:
+    cron: "0 0 18 * * ?"
+
 ai:
   openai:
     key: test-key
