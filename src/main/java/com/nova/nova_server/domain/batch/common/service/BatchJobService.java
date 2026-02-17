@@ -1,6 +1,7 @@
 package com.nova.nova_server.domain.batch.common.service;
 
 import com.nova.nova_server.domain.batch.articleingestion.service.ArticleFlowFactory;
+import com.nova.nova_server.domain.batch.statistics.StatisticStepFactory;
 import com.nova.nova_server.domain.batch.summary.service.SummaryStepFactory;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
 import com.nova.nova_server.domain.post.service.ArticleApiServiceFactory;
@@ -27,6 +28,7 @@ public class BatchJobService {
     private final ArticleApiServiceFactory articleApiServiceFactory;
     private final ArticleFlowFactory articleFlowFactory;
     private final SummaryStepFactory summaryStepFactory;
+    private final StatisticStepFactory statisticStepFactory;
 
     public void runArticleIngestionBatch() {
         List<ArticleApiService> articleApiServices = articleApiServiceFactory.createAllAvailableServices();
@@ -49,10 +51,14 @@ public class BatchJobService {
     public void runArticleIngestionAndSummaryBatch() {
         List<ArticleApiService> articleApiServices = articleApiServiceFactory.createAllAvailableServices();
         Flow flow = articleFlowFactory.createCombinedFlow(articleApiServices);
-        Step step = summaryStepFactory.createStep();
+        Step summaryStep = summaryStepFactory.createStep();
+        Step statisticsStep = statisticStepFactory.createStep();
+
         Job job = new JobBuilder("articleIngestionAndSummaryBatch", jobRepository)
                 .start(flow)
-                .next(step)
+                .next(summaryStep)
+                // 통계 배치
+                .next(statisticsStep)
                 .build()
                 .build();
         runBatch(job);
