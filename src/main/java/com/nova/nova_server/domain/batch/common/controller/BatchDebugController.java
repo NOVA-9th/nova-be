@@ -58,6 +58,20 @@ public class BatchDebugController {
         return ApiResponse.successWithNoData();
     }
 
+    @Operation(summary = "statistics batch")
+    @PostMapping("/statistics-batch")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ApiResponse<Void> executeStatisticsBatch() {
+        flowTaskExecutor.execute(() -> {
+            try {
+                batchJobService.runStatisticsBatch();
+            } catch (Exception e) {
+                log.error("Batch execution failed", e);
+            }
+        });
+        return ApiResponse.successWithNoData();
+    }
+
     @Operation(summary = "모든 배치 실행 결과", description = "등록된 모든 Job 의 실행 이력(JobExecution)을 최신순으로 반환합니다.")
     @GetMapping("/status/all")
     public ApiResponse<List<BatchExecutionStatusDto>> getAllBatchResults() {

@@ -54,14 +54,19 @@ public class BatchJobService {
         List<ArticleApiService> articleApiServices = articleApiServiceFactory.createAllAvailableServices();
         Flow flow = articleFlowFactory.createCombinedFlow(articleApiServices);
         Step summaryStep = summaryStepFactory.createStep();
-        Step statisticsStep = statisticStepFactory.createStep();
 
         Job job = new JobBuilder("articleIngestionAndSummaryBatch", jobRepository)
                 .start(flow)
                 .next(summaryStep)
-                // 통계 배치
-                .next(statisticsStep)
                 .build()
+                .build();
+        runBatch(job);
+    }
+
+    public void runStatisticsBatch() {
+        Step step = statisticStepFactory.createStep();
+        Job job = new JobBuilder("statisticsBatch", jobRepository)
+                .start(step)
                 .build();
         runBatch(job);
     }
