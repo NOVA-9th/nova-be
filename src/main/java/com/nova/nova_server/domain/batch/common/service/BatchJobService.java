@@ -1,6 +1,7 @@
 package com.nova.nova_server.domain.batch.common.service;
 
 import com.nova.nova_server.domain.batch.articleingestion.service.ArticleFlowFactory;
+import com.nova.nova_server.domain.batch.cardnews.service.CardNewsBatchProcessingStepFactory;
 import com.nova.nova_server.domain.batch.statistics.StatisticStepFactory;
 import com.nova.nova_server.domain.batch.summary.service.SummaryStepFactory;
 import com.nova.nova_server.domain.post.service.ArticleApiService;
@@ -29,6 +30,7 @@ public class BatchJobService {
     private final ArticleFlowFactory articleFlowFactory;
     private final SummaryStepFactory summaryStepFactory;
     private final StatisticStepFactory statisticStepFactory;
+    private final CardNewsBatchProcessingStepFactory cardNewsBatchProcessingStepFactory;
 
     public void runArticleIngestionBatch() {
         List<ArticleApiService> articleApiServices = articleApiServiceFactory.createAllAvailableServices();
@@ -64,15 +66,30 @@ public class BatchJobService {
         runBatch(job);
     }
 
+    public void runCardNewsBatchProcessingJob(String batchId) {
+        Step step = cardNewsBatchProcessingStepFactory.createStep();
+        Job job = new JobBuilder("cardNewsBatchProcessingJob", jobRepository)
+                .start(step)
+                .build();
+        JobParameters params = new JobParametersBuilder()
+                .addString("batchId", batchId)
+                .toJobParameters();
+        runBatch(job, params);
+    }
+
     private void runBatch(Job job) {
+        JobParameters params = new JobParametersBuilder()
+                .addLong("runAt", System.currentTimeMillis())
+                .toJobParameters();
+        runBatch(job, params);
+    }
+
+    private void runBatch(Job job, JobParameters params) {
         try {
-            JobParameters params = new JobParametersBuilder()
-                    .addLong("runAt", System.currentTimeMillis())
-                    .toJobParameters();
             jobLauncher.run(job, params);
-            log.info("Spring Batch job {} launched", job.getName());
+            log.info("Spring Batch job {} launched with params {}", job.getName(), params);
         } catch (Exception e) {
-            log.error("Failed to launch job {}", job.getName(), e);
+            log.error("Failed to launch job {} with params {}", job.getName(), params, e);
             throw new RuntimeException("Batch job launch failed", e);
         }
     }

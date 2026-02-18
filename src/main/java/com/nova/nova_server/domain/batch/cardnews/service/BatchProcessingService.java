@@ -27,6 +27,21 @@ public class BatchProcessingService {
     private final AiBatchRepository aiBatchRepository;
 
     @Transactional
+    public void processBatchResult(String batchId) {
+        AiBatchEntity entity = aiBatchRepository.findByBatchId(batchId).orElse(null);
+        if (entity == null) {
+            log.warn("존재하지 않는 AiBatchEntity batchId={}", batchId);
+            return;
+        }
+        if (entity.getState() != AiBatchState.PROGRESS) {
+            log.debug("처리 대상이 아닌 배치 상태입니다. batchId={}, state={}", batchId, entity.getState());
+            return;
+        }
+
+        processBatchResult(entity);
+    }
+
+    @Transactional
     public void processBatchResult(AiBatchEntity entity) {
         try {
             if (aiBatchService.isCompleted(entity.getBatchId())) {
@@ -35,7 +50,7 @@ public class BatchProcessingService {
                 entity.setState(AiBatchState.COMPLETED);
             }
         }
-        catch (AiException e) {
+        catch (Exception e) {
             log.error("배치 {} 실패", entity.getBatchId(), e);
             onBatchFailed(entity.getBatchId());
             entity.setState(AiBatchState.FAILED);
