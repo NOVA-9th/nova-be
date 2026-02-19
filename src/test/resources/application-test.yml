@@ -35,6 +35,8 @@ oauth:
 batch:
   article-ingestion:
     cron: "0 0 18 * * ?"
+  statistics:
+    cron: "0 0 2 * * ?"
 
 ai:
   openai:

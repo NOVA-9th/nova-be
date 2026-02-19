@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/debug/news")
-@Tag(name = "Debug: News/Batch", description = "뉴스 데이터 수집 및 배치 모니터링 디버그 API")
+@Tag(name = "Debug", description = "디버그/테스트 API")
 public class NewsDebugController {
 
     private final ArticleApiServiceFactory articleApiServiceFactory;

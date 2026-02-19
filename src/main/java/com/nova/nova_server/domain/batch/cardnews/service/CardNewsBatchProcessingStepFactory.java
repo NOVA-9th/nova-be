@@ -1,4 +1,4 @@
-package com.nova.nova_server.domain.batch.statistics;
+package com.nova.nova_server.domain.batch.cardnews.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Step;
@@ -9,15 +9,14 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Component
 @RequiredArgsConstructor
-public class StatisticStepFactory {
-
+public class CardNewsBatchProcessingStepFactory {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
-    private final KeywordStatisticsTasklet keywordStatisticsTasklet;
+    private final CardNewsBatchProcessingTasklet cardNewsBatchProcessingTasklet;
 
     public Step createStep() {
-        return new StepBuilder("keywordStatisticsStep", jobRepository)
-                .tasklet(keywordStatisticsTasklet, transactionManager)
+        return new StepBuilder("cardNewsBatchProcessingStep", jobRepository)
+                .tasklet(cardNewsBatchProcessingTasklet, transactionManager)
                 .build();
     }
 }

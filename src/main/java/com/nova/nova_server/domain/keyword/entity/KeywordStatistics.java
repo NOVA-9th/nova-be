@@ -9,7 +9,13 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "keyword_statistics")
+@Table(
+        name = "keyword_statistics",
+        uniqueConstraints = @UniqueConstraint(
+                name = "UK_keyword_statistics_keyword_stat_date",
+                columnNames = {"keyword_id", "stat_date"}
+        )
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class KeywordStatistics extends BaseEntity {
