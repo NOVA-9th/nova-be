@@ -1,9 +1,9 @@
 package com.nova.nova_server.domain.batch.cardnews.scheduler;
 
-import com.nova.nova_server.domain.batch.cardnews.service.BatchProcessingService;
 import com.nova.nova_server.domain.batch.common.entity.AiBatchEntity;
 import com.nova.nova_server.domain.batch.common.entity.AiBatchState;
 import com.nova.nova_server.domain.batch.common.repository.AiBatchRepository;
+import com.nova.nova_server.domain.batch.cardnews.service.CardNewsBatchProcessingJobRunner;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,8 +15,8 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class BatchPollingScheduler {
-    private final BatchProcessingService batchProcessingService;
     private final AiBatchRepository aiBatchRepository;
+    private final CardNewsBatchProcessingJobRunner cardNewsBatchProcessingJobService;
 
     @Scheduled(fixedDelay = 1000 * 10)
     public void pollBatch() {
@@ -26,9 +26,12 @@ public class BatchPollingScheduler {
         }
 
         log.info("진행중인 배치 작업 {} 개 발견", batchEntities.size());
-
         for (AiBatchEntity entity : batchEntities) {
-            batchProcessingService.processBatchResult(entity);
+            try {
+                cardNewsBatchProcessingJobService.runCardNewsBatchProcessingJob(entity.getBatchId());
+            } catch (Exception e) {
+                log.error("Card news batch processing job execution failed for batchId={}", entity.getBatchId(), e);
+            }
         }
     }
 }

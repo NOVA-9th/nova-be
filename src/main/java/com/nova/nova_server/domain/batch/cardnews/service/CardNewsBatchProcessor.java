@@ -1,6 +1,5 @@
 package com.nova.nova_server.domain.batch.cardnews.service;
 
-import com.nova.nova_server.domain.ai.exception.AiException;
 import com.nova.nova_server.domain.ai.service.AiBatchService;
 import com.nova.nova_server.domain.batch.common.entity.AiBatchEntity;
 import com.nova.nova_server.domain.batch.common.entity.AiBatchState;
@@ -20,11 +19,26 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BatchProcessingService {
+public class CardNewsBatchProcessor {
     private final AiBatchService aiBatchService;
     private final ArticleEntityRepository articleEntityRepository;
     private final CardNewsSaveService cardNewsSaveService;
     private final AiBatchRepository aiBatchRepository;
+
+    @Transactional
+    public void processBatchResult(String batchId) {
+        AiBatchEntity entity = aiBatchRepository.findByBatchId(batchId).orElse(null);
+        if (entity == null) {
+            log.warn("존재하지 않는 AiBatchEntity batchId={}", batchId);
+            return;
+        }
+        if (entity.getState() != AiBatchState.PROGRESS) {
+            log.debug("처리 대상이 아닌 배치 상태입니다. batchId={}, state={}", batchId, entity.getState());
+            return;
+        }
+
+        processBatchResult(entity);
+    }
 
     @Transactional
     public void processBatchResult(AiBatchEntity entity) {
@@ -35,7 +49,7 @@ public class BatchProcessingService {
                 entity.setState(AiBatchState.COMPLETED);
             }
         }
-        catch (AiException e) {
+        catch (Exception e) {
             log.error("배치 {} 실패", entity.getBatchId(), e);
             onBatchFailed(entity.getBatchId());
             entity.setState(AiBatchState.FAILED);

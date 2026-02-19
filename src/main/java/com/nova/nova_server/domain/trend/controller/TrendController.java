@@ -19,7 +19,7 @@ public class TrendController implements com.nova.nova_server.domain.trend.docs.T
 
     @GetMapping("/keywords/keywordtop")
     public ApiResponse<TrendResponse> getTopKeywords() {
-        return ApiResponse.success(trendService.getTopKeywords(LocalDate.now()));
+        return ApiResponse.success(trendService.getTopKeywords(LocalDate.now().minusDays(1)));
     }
 
     @GetMapping("/interests/skilltop")
