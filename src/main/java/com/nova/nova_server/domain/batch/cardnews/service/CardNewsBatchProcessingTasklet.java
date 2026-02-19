@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CardNewsBatchProcessingTasklet implements Tasklet {
-    private final BatchProcessingService batchProcessingService;
+    private final CardNewsBatchProcessor batchProcessingService;
 
     @Override
     public RepeatStatus execute(@NonNull StepContribution contribution, @NonNull ChunkContext chunkContext) {

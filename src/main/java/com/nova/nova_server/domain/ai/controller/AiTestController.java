@@ -5,6 +5,7 @@ import com.nova.nova_server.domain.ai.exception.AiException;
 import com.nova.nova_server.domain.ai.service.AiBatchService;
 import com.nova.nova_server.global.apiPayload.ApiResponse;
 import com.nova.nova_server.global.apiPayload.code.error.CommonErrorCode;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/debug/ai/test")
+@Tag(name = "Debug", description = "디버그/테스트 API")
 public class AiTestController {
 
     private final AiBatchService aiBatchService;
